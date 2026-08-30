@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Verbrauchsausweis für Wohngebäude online erstellen und bestellen."
+    />
+    <title>Verbrauchsausweis bestellen | Energieausweis Pro</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Zum Inhalt springen</a>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="brand" href="#main">
+          <span class="brand__mark" aria-hidden="true">EP</span>
+          <span>
+            <span class="brand__name">Energieausweis Pro</span>
+            <span class="brand__tag">Verbrauchsausweis für Wohngebäude</span>
+          </span>
+        </a>
+        <span class="badge">GEG-konforme Logik vorbereitet</span>
+      </div>
+    </header>
+
+    <main id="main" class="site-main">
+      <nav class="stepper card" aria-label="Bestellschritte">
+        <ol class="stepper__list" id="stepper-list"></ol>
+      </nav>
+
+      <div>
+        <section class="panel card" id="step-1" data-step="1">
+          <div class="panel__head">
+            <div>
+              <h1 tabindex="-1">Gebäudedaten</h1>
+              <p>Adresse und wesentliche Eigenschaften des Wohngebäudes.</p>
+            </div>
+          </div>
+          <form id="form-building" novalidate>
+            <div class="grid-3">
+              <div class="field">
+                <label class="field__label" for="plz">Postleitzahl</label>
+                <input class="input" id="plz" name="plz" inputmode="numeric" maxlength="5" required />
+                <span class="field__error" data-error-for="plz"></span>
+              </div>
+              <div class="field">
+                <label class="field__label" for="ort">Ort</label>
+                <input class="input" id="ort" name="ort" required />
+                <span class="field__error" data-error-for="ort"></span>
+              </div>
+              <div class="field">
+                <label class="field__label" for="strasse">Straße</label>
+                <input class="input" id="strasse" name="strasse" required />
+                <span class="field__error" data-error-for="strasse"></span>
+              </div>
+            </div>
+            <div class="grid-3" style="margin-top: 1rem">
+              <div class="field">
+                <label class="field__label" for="hausnummer">Hausnummer</label>
+                <input class="input" id="hausnummer" name="hausnummer" required />
+                <span class="field__error" data-error-for="hausnummer"></span>
+              </div>
+              <div class="field">
+                <label class="field__label" for="wohnflaeche">Wohnfläche (m²)</label>
+                <input
+                  class="input"
+                  id="wohnflaeche"
+                  name="wohnflaeche"
+                  type="number"
+                  min="20"
+                  max="20000"
+                  step="0.1"
+                  required
+                />
+                <span class="field__error" data-error-for="wohnflaeche"></span>
+              </div>
+              <div class="field">
+                <label class="field__label" for="gebaeudetyp">Gebäudetyp</label>
+                <select class="select" id="gebaeudetyp" name="gebaeudetyp" required>
+                  <option value="">Bitte wählen</option>
+                  <option value="efh">1-2 Familienhaus</option>
+                  <option value="mfh">Mehrfamilienhaus</option>
+                </select>
+                <span class="field__error" data-error-for="gebaeudetyp"></span>
+              </div>
+            </div>
+            <div class="grid-2" style="margin-top: 1rem">
+              <div class="field">
+                <label class="field__label" for="baujahr">Baujahr Gebäude</label>
+                <input
+                  class="input"
+                  id="baujahr"
+                  name="baujahr"
+                  type="number"
+                  min="1800"
+                  max="2026"
+                  required
+                />
+                <span class="field__error" data-error-for="baujahr"></span>
+              </div>
+              <div class="field">
+                <label class="field__label" for="baujahrHeizung">Baujahr Heizung</label>
+                <input
+                  class="input"
+                  id="baujahrHeizung"
+                  name="baujahrHeizung"
+                  type="number"
+                  min="1800"
+                  max="2026"
+                  required
+                />
+                <span class="field__error" data-error-for="baujahrHeizung"></span>
+              </div>
+            </div>
+            <div class="field" style="margin-top: 1rem">
+              <span class="field__label" id="keller-label">Beheizter Keller</span>
+              <div class="choice-group" role="radiogroup" aria-labelledby="keller-label">
+                <label class="choice">
+                  <input type="radio" name="beheizterKeller" value="ja" required />
+                  <span>Ja</span>
+                </label>
+                <label class="choice">
+                  <input type="radio" name="beheizterKeller" value="nein" />
+                  <span>Nein</span>
+                </label>
+              </div>
+              <span class="field__error" data-error-for="beheizterKeller"></span>
+            </div>
+            <div class="field" style="margin-top: 1rem">
+              <span class="field__label" id="ww-label">Warmwasser</span>
+              <div class="choice-group" role="radiogroup" aria-labelledby="ww-label">
+                <label class="choice">
+                  <input type="radio" name="warmwasser" value="enthalten" required />
+                  <span>enthalten</span>
+                </label>
+                <label class="choice">
+                  <input type="radio" name="warmwasser" value="separat" />
+                  <span>separat</span>
+                </label>
+                <label class="choice">
+                  <input type="radio" name="warmwasser" value="unbekannt" />
+                  <span>unbekannt</span>
+                </label>
+              </div>
+              <span class="field__error" data-error-for="warmwasser"></span>
+            </div>
+          </form>
+          <div class="btn-row">
+            <span></span>
+            <button class="btn btn--primary" type="button" data-next>Weiter</button>
+          </div>
+        </section>
+
+        <section class="panel card" id="step-2" data-step="2" hidden>
+          <div class="panel__head">
+            <div>
+              <h1 tabindex="-1">Verbrauch</h1>
+              <p>Energieträger, Abrechnungsperioden und Verbrauchswerte der letzten drei Jahre.</p>
+            </div>
+          </div>
+          <form id="form-consumption" novalidate>
+            <div class="field">
+              <span class="field__label" id="carrier-label">Energieträger</span>
+              <div class="carrier-grid" id="carrier-grid" role="radiogroup" aria-labelledby="carrier-label"></div>
+              <span class="field__error" data-error-for="energietraeger"></span>
+            </div>
+            <div class="grid-2" style="margin-top: 1rem">
+              <div class="field">
+                <label class="field__label" for="startYear">Beginn erstes Abrechnungsjahr</label>
+                <input class="input" id="startYear" name="startYear" type="number" min="2015" max="2026" required />
+                <span class="field__hint">Beispiel: 2023 – daraus werden drei Zeiträume erzeugt.</span>
+                <span class="field__error" data-error-for="startYear"></span>
+              </div>
+              <div class="field">
+                <label class="field__label" for="periodStartMonth">Abrechnungsperiode</label>
+                <select class="select" id="periodStartMonth" name="periodStartMonth" required></select>
+                <span class="field__error" data-error-for="periodStartMonth"></span>
+              </div>
+            </div>
+            <div id="periods-container" style="margin-top: 1.5rem"></div>
+          </form>
+          <div class="btn-row">
+            <button class="btn btn--ghost" type="button" data-prev>Zurück</button>
+            <button class="btn btn--primary" type="button" data-next>Weiter</button>
+          </div>
+        </section>
+
+        <section class="panel card" id="step-3" data-step="3" hidden>
+          <div class="panel__head">
+            <div>
+              <h1 tabindex="-1">Dokumente</h1>
+              <p>Nur PDF. Mindestens drei Heizkostenabrechnungen. Dateien verlassen den Browser erst bei der Bestellung.</p>
+            </div>
+          </div>
+          <div id="documents-root"></div>
+          <div class="btn-row">
+            <button class="btn btn--ghost" type="button" data-prev>Zurück</button>
+            <button class="btn btn--primary" type="button" data-next>Weiter</button>
+          </div>
+        </section>
+
+        <section class="panel card" id="step-4" data-step="4" hidden>
+          <div class="panel__head">
+            <div>
+              <h1 tabindex="-1">Berechnung</h1>
+              <p>Endenergie, Primärenergie, CO₂ und Effizienzklasse. Klimafaktoren sind vorbereitet.</p>
+            </div>
+          </div>
+          <div id="calculation-root"></div>
+          <div class="btn-row">
+            <button class="btn btn--ghost" type="button" data-prev>Zurück</button>
+            <button class="btn btn--primary" type="button" data-next>Zur Vorschau</button>
+          </div>
+        </section>
+
+        <section class="panel card" id="step-5" data-step="5" hidden>
+          <div class="panel__head">
+            <div>
+              <h1 tabindex="-1">Vorschau</h1>
+              <p>Grafische Darstellung analog zum Energieband – eigenständiges Layout.</p>
+            </div>
+          </div>
+          <div id="preview-root"></div>
+          <div class="btn-row">
+            <button class="btn btn--ghost" type="button" data-prev>Zurück</button>
+            <button class="btn btn--primary" type="button" data-next>Zur Bestellung</button>
+          </div>
+        </section>
+
+        <section class="panel card" id="step-6" data-step="6" hidden>
+          <div class="panel__head">
+            <div>
+              <h1 tabindex="-1">Bestellung</h1>
+              <p>Prüfen Sie die Angaben und bestellen Sie den Verbrauchsausweis kostenpflichtig.</p>
+            </div>
+          </div>
+          <div id="order-root"></div>
+          <div class="btn-row">
+            <button class="btn btn--ghost" type="button" data-prev>Zurück</button>
+            <button class="btn btn--primary" type="button" id="btn-checkout">
+              Jetzt kostenpflichtig bestellen
+            </button>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <section id="agb" class="card" style="width:min(100% - 2rem, var(--max-width)); margin: 0 auto 1.5rem">
+      <h2>Allgemeine Geschäftsbedingungen (Muster)</h2>
+      <p>
+        Vertragspartner ist der Betreiber der Wix-Website, auf der dieser Bestellprozess eingebunden ist.
+        Gegenstand ist die Erstellung eines Verbrauchsausweises für Wohngebäude nach Prüfung der vom Kunden
+        übermittelten Unterlagen. Der Vertrag kommt mit Abschluss der kostenpflichtigen Bestellung im Wix Shop zustande.
+      </p>
+      <p>
+        Die im Wizard angezeigte Effizienzklasse ist eine vorläufige Kennzahl und nicht der amtliche Ausweis.
+        Der Betreiber kann unvollständige oder widersprüchliche Unterlagen nachfordern. Es gelten die Widerrufsbelehrung
+        und die Preisangaben des Shops. Dieses Muster ersetzt keine Rechtsberatung und muss vor dem Livegang angepasst werden.
+      </p>
+    </section>
+    <section id="datenschutz" class="card" style="width:min(100% - 2rem, var(--max-width)); margin: 0 auto 2rem">
+      <h2>Datenschutz (Auftragserfüllung)</h2>
+      <p>
+        Verarbeitet werden Adress- und Gebäudedaten, Verbrauchsangaben, Kontaktdaten sowie die hochgeladenen PDFs,
+        soweit dies zur Vertragserfüllung Art. 6 Abs. 1 lit. b DSGVO erforderlich ist. Vor der verbindlichen Bestellung
+        verbleiben Dateien im Browser. Nach der Bestellung erfolgt die Speicherung in Wix (Collection und Media)
+        sowie – sofern konfiguriert – in SevDesk zur Rechnungsstellung.
+      </p>
+      <p>
+        Empfänger können Wix (Hosting/Shop), der Aussteller des Ausweises und der Steuerberater bzw. SevDesk sein.
+        Speicherdauer: solange gesetzliche Aufbewahrungspflichten bestehen. Rechte: Auskunft, Berichtigung, Löschung,
+        Einschränkung, Widerspruch, Beschwerde bei einer Aufsichtsbehörde. Vollständige Angaben stehen in der
+        Datenschutzerklärung der Wix-Website.
+      </p>
+    </section>
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <span>© Energieausweis Pro · Angaben gemäß DSGVO nur zur Auftragserfüllung · <a href="#agb">AGB</a> · <a href="#datenschutz">Datenschutz</a></span>
+        <span>Keine Speicherung von Dateien vor der verbindlichen Bestellung</span>
+      </div>
+    </footer>
+    <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

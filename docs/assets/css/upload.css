@@ -1,0 +1,83 @@
+.dropzone {
+  border: 1.5px dashed #b7c2ce;
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  text-align: center;
+  background: #fafbfc;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.dropzone.is-active {
+  border-color: var(--color-blue);
+  background: var(--color-blue-soft);
+}
+
+.dropzone__icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 0.75rem;
+  color: var(--color-blue);
+}
+
+.file-list {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.file-item {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: #fff;
+}
+
+.file-item__icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 8px;
+  background: var(--color-blue-soft);
+  color: var(--color-blue);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 0.7rem;
+}
+
+.file-item__name {
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.file-item__meta {
+  color: var(--color-text-soft);
+  font-size: 0.85rem;
+}
+
+.progress {
+  height: 6px;
+  background: var(--color-muted);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  margin-top: 0.35rem;
+}
+
+.progress > span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--color-blue);
+  transition: width 0.2s ease;
+}
+
+.doc-section + .doc-section {
+  margin-top: var(--space-6);
+}
