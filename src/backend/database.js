@@ -1,18 +1,6 @@
 /**
  * Wix Data: Collection "CertificateOrders"
- *
- * Felder (Dashboard anlegen):
- * orderNumber (Text, unique)
- * status (Text)
- * customerName, customerEmail
- * building (Object / JSON-Text)
- * consumption (Object)
- * calculation (Object)
- * fileUrls (Array)
- * createdAt (Date)
- * updatedAt (Date)
- *
- * Medien über wix-media-backend.mediaManager.upload
+ * Secrets gehören in den Wix Secrets Manager, nicht in diese Datei.
  */
 
 import wixData from 'wix-data';
