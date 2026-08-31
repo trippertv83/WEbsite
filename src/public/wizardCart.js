@@ -1,11 +1,12 @@
 /**
- * Warenkorb aus dem HTML-iFrame (postMessage).
- * HTML-Komponente: ID wizardHtml (Fallback html1).
+ * Warenkorb + Kasse. HTML-Komponente: #wizardHtml
  */
 
+import { currentCart } from 'wix-ecom-backend';
+import wixEcomFrontend from 'wix-ecom-frontend';
 import { cart } from 'wix-stores-frontend';
-import wixLocation from 'wix-location';
 
+const STORES_APP = '215238eb-22a5-4c36-9e7b-e7c08025e04e';
 let lastOrder = '';
 
 function htmlBox() {
@@ -15,7 +16,7 @@ function htmlBox() {
       const el = $w(id);
       if (el && el.length !== 0) return el;
     } catch {
-      /* Element fehlt auf dieser Seite */
+      /* fehlt */
     }
   }
   return null;
@@ -34,49 +35,76 @@ function payloadFrom(event) {
   return data;
 }
 
+function checkoutIdOf(result) {
+  if (!result) return '';
+  if (typeof result === 'string') return result;
+  return result.checkoutId || result._id || '';
+}
+
 async function addLine(productId, orderNumber, efficiencyClass) {
-  const plain = [{ productId, quantity: 1 }];
-  const withText = [
-    {
-      productId,
-      quantity: 1,
-      options: {
-        customTextFields: [
-          { title: 'Bestellnummer', value: String(orderNumber || '') },
-          { title: 'Effizienzklasse', value: String(efficiencyClass || '') },
-        ],
+  const line = {
+    lineItems: [
+      {
+        catalogReference: {
+          appId: STORES_APP,
+          catalogItemId: productId,
+          options: {
+            customTextFields: {
+              Bestellnummer: String(orderNumber || ''),
+              Effizienzklasse: String(efficiencyClass || ''),
+            },
+          },
+        },
+        quantity: 1,
       },
-    },
-  ];
+    ],
+  };
   try {
-    await cart.addProducts(withText);
+    await currentCart.addToCurrentCart(line);
+    return;
   } catch {
-    await cart.addProducts(plain);
+    /* ohne Textfelder */
+  }
+  try {
+    await currentCart.addToCurrentCart({
+      lineItems: [
+        {
+          catalogReference: {
+            appId: STORES_APP,
+            catalogItemId: productId,
+          },
+          quantity: 1,
+        },
+      ],
+    });
+    return;
+  } catch {
+    await cart.addProducts([{ productId, quantity: 1 }]);
   }
 }
 
 async function goToCheckout() {
+  await wixEcomFrontend.refreshCart();
   try {
-    const ecom = await import('wix-ecom-frontend');
-    const api = ecom.default || ecom;
-    if (typeof api.navigateToCheckoutPage === 'function') {
-      await api.navigateToCheckoutPage();
-      return;
-    }
-  } catch {
-    /* ältere Sites */
+    const created = await currentCart.createCheckoutFromCurrentCart({
+      channelType: 'WEB',
+    });
+    const id = checkoutIdOf(created);
+    if (!id) throw new Error('Keine Checkout-ID');
+    await wixEcomFrontend.navigateToCheckoutPage(id, {
+      skipDeliveryStep: true,
+    });
+    return;
+  } catch (error) {
+    console.error('Checkout-ID:', error);
   }
-  if (typeof cart.showCart === 'function') {
-    try {
-      await cart.showCart();
-    } catch {
-      /* weiterleiten */
-    }
+  if (typeof wixEcomFrontend.navigateToCartPage === 'function') {
+    await wixEcomFrontend.navigateToCartPage();
+    return;
   }
-  const path = wixLocation.path || [];
-  const lang = Array.isArray(path) && path[0] && path[0].length === 2 ? `/${path[0]}` : '';
-  const targets = [`${lang}/checkout`, `${lang}/kasse`, '/checkout', '/kasse', '/cart', '/warenkorb'];
-  wixLocation.to(targets[0] || '/checkout');
+  if (typeof wixEcomFrontend.openSideCart === 'function') {
+    await wixEcomFrontend.openSideCart();
+  }
 }
 
 async function handleAddToCart(data) {
@@ -95,18 +123,9 @@ export function bindWizardCart() {
         await handleAddToCart(payloadFrom(event));
       } catch (error) {
         console.error('Kasse:', error);
-        try {
-          html.postMessage({
-            type: 'CART_ERROR',
-            message: error.message || String(error),
-          });
-        } catch {
-          /* */
-        }
       }
     });
   }
-
   if (typeof window !== 'undefined' && window.addEventListener) {
     window.addEventListener('message', async (event) => {
       try {
