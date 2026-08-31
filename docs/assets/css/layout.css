@@ -107,7 +107,19 @@ body.is-register-only .stepper {
 }
 
 .register-gate {
-  max-width: 640px;
+  max-width: 720px;
+  min-height: 640px;
+}
+
+.legal-fold {
+  width: min(100% - 2rem, var(--max-width));
+  margin: 0 auto 1rem;
+}
+
+.legal-fold summary {
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0.75rem 0;
 }
 
 @media (max-width: 900px) {
