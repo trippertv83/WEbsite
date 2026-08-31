@@ -65,7 +65,11 @@ export async function renderOrder() {
           <dt>Wohnfläche</dt>
           <dd>${formatDeNumber(Number(building.wohnflaeche), 1)} m²</dd>
           <dt>Gebäudetyp</dt>
-          <dd>${building.gebaeudetyp === 'efh' ? '1-2 Familienhaus' : 'Mehrfamilienhaus'}</dd>
+          <dd>${escapeHtml(building.gebaeudetyp || '–')}</dd>
+          <dt>Nutzfläche</dt>
+          <dd>${formatDeNumber(Number(building.nutzflaeche || building.wohnflaeche), 1)} m²</dd>
+          <dt>Anlass</dt>
+          <dd>${escapeHtml(building.anlass || '–')}</dd>
           <dt>Energieträger</dt>
           <dd>${escapeHtml(calculation?.carrierLabel || consumption.energietraeger)}</dd>
           <dt>Effizienzklasse</dt>

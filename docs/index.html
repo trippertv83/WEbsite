@@ -208,10 +208,69 @@
                 <label class="field__label" for="gebaeudetyp">Gebäudetyp</label>
                 <select class="select" id="gebaeudetyp" name="gebaeudetyp" required>
                   <option value="">Bitte wählen</option>
-                  <option value="efh">1-2 Familienhaus</option>
-                  <option value="mfh">Mehrfamilienhaus</option>
+                  <option value="Einfamilienhaus">Einfamilienhaus</option>
+                  <option value="Zweifamilienhaus">Zweifamilienhaus</option>
+                  <option value="Mehrfamilienhaus">Mehrfamilienhaus</option>
                 </select>
                 <span class="field__error" data-error-for="gebaeudetyp"></span>
+              </div>
+              <div class="field">
+                <label class="field__label" for="nutzflaeche">Nutzfläche A<sub>N</sub> nach GEG (m²)</label>
+                <input
+                  class="input"
+                  id="nutzflaeche"
+                  name="nutzflaeche"
+                  type="number"
+                  min="20"
+                  max="20000"
+                  step="0.1"
+                />
+                <span class="field__hint">Leer = 1,2 × Wohnfläche (wie in Hottgenroth).</span>
+                <span class="field__error" data-error-for="nutzflaeche"></span>
+              </div>
+            </div>
+            <div class="grid-2" style="margin-top: 1rem">
+              <div class="field">
+                <label class="field__label" for="anzahlWohnungen">Anzahl Wohnungen</label>
+                <input class="input" id="anzahlWohnungen" name="anzahlWohnungen" type="number" min="1" max="500" value="1" required />
+                <span class="field__error" data-error-for="anzahlWohnungen"></span>
+              </div>
+              <div class="field">
+                <label class="field__label" for="gebaeudeteil">Gebäudeteil</label>
+                <select class="select" id="gebaeudeteil" name="gebaeudeteil">
+                  <option value="Ganzes Gebäude">Ganzes Gebäude</option>
+                  <option value="Gebäudeteil">Gebäudeteil</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid-2" style="margin-top: 1rem">
+              <div class="field">
+                <label class="field__label" for="anlass">Anlass der Ausstellung</label>
+                <select class="select" id="anlass" name="anlass" required>
+                  <option value="Vermietung / Verkauf">Vermietung / Verkauf</option>
+                  <option value="Modernisierung">Modernisierung</option>
+                  <option value="Aushang">Aushang</option>
+                  <option value="Sonstiges">Sonstiges</option>
+                </select>
+                <span class="field__error" data-error-for="anlass"></span>
+              </div>
+              <div class="field">
+                <label class="field__label" for="lueftung">Lüftung</label>
+                <select class="select" id="lueftung" name="lueftung">
+                  <option value="Fensterlüftung">Fensterlüftung</option>
+                  <option value="Schachtlüftung">Schachtlüftung</option>
+                  <option value="Lüftungsanlage">Lüftungsanlage</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid-2" style="margin-top: 1rem">
+              <div class="field">
+                <label class="field__label" for="erneuerbareEnergien">Erneuerbare Energien (Nutzung)</label>
+                <input class="input" id="erneuerbareEnergien" name="erneuerbareEnergien" placeholder="z. B. Heizung" />
+              </div>
+              <div class="field">
+                <label class="field__label" for="erneuerbareEnergienA">Erneuerbare Energien (Art)</label>
+                <input class="input" id="erneuerbareEnergienA" name="erneuerbareEnergienA" placeholder="z. B. Holz" />
               </div>
             </div>
             <div class="grid-2" style="margin-top: 1rem">
@@ -229,7 +288,7 @@
                 <span class="field__error" data-error-for="baujahr"></span>
               </div>
               <div class="field">
-                <label class="field__label" for="baujahrHeizung">Baujahr Heizung</label>
+                <label class="field__label" for="baujahrHeizung">Baujahr Wärmeerzeuger</label>
                 <input
                   class="input"
                   id="baujahrHeizung"
@@ -257,23 +316,53 @@
               <span class="field__error" data-error-for="beheizterKeller"></span>
             </div>
             <div class="field" style="margin-top: 1rem">
+              <span class="field__label" id="kuehl-label">Kühlung</span>
+              <div class="choice-group" role="radiogroup" aria-labelledby="kuehl-label">
+                <label class="choice">
+                  <input type="radio" name="gekuehlt" value="nein" checked />
+                  <span>Nein</span>
+                </label>
+                <label class="choice">
+                  <input type="radio" name="gekuehlt" value="ja" />
+                  <span>Das Gebäude wird gekühlt</span>
+                </label>
+              </div>
+              <span class="field__error" data-error-for="gekuehlt"></span>
+            </div>
+            <div class="field" style="margin-top: 1rem">
               <span class="field__label" id="ww-label">Warmwasser</span>
               <div class="choice-group" role="radiogroup" aria-labelledby="ww-label">
                 <label class="choice">
-                  <input type="radio" name="warmwasser" value="enthalten" required />
-                  <span>enthalten</span>
+                  <input type="radio" name="warmwasser" value="pauschal" required />
+                  <span>pauschal 20 kWh/m² (GEG)</span>
+                </label>
+                <label class="choice">
+                  <input type="radio" name="warmwasser" value="enthalten" />
+                  <span>im Verbrauch enthalten</span>
                 </label>
                 <label class="choice">
                   <input type="radio" name="warmwasser" value="separat" />
-                  <span>separat</span>
-                </label>
-                <label class="choice">
-                  <input type="radio" name="warmwasser" value="unbekannt" />
-                  <span>unbekannt</span>
+                  <span>separat gemessen</span>
                 </label>
               </div>
               <span class="field__error" data-error-for="warmwasser"></span>
+              <label class="checkbox" style="margin-top: 0.75rem">
+                <input type="checkbox" name="warmwasserSolar" value="1" />
+                <span>Solare Warmwasserbereitung vorhanden</span>
+              </label>
             </div>
+            <fieldset style="margin-top: 1.5rem; border: 0; padding: 0">
+              <legend class="field__label">Modernisierungsempfehlungen</legend>
+              <p class="field__hint">Wie in HS Verbrauchspass – nur ankreuzen, was empfohlen werden soll.</p>
+              <label class="checkbox"><input type="checkbox" name="recommendation" value="waerme-wp" /><span>Wärmeerzeugung: Wärmepumpe</span></label>
+              <label class="checkbox"><input type="checkbox" name="recommendation" value="hydraulisch" /><span>Heizungsanlage: hydraulischer Abgleich</span></label>
+              <label class="checkbox"><input type="checkbox" name="recommendation" value="solar-ww" /><span>Warmwasser: Solar / PV</span></label>
+              <label class="checkbox"><input type="checkbox" name="recommendation" value="fenster" /><span>Fenster erneuern</span></label>
+              <label class="checkbox"><input type="checkbox" name="recommendation" value="dach" /><span>Dach / oberste Geschossdecke dämmen</span></label>
+              <label class="checkbox"><input type="checkbox" name="recommendation" value="kellerdecke" /><span>Kellerdecke dämmen</span></label>
+              <label class="checkbox"><input type="checkbox" name="recommendation" value="fassade" /><span>Fassadendämmung</span></label>
+              <label class="checkbox"><input type="checkbox" name="recommendation" value="allgemein" /><span>Allgemein: Energieberatung / Förderung</span></label>
+            </fieldset>
           </form>
           <div class="btn-row">
             <span></span>

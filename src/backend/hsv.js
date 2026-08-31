@@ -1,7 +1,72 @@
 /**
- * HS Verbrauchspass 5.2.11 – exakt das Schlüssel-Layout der Desktop-Software.
- * Kundendaten werden nur in vorhandene Felder geschrieben, keine Extra-Keys.
+ * HS Verbrauchspass – Layout wie lukas.hsv (5.2.16).
+ * Nur vorhandene Schlüssel, Werte aus dem Erfassungsbogen.
  */
+
+const RECOMMENDATION_OPTIONS = [
+  {
+    id: 'waerme-wp',
+    bauteil: 'Wärmeerzeugung',
+    beschreibung: 'Erneuerung der Heizungsanlage - Einbau einer Wärmepumpe',
+    modernisierung: 0,
+    einzelmassnahme: 1,
+  },
+  {
+    id: 'hydraulisch',
+    bauteil: 'Heizungsanlage',
+    beschreibung: 'Durchführung eines hydraulischen Abgleiches',
+    modernisierung: 0,
+    einzelmassnahme: 1,
+  },
+  {
+    id: 'solar-ww',
+    bauteil: 'Warmwasser-Bereitung',
+    beschreibung: 'Einbau einer solaren Brauchwarmwasserbereitung / PV Anlage',
+    modernisierung: 0,
+    einzelmassnahme: 1,
+  },
+  {
+    id: 'fenster',
+    bauteil: 'Fenster',
+    beschreibung: 'Erneuerung der Fenster',
+    modernisierung: 0,
+    einzelmassnahme: 1,
+  },
+  {
+    id: 'dach',
+    bauteil: 'Dach',
+    beschreibung: 'Dämmung der obersten Geschossdecke / des Daches',
+    modernisierung: 0,
+    einzelmassnahme: 1,
+  },
+  {
+    id: 'kellerdecke',
+    bauteil: 'Kellerdecke',
+    beschreibung: 'Dämmung der Kellerdecke',
+    modernisierung: 0,
+    einzelmassnahme: 1,
+  },
+  {
+    id: 'fassade',
+    bauteil: 'Außenwand',
+    beschreibung: 'Fassadendämmung',
+    modernisierung: 0,
+    einzelmassnahme: 1,
+  },
+  {
+    id: 'allgemein',
+    bauteil: 'Allgemein',
+    beschreibung:
+      'Weitere Maßnahmen sind denkbar, diese sollten im Rahmen einer Energieberatung untersucht werden. Die staatlichen Förderungen sind sehr gut.',
+    modernisierung: 1,
+    einzelmassnahme: 1,
+  },
+];
+
+function selectedRecommendations(ids = []) {
+  const set = new Set(ids);
+  return RECOMMENDATION_OPTIONS.filter((item) => set.has(item.id));
+}
 
 const FUELS = {
   heizoel: {
@@ -13,12 +78,12 @@ const FUELS = {
     co2: '0,31',
   },
   erdgas: {
-    brennstoff: 'Erdgas H',
-    name: 'Erdgas',
-    einheit: { m3: 'm³', kwh: 'kWh' },
-    kwhPer: { m3: '10,00', kwh: '1' },
+    brennstoff: 'Erdgas E',
+    name: 'Erdgas E',
+    einheit: { m3: 'm³', kwh: 'kWh Brennwert' },
+    kwhPer: { m3: '10,00', kwh: '0,900900900900901' },
     prim: '1,1',
-    co2: '0,20',
+    co2: '0,24',
   },
   fernwaerme: {
     brennstoff: 'Fernwärme',
@@ -38,19 +103,19 @@ const FUELS = {
   },
   holz: {
     brennstoff: 'Stückholz',
-    name: 'Holz',
-    einheit: { rm: 'Raummeter', kwh: 'kWh' },
-    kwhPer: { rm: '1500', kwh: '1' },
+    name: 'Stückholz',
+    einheit: { rm: 'rm', kwh: 'kWh' },
+    kwhPer: { rm: '2326', kwh: '1' },
     prim: '0,2',
-    co2: '0,03',
+    co2: '0,02',
   },
   pellets: {
     brennstoff: 'Holzpellets',
-    name: 'Pellets',
-    einheit: { kg: 'kg', t: 'Tonne', kwh: 'kWh' },
+    name: 'Holzpellets',
+    einheit: { kg: 'kg', t: 't', kwh: 'kWh' },
     kwhPer: { kg: '4,80', t: '4800', kwh: '1' },
     prim: '0,2',
-    co2: '0,03',
+    co2: '0,02',
   },
   waermepumpe: {
     brennstoff: 'Strom',
@@ -61,198 +126,6 @@ const FUELS = {
     co2: '0,38',
   },
 };
-
-/** Leere Projektdatei aus HS Verbrauchspass 5.2.11 – Reihenfolge und Keys unverändert. */
-export const HSV_TEMPLATE = `[Version]
-Programmversion=HS Verbrauchspass 5.2.11
-[Energieausweis]
-EnEVAusgabe=GEG2024
-IstNichtwohngebaeude=0
-DatenerfassungDurchEigentuemer=0
-MitZusatzInfos=0
-AusstellerZeile1=Dieter Spaderna
-AusstellerZeile2=Schornsteinfegermeister
-AusstellerZeile3=Ziegelanger 5
-AusstellerZeile4=96250 Ebensfeld
-Anlass=
-Ausstellungsdatum=30.12.1899
-FirmenlogoAktiviert=0
-FirmenlogoPfad=
-ZusatzlogoAktiviert=0
-ZusatzlogoPfad=
-UnterschriftAktiviert=0
-UnterschriftPfad=
-UnterschriftTransparent=0
-UnterschriftFarbe=16777215
-UnterschriftToleranz=1
-[DIBt]
-Registriernummer=
-XML_Senden=xsUnbekannt
-[Gebaeude]
-Gebaeudetyp=
-PLZ=96250
-Ort=Ebenfeld
-Strasse=gasmoasn
-Gebaeudeteil=
-Bundesland=- Bundesland auswählen -
-ErneuerbareEnergien=
-ErneuerbareEnergienA=
-Lueftung=
-BaujahrGeb=
-BaujahrAnlage=
-BaujahrKlimaanlage=
-AnzahlWohnungen=
-Nutzflaeche=
-WestentlTraeger=
-WestentlTraegerHeizung=
-WestentlTraegerWasser=
-WestentlTraegerAuto=1
-Foto=
-FotoDrehung=0
-FotoRelativ=
-KlimaanlageAnzahl=0
-KlimaanlageFaelligkeit=28.08.2026
-Klimaanlage12kWohne=0
-Klimaanlage12kWmit=0
-Klimaanlage70kW=0
-EE24_NutzungHz=0
-EE24_NutzungDHW=0
-EE24_65ProzEERegel=0
-EE24_65ProzEERegelPauschal=0
-EE24_P71b=0
-EE24_P71c=0
-EE24_P71d=0
-EE24_P71e=0
-EE24_P71fg=0
-EE24_P71h_WP=0
-EE24_P71h_sol=0
-EE24_P71Abs5=0
-EE24_65ProzEERegelNicht=1
-[Nichtwohngebauede]
-Sonderzone1=
-Sonderzone2=
-Sonderzone3=
-Vergleichsgebaeude=
-VglHeizenergie=0
-VglStrom=0
-AnzahlKategorien=0
-ENFausHNF=0
-ENFausNF=0
-ENFausBGF=0
-EingabeFlaeche=0
-TypFlaechenberechnung=-1
-VerschiedeneZeitraueme=1
-StromFuerHeizung=0
-StromFuerBeleuchtung=1
-StromFuerWarmwasser=0
-StromFuerLueftung=0
-StromFuerKuehlung=0
-StromFuerSonstiges=1
-StromFuerSonstigesBez=
-StromFuerAufzug=0
-FeuchteAnlage=0
-[Gebauede]
-ZusatzAuftraggeber=
-ZusatzAuftragsnummer=
-ZusatzObjektnummer=
-ZusatzSonstiges=
-ZusatzNutzflaeche=
-[Druck]
-MitEmpfehlungen=1
-MitUnterlagen=0
-[Modernisierungsempfehlungen]
-Anzahl=0
-EmpfehlungenMoeglich=1
-WeiteresBlatt=0
-GenauereEmpfehlungen=Dieter Spaderna, Schornsteinfegermeister|Ziegelanger 5, 96250 Ebensfeld
-Erlaeuterungen=
-[Verbrauch3]
-PLZ=0
-WarmwasserIndividuell=0
-WarmwasserMitSolar=0
-Systemanzahl=1
-SystemVon0=30.12.1899
-SystemBis0=30.12.1899
-SystemBrennstoff0=Heizöl EL
-SystemBrennstoffName0=Heizöl
-SystemEinheit0=Liter
-SystemEnergieJeEinheit0=10,08
-SystemEnergieJeEinheitManuell0=0
-SystemPrimFaktor0=1,1
-SystemPrimFaktorManuell0=0
-SystemCO2Faktor0=0,31
-SystemCO2FaktorManuell0=0
-SystemLagerdaten0=
-SystemVerbrauchEKZ0=0
-SystemWarmwassertyp0=wwMesswertkWh
-SystemWarmwasserprozent0=0,18
-SystemWarmwassertemperatur0=50
-SystemKuehlungstyp0=ktNichtEnthalten
-Periodenanzahl=3
-PeriodeVon0=01.01.2023
-PeriodeBis0=31.12.2023
-PeriodeVerbrauchMenge0=0
-PeriodeVerbrauchHZ0=0
-PeriodeVerbrauchWW0=0
-PeriodeVerbrauchWWPro0=0
-PeriodeVerbrauchWWKubik0=0
-PeriodeVerbrauchKE0=0
-PeriodeVerbrauchKF0=0
-PeriodeVerbrauchHZEKZ0=0
-PeriodeVerbrauchWWEKZ0=0
-PeriodeVerbrauchEKZ0=0
-PeriodeSystem0=0
-PeriodeVon1=01.01.2024
-PeriodeBis1=31.12.2024
-PeriodeVerbrauchMenge1=0
-PeriodeVerbrauchHZ1=0
-PeriodeVerbrauchWW1=0
-PeriodeVerbrauchWWPro1=0
-PeriodeVerbrauchWWKubik1=0
-PeriodeVerbrauchKE1=0
-PeriodeVerbrauchKF1=0
-PeriodeVerbrauchHZEKZ1=0
-PeriodeVerbrauchWWEKZ1=0
-PeriodeVerbrauchEKZ1=0
-PeriodeSystem1=0
-PeriodeVon2=01.01.2025
-PeriodeBis2=31.12.2025
-PeriodeVerbrauchMenge2=0
-PeriodeVerbrauchHZ2=0
-PeriodeVerbrauchWW2=0
-PeriodeVerbrauchWWPro2=0
-PeriodeVerbrauchWWKubik2=0
-PeriodeVerbrauchKE2=0
-PeriodeVerbrauchKF2=0
-PeriodeVerbrauchHZEKZ2=0
-PeriodeVerbrauchWWEKZ2=0
-PeriodeVerbrauchEKZ2=0
-PeriodeSystem2=0
-Leerstandanzahl=0
-LeerstandLeichtbeheizt=1
-Stromanzahl=3
-StromVon0=01.01.2023
-StromBis0=31.12.2023
-StromkWh0=0
-StromKE0=0
-StromEKZ0=0
-StromVon1=01.01.2024
-StromBis1=31.12.2024
-StromkWh1=0
-StromKE1=0
-StromEKZ1=0
-StromVon2=01.01.2025
-StromBis2=31.12.2025
-StromkWh2=0
-StromKE2=0
-StromEKZ2=0
-[Verbrauch]
-Nutzflaeche=1
-NutzflaecheAusWohnflaeche=0
-Wohnflaeche=0
-KellerBeheizt=0
-Gekuehlt=0
-FAnteilGekuehlt_WG=0`;
 
 function deNum(value, digits = 0) {
   const n = Number(value);
@@ -271,6 +144,10 @@ function germanDate(year, month, day) {
 
 function lastDayOfMonth(year, month) {
   return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+function todayGerman(now = new Date()) {
+  return germanDate(now.getFullYear(), now.getMonth() + 1, now.getDate());
 }
 
 export function periodBounds(period) {
@@ -330,24 +207,9 @@ export function periodBounds(period) {
   };
 }
 
-export function orderBodyFromRecord(record = {}) {
-  const calc = record.calculation || {};
-  const snap = calc.orderSnapshot || record.orderSnapshot || {};
-  return {
-    orderNumber: record.orderNumber || snap.orderNumber || '',
-    customer: record.customer || snap.customer || {
-      name: record.customerName || '',
-      email: record.customerEmail || '',
-    },
-    building: record.building || snap.building || {},
-    consumption: record.consumption || snap.consumption || {},
-    calculation: calc,
-  };
-}
-
 export function bundeslandFromPlz(plz) {
   const n = Number(String(plz || '').replace(/\D/g, '').slice(0, 5));
-  if (!n) return '- Bundesland auswählen -';
+  if (!n) return 'Bayern';
   if ((n >= 80000 && n <= 87999) || (n >= 89000 && n <= 97999)) return 'Bayern';
   if (n >= 70000 && n <= 79999) return 'Baden-Württemberg';
   if (n >= 60000 && n <= 65999) return 'Hessen';
@@ -374,20 +236,30 @@ export function bundeslandFromPlz(plz) {
   if (n >= 7000 && n <= 7999) return 'Thüringen';
   if (n >= 98000 && n <= 99999) return 'Thüringen';
   if (n >= 27000 && n <= 28999) return 'Bremen';
-  return '- Bundesland auswählen -';
+  return 'Bayern';
+}
+
+export function orderBodyFromRecord(record = {}) {
+  const calc = record.calculation || {};
+  const snap = calc.orderSnapshot || record.orderSnapshot || {};
+  return {
+    orderNumber: record.orderNumber || snap.orderNumber || '',
+    customer: record.customer || snap.customer || {
+      name: record.customerName || '',
+      email: record.customerEmail || '',
+    },
+    building: record.building || snap.building || {},
+    consumption: record.consumption || snap.consumption || {},
+    calculation: calc,
+  };
 }
 
 function iniValue(value) {
   return String(value ?? '').replace(/[\r\n]/g, ' ').trim();
 }
 
-function parseTemplate(text) {
-  return text.split(/\r?\n/).map((line) => {
-    if (!line || line.startsWith('[')) return { raw: line };
-    const eq = line.indexOf('=');
-    if (eq < 0) return { raw: line };
-    return { key: line.slice(0, eq), value: line.slice(eq + 1) };
-  });
+function kv(key, value) {
+  return `${key}=${iniValue(value)}`;
 }
 
 function sortedPeriods(consumption = {}) {
@@ -405,123 +277,277 @@ function climateOf(body, index) {
   return Number.isFinite(n) ? n : 0;
 }
 
+function gebaeudetypHsv(id) {
+  if (id === 'mfh' || id === 'Mehrfamilienhaus') return 'Mehrfamilienhaus';
+  if (id === 'zfh' || id === 'Zweifamilienhaus') return 'Zweifamilienhaus';
+  return 'Einfamilienhaus';
+}
+
+function warmwasserTyp(mode) {
+  if (mode === 'separat') return 'wwMesswertkWh';
+  if (mode === 'enthalten') return 'wwEnthalten';
+  return 'wwPauschal20kWhNF';
+}
+
+function nutzflaecheOf(building) {
+  const n = Number(building.nutzflaeche);
+  if (Number.isFinite(n) && n > 0) return n;
+  const w = Number(building.wohnflaeche);
+  if (Number.isFinite(w) && w > 0) return Math.round(w * 1.2 * 10) / 10;
+  return 0;
+}
+
 export function hsvFileName(body) {
   const order = String(body.orderNumber || 'auftrag').replace(/[^\w.-]/g, '_');
   const plz = String(body.building?.plz || body.customer?.plz || '').replace(/\D/g, '');
   return `${order}${plz ? `_${plz}` : ''}.hsv`;
 }
 
-export function hsvTemplateKeys() {
-  return parseTemplate(HSV_TEMPLATE)
-    .filter((row) => row.key)
-    .map((row) => row.key);
-}
-
-export function buildHsvContent(body) {
+export function buildHsvContent(body, now = new Date()) {
+  const customer = body.customer || {};
   const building = {
     ...(body.building || {}),
   };
-  const customer = body.customer || {};
   if (!String(building.strasse || '').trim()) building.strasse = customer.strasse || '';
-  if (!String(building.hausnummer || '').trim()) building.hausnummer = customer.hausnummer || '';
+  if (!String(building.hausnummer || '').trim()) {
+    building.hausnummer = customer.hausnummer || '';
+  }
   if (!String(building.plz || '').trim()) building.plz = customer.plz || '';
   if (!String(building.ort || '').trim()) building.ort = customer.ort || '';
+
   const consumption = body.consumption || {};
-  const fuel = FUELS[consumption.energietraeger] || FUELS.heizoel;
-  const unit = consumption.unit || 'liter';
+  const calc = body.calculation || {};
+  const fuel = FUELS[consumption.energietraeger] || FUELS.erdgas;
+  const unit = consumption.unit || (consumption.energietraeger === 'erdgas' ? 'kwh' : 'liter');
   const periods = sortedPeriods(consumption);
-  const plz = building.plz || customer.plz || '';
+  const plz = building.plz || '';
   const street = `${building.strasse || ''} ${building.hausnummer || ''}`.trim();
-  const area =
-    building.wohnflaeche === '' || building.wohnflaeche == null
-      ? ''
-      : deNum(building.wohnflaeche, 0);
+  const areaN = nutzflaecheOf(building);
+  const areaW = Number(building.wohnflaeche) || 0;
+  const today = todayGerman(now);
+  const isStrom =
+    consumption.energietraeger === 'strom' || consumption.energietraeger === 'waermepumpe';
+  const isHolz = consumption.energietraeger === 'holz' || consumption.energietraeger === 'pellets';
+  const recs = selectedRecommendations(building.recommendations || body.recommendations || []);
+  const nPeriods = Math.max(periods.length, 1);
   const customerName =
     customer.name ||
     [customer.firstName, customer.lastName].filter(Boolean).join(' ') ||
     customer.companyName ||
     '';
-  const isStrom =
-    consumption.energietraeger === 'strom' || consumption.energietraeger === 'waermepumpe';
 
-  const bySection = {
-    Gebaeude: {
-      PLZ: plz,
-      Ort: building.ort || customer.ort || '',
-      Strasse: street,
-      Bundesland: bundeslandFromPlz(plz),
-      BaujahrGeb: building.baujahr || '',
-      BaujahrAnlage: building.baujahrHeizung || '',
-      AnzahlWohnungen: building.gebaeudetyp === 'efh' ? '1' : '',
-      Nutzflaeche: area,
-      WestentlTraeger: fuel.name,
-      WestentlTraegerHeizung: fuel.name,
-      EE24_P71h_WP: consumption.energietraeger === 'waermepumpe' ? '1' : '0',
-    },
-    Nichtwohngebauede: {
-      StromFuerHeizung: isStrom ? '1' : '0',
-    },
-    Gebauede: {
-      ZusatzAuftraggeber: customerName,
-      ZusatzAuftragsnummer: body.orderNumber || '',
-      ZusatzObjektnummer: customer.customerNumber || '',
-      ZusatzSonstiges: [customer.email, customer.phone].filter(Boolean).join(' | '),
-      ZusatzNutzflaeche: area,
-    },
-    Verbrauch3: {
-      WarmwasserIndividuell: building.warmwasser === 'separat' ? '1' : '0',
-      SystemBrennstoff0: fuel.brennstoff,
-      SystemBrennstoffName0: fuel.name,
-      SystemEinheit0: fuel.einheit[unit] || fuel.einheit.kwh || 'Liter',
-      SystemEnergieJeEinheit0: fuel.kwhPer[unit] || fuel.kwhPer.kwh || '1',
-      SystemPrimFaktor0: fuel.prim,
-      SystemCO2Faktor0: fuel.co2,
-    },
-    Verbrauch: {
-      Wohnflaeche: area || '0',
-      KellerBeheizt: building.beheizterKeller === 'ja' ? '1' : '0',
-    },
-  };
+  const lines = [
+    '[Version]',
+    kv('Programmversion', 'HS Verbrauchspass 5.2.16'),
+    '[Energieausweis]',
+    kv('EnEVAusgabe', 'GEG2024'),
+    kv('IstNichtwohngebaeude', '0'),
+    kv('DatenerfassungDurchEigentuemer', '1'),
+    kv('MitZusatzInfos', building.mitZusatzInfos ? '1' : '0'),
+    kv('AusstellerZeile1', 'Dieter Spaderna'),
+    kv('AusstellerZeile2', 'Energieberater ( HWK ) Schornsteinfegermeister'),
+    kv('AusstellerZeile3', 'Ziegelanger 5'),
+    kv('AusstellerZeile4', '96250 Ebensfeld'),
+    kv('Anlass', building.anlass || 'Vermietung / Verkauf'),
+    kv('Ausstellungsdatum', today),
+    kv('FirmenlogoAktiviert', '0'),
+    kv('FirmenlogoPfad', ''),
+    kv('ZusatzlogoAktiviert', '0'),
+    kv('ZusatzlogoPfad', ''),
+    kv('UnterschriftAktiviert', '0'),
+    kv('UnterschriftPfad', ''),
+    kv('UnterschriftTransparent', '0'),
+    kv('UnterschriftFarbe', '16777215'),
+    kv('UnterschriftToleranz', '1'),
+    '[DIBt]',
+    kv('Registriernummer', ''),
+    kv('XML_Senden', 'xsUnbekannt'),
+    '[Gebaeude]',
+    kv('Gebaeudetyp', gebaeudetypHsv(building.gebaeudetyp)),
+    kv('PLZ', plz),
+    kv('Ort', building.ort || ''),
+    kv('Strasse', street),
+    kv('Gebaeudeteil', building.gebaeudeteil || 'Ganzes Gebäude'),
+    kv('Bundesland', bundeslandFromPlz(plz)),
+    kv('ErneuerbareEnergien', building.erneuerbareEnergien || (isHolz ? 'Heizung' : '')),
+    kv('ErneuerbareEnergienA', building.erneuerbareEnergienA || (isHolz ? 'Holz' : '')),
+    kv('Lueftung', building.lueftung || 'Fensterlüftung'),
+    kv('BaujahrGeb', building.baujahr || ''),
+    kv('BaujahrAnlage', building.baujahrHeizung || ''),
+    kv('BaujahrKlimaanlage', ''),
+    kv(
+      'AnzahlWohnungen',
+      building.anzahlWohnungen || (gebaeudetypHsv(building.gebaeudetyp) === 'Einfamilienhaus' ? '1' : '')
+    ),
+    kv('Nutzflaeche', ''),
+    kv('WestentlTraeger', ''),
+    kv('WestentlTraegerHeizung', fuel.name),
+    kv('WestentlTraegerWasser', fuel.name),
+    kv('WestentlTraegerAuto', '1'),
+    kv('Foto', ''),
+    kv('FotoDrehung', '0'),
+    kv('FotoRelativ', ''),
+    kv('KlimaanlageAnzahl', '0'),
+    kv('KlimaanlageFaelligkeit', today),
+    kv('Klimaanlage12kWohne', '0'),
+    kv('Klimaanlage12kWmit', '0'),
+    kv('Klimaanlage70kW', '0'),
+    kv('EE24_NutzungHz', '0'),
+    kv('EE24_NutzungDHW', '0'),
+    kv('EE24_65ProzEERegel', '0'),
+    kv('EE24_65ProzEERegelPauschal', '0'),
+    kv('EE24_P71b', '0'),
+    kv('EE24_P71c', '0'),
+    kv('EE24_P71d', '0'),
+    kv('EE24_P71e', '0'),
+    kv('EE24_P71fg', '0'),
+    kv('EE24_P71h_WP', consumption.energietraeger === 'waermepumpe' ? '1' : '0'),
+    kv('EE24_P71h_sol', building.warmwasserSolar ? '1' : '0'),
+    kv('EE24_P71Abs5', '0'),
+    kv('EE24_65ProzEERegelNicht', '1'),
+    '[Nichtwohngebauede]',
+    kv('Sonderzone1', ''),
+    kv('Sonderzone2', ''),
+    kv('Sonderzone3', ''),
+    kv('Vergleichsgebaeude', ''),
+    kv('VglHeizenergie', '0'),
+    kv('VglStrom', '0'),
+    kv('AnzahlKategorien', '0'),
+    kv('ENFausHNF', '0'),
+    kv('ENFausNF', '0'),
+    kv('ENFausBGF', '0'),
+    kv('EingabeFlaeche', '0'),
+    kv('TypFlaechenberechnung', '-1'),
+    kv('VerschiedeneZeitraueme', '1'),
+    kv('StromFuerHeizung', isStrom ? '1' : '0'),
+    kv('StromFuerBeleuchtung', '1'),
+    kv('StromFuerWarmwasser', '0'),
+    kv('StromFuerLueftung', '0'),
+    kv('StromFuerKuehlung', '0'),
+    kv('StromFuerSonstiges', '1'),
+    kv('StromFuerSonstigesBez', ''),
+    kv('StromFuerAufzug', '0'),
+    kv('FeuchteAnlage', '0'),
+    '[Gebauede]',
+    kv('ZusatzAuftraggeber', customerName),
+    kv('ZusatzAuftragsnummer', body.orderNumber || ''),
+    kv('ZusatzObjektnummer', customer.customerNumber || ''),
+    kv('ZusatzSonstiges', [customer.email, customer.phone].filter(Boolean).join(' | ')),
+    kv('ZusatzNutzflaeche', areaN ? deNum(areaN, 1) : ''),
+    '[Druck]',
+    kv('MitEmpfehlungen', recs.length ? '1' : '1'),
+    kv('MitUnterlagen', '0'),
+    '[Modernisierungsempfehlungen]',
+    kv('Anzahl', String(recs.length)),
+  ];
 
-  if (periods.length) {
-    bySection.Verbrauch3.SystemVon0 = periods[0].bounds.from;
-    bySection.Verbrauch3.SystemBis0 = periods[periods.length - 1].bounds.to;
-  }
+  recs.forEach((rec, i) => {
+    const n = i + 1;
+    lines.push(
+      kv(`Bauteil${n}`, rec.bauteil),
+      kv(`Beschreibung${n}`, rec.beschreibung),
+      kv(`Variante1${n}`, '0'),
+      kv(`Variante2${n}`, '0'),
+      kv(`Modernisierung${n}`, rec.modernisierung),
+      kv(`Einzelmassnahme${n}`, rec.einzelmassnahme),
+      kv(`Zeit${n}`, '0'),
+      kv(`Kosten${n}`, '0')
+    );
+  });
 
-  for (let i = 0; i < 3; i += 1) {
+  lines.push(
+    kv('EmpfehlungenMoeglich', '1'),
+    kv('WeiteresBlatt', '0'),
+    kv(
+      'GenauereEmpfehlungen',
+      'Dieter Spaderna, Energieberater ( HWK ) Schornsteinfegermeister|Ziegelanger 5, 96250 Ebensfeld'
+    ),
+    kv('Erlaeuterungen', ''),
+    '[Verbrauch3]',
+    kv('PLZ', plz || '0'),
+    kv('WarmwasserIndividuell', building.warmwasser === 'pauschal' || !building.warmwasser ? '1' : '0'),
+    kv('WarmwasserMitSolar', building.warmwasserSolar ? '1' : '0'),
+    kv('Systemanzahl', '1'),
+    kv('SystemVon0', periods[0] ? periods[0].bounds.from : '30.12.1899'),
+    kv('SystemBis0', periods.length ? periods[periods.length - 1].bounds.to : '30.12.1899'),
+    kv('SystemBrennstoff0', fuel.brennstoff),
+    kv('SystemBrennstoffName0', fuel.name),
+    kv('SystemEinheit0', fuel.einheit[unit] || fuel.einheit.kwh || 'kWh Brennwert'),
+    kv('SystemEnergieJeEinheit0', fuel.kwhPer[unit] || fuel.kwhPer.kwh || '1'),
+    kv('SystemEnergieJeEinheitManuell0', '0'),
+    kv('SystemPrimFaktor0', fuel.prim),
+    kv('SystemPrimFaktorManuell0', '0'),
+    kv('SystemCO2Faktor0', fuel.co2),
+    kv('SystemCO2FaktorManuell0', '0'),
+    kv('SystemLagerdaten0', ''),
+    kv('SystemVerbrauchEKZ0', '0'),
+    kv('SystemWarmwassertyp0', warmwasserTyp(building.warmwasser)),
+    kv('SystemWarmwasserprozent0', '0,18'),
+    kv('SystemWarmwassertemperatur0', '50'),
+    kv('SystemKuehlungstyp0', building.gekuehlt === 'ja' ? 'ktEnthalten' : 'ktNichtEnthalten'),
+    kv('Periodenanzahl', String(nPeriods))
+  );
+
+  for (let i = 0; i < nPeriods; i += 1) {
     const item = periods[i];
-    if (!item) continue;
+    const bounds = item ? item.bounds : { from: '30.12.1899', to: '30.12.1899' };
     const menge =
-      item.p.consumption === '' || item.p.consumption == null
+      !item || item.p.consumption === '' || item.p.consumption == null
         ? '0'
         : deNum(item.p.consumption, 0);
-    const ww = item.p.warmWater ? deNum(item.p.warmWater, 0) : '0';
+    const ww = item?.p.warmWater ? deNum(item.p.warmWater, 0) : '0';
     const kf = climateOf(body, i);
-    bySection.Verbrauch3[`PeriodeVon${i}`] = item.bounds.from;
-    bySection.Verbrauch3[`PeriodeBis${i}`] = item.bounds.to;
-    bySection.Verbrauch3[`PeriodeVerbrauchMenge${i}`] = menge;
-    bySection.Verbrauch3[`PeriodeVerbrauchWW${i}`] =
-      building.warmwasser === 'separat' ? ww : '0';
-    bySection.Verbrauch3[`PeriodeVerbrauchKF${i}`] = kf ? deNum(kf, 3) : '0';
-    bySection.Verbrauch3[`StromVon${i}`] = item.bounds.from;
-    bySection.Verbrauch3[`StromBis${i}`] = item.bounds.to;
-    bySection.Verbrauch3[`StromkWh${i}`] = isStrom ? menge : '0';
+    const wwPauschal = areaN ? deNum(20 * areaN, 0) : '0';
+    lines.push(
+      kv(`PeriodeVon${i}`, bounds.from),
+      kv(`PeriodeBis${i}`, bounds.to),
+      kv(`PeriodeVerbrauchMenge${i}`, menge),
+      kv(`PeriodeVerbrauchHZ${i}`, '0'),
+      kv(
+        `PeriodeVerbrauchWW${i}`,
+        building.warmwasser === 'separat' ? ww : building.warmwasser === 'pauschal' || !building.warmwasser ? wwPauschal : '0'
+      ),
+      kv(`PeriodeVerbrauchWWPro${i}`, '0'),
+      kv(`PeriodeVerbrauchWWKubik${i}`, '0'),
+      kv(`PeriodeVerbrauchKE${i}`, '0'),
+      kv(`PeriodeVerbrauchKF${i}`, kf ? deNum(kf, 4) : '0'),
+      kv(`PeriodeVerbrauchHZEKZ${i}`, '0'),
+      kv(`PeriodeVerbrauchWWEKZ${i}`, '0'),
+      kv(`PeriodeVerbrauchEKZ${i}`, '0'),
+      kv(`PeriodeSystem${i}`, '0')
+    );
   }
 
-  let section = '';
-  const lines = parseTemplate(HSV_TEMPLATE).map((row) => {
-    if (row.raw && row.raw.startsWith('[')) {
-      section = row.raw.slice(1, -1);
-      return row.raw;
-    }
-    if (!row.key) return row.raw;
-    const overlay = bySection[section];
-    const next =
-      overlay && Object.prototype.hasOwnProperty.call(overlay, row.key)
-        ? overlay[row.key]
-        : row.value;
-    return `${row.key}=${iniValue(next)}`;
-  });
+  lines.push(kv('Leerstandanzahl', '0'), kv('LeerstandLeichtbeheizt', '1'), kv('Stromanzahl', String(Math.max(nPeriods, 3))));
+
+  const stromCount = Math.max(nPeriods, 3);
+  for (let i = 0; i < stromCount; i += 1) {
+    const item = periods[i];
+    const y = 2021 + i;
+    const bounds = item ? item.bounds : { from: germanDate(y, 1, 1), to: germanDate(y, 12, 31) };
+    const kwh = isStrom && item && item.p.consumption != null && item.p.consumption !== '' ? deNum(item.p.consumption, 0) : '0';
+    lines.push(
+      kv(`StromVon${i}`, bounds.from),
+      kv(`StromBis${i}`, bounds.to),
+      kv(`StromkWh${i}`, kwh),
+      kv(`StromKE${i}`, '0'),
+      kv(`StromEKZ${i}`, '0')
+    );
+  }
+
+  lines.push(
+    '[Verbrauch]',
+    kv('Nutzflaeche', areaN ? deNum(areaN, 1) : '0'),
+    kv('NutzflaecheAusWohnflaeche', '1'),
+    kv('Wohnflaeche', areaW ? deNum(areaW, 0) : '0'),
+    kv('KellerBeheizt', building.beheizterKeller === 'ja' ? '1' : '0'),
+    kv('Gekuehlt', building.gekuehlt === 'ja' ? '1' : '0'),
+    kv('FAnteilGekuehlt_WG', '0'),
+    '[Ergebnisse]',
+    kv('Endenergieverbrauch', calc.endSpecific != null ? deNum(calc.endSpecific, 4) : '0'),
+    kv('Primaerenergieverbrauch', calc.primarySpecific != null ? deNum(calc.primarySpecific, 4) : '0'),
+    kv('Energieverbrauchsklasse', calc.efficiencyClass || '')
+  );
 
   return `${lines.join('\r\n')}\r\n`;
 }

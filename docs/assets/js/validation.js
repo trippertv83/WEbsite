@@ -22,6 +22,12 @@ export function validateBuilding(building) {
     errors.wohnflaeche = 'Wohnfläche mindestens 20 m².';
   }
   if (!building.gebaeudetyp) errors.gebaeudetyp = 'Bitte Gebäudetyp wählen.';
+  if (!building.anlass) errors.anlass = 'Bitte den Anlass wählen.';
+  const units = Number(building.anzahlWohnungen);
+  if (!Number.isFinite(units) || units < 1) {
+    errors.anzahlWohnungen = 'Anzahl Wohnungen mindestens 1.';
+  }
+  if (!building.gekuehlt) errors.gekuehlt = 'Bitte Kühlung angeben.';
   const year = Number(building.baujahr);
   if (year < 1800 || year > 2026) errors.baujahr = 'Baujahr prüfen.';
   const heatYear = Number(building.baujahrHeizung);

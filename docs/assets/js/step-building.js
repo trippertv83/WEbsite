@@ -9,6 +9,15 @@ import { clearFormErrors, qs, qsa, setFieldError } from './utils.js';
 export function readBuildingForm() {
   const form = qs('#form-building');
   const data = Object.fromEntries(new FormData(form).entries());
+  delete data.recommendation;
+  data.recommendations = [...form.querySelectorAll('input[name="recommendation"]:checked')].map(
+    (el) => el.value
+  );
+  data.warmwasserSolar = form.querySelector('[name="warmwasserSolar"]')?.checked ? '1' : '';
+  const living = Number(data.wohnflaeche);
+  if ((!data.nutzflaeche || data.nutzflaeche === '') && Number.isFinite(living) && living > 0) {
+    data.nutzflaeche = String(Math.round(living * 1.2 * 10) / 10);
+  }
   patchBuilding(data);
   return getState().building;
 }
@@ -35,7 +44,5 @@ export function validateStepBuilding() {
 export function bindBuildingLive() {
   const form = qs('#form-building');
   form.addEventListener('input', () => readBuildingForm());
-  qsa('input[type="radio"]', form).forEach((el) => {
-    el.addEventListener('change', () => readBuildingForm());
-  });
+  form.addEventListener('change', () => readBuildingForm());
 }

@@ -82,6 +82,7 @@ export function bandPositionPercent(primarySpecific) {
 
 function warmWaterAddition(warmwasserMode, area, periods) {
   if (warmwasserMode === 'enthalten') return 0;
+  if (warmwasserMode === 'pauschal') return 20 * area;
   const hasManual = periods.some((p) => Number(p.warmWater) > 0);
   if (hasManual) {
     const sum = periods.reduce((acc, p) => acc + Number(p.warmWater || 0), 0);
@@ -96,8 +97,8 @@ export function calculateCertificate({
   climateFactor = 1,
   climateFactors,
 }) {
-  const area = Number(building.wohnflaeche);
-  if (!area || area <= 0) throw new Error('Wohnfläche fehlt.');
+  const area = Number(building.nutzflaeche) || Number(building.wohnflaeche);
+  if (!area || area <= 0) throw new Error('Nutz- oder Wohnfläche fehlt.');
   const carrier = getCarrier(consumption.energietraeger);
   if (!carrier) throw new Error('Energieträger fehlt.');
 
