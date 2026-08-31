@@ -453,7 +453,7 @@
           <div class="panel__head">
             <div>
               <h1 tabindex="-1">Verbrauch</h1>
-              <p>Energieträger, Abrechnungsperioden und Verbrauchswerte der letzten drei Jahre.</p>
+              <p>Energieträger und Verbrauch. Bei Heizöl, Holz und Pellets über den Lagermengen-Ermittler wie in HS Verbrauchspass.</p>
             </div>
           </div>
           <form id="form-consumption" novalidate>
@@ -462,7 +462,99 @@
               <div class="carrier-grid" id="carrier-grid" role="radiogroup" aria-labelledby="carrier-label"></div>
               <span class="field__error" data-error-for="energietraeger"></span>
             </div>
-            <div class="grid-2" style="margin-top: 1rem">
+            <div id="lager-panel" class="lager" hidden>
+              <h2>Verbrauchsermittlung für lagerfähige Brennstoffe</h2>
+              <p class="field__hint">
+                Zwei Zeitpunkte mit bekannter Lagermenge. Dazwischen müssen mindestens drei Jahre liegen.
+                Verbrauch = Anfangsbestand + Zukäufe − Endbestand.
+              </p>
+              <div class="lager__grid">
+                <div>
+                  <table class="lager-table">
+                    <thead>
+                      <tr>
+                        <th></th>
+                        <th>Datum</th>
+                        <th>Zukäufe</th>
+                        <th>Bestand</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <th>Anfangsbestand</th>
+                        <td><input class="input" id="lager-anfang-datum" type="date" /></td>
+                        <td></td>
+                        <td>
+                          <div class="lager-stock">
+                            <input class="input" id="lager-anfang-bestand" type="number" min="0" step="0.01" />
+                            <button class="btn btn--ghost" type="button" data-tank-target="anfang" title="Über Tankgeometrie rechnen">…</button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th>+ Zukauf</th>
+                        <td><input class="input" id="lager-z0-datum" type="date" /></td>
+                        <td><input class="input" id="lager-z0-menge" type="number" min="0" step="0.01" /></td>
+                        <td></td>
+                      </tr>
+                      <tr>
+                        <th>+ Zukauf</th>
+                        <td><input class="input" id="lager-z1-datum" type="date" /></td>
+                        <td><input class="input" id="lager-z1-menge" type="number" min="0" step="0.01" /></td>
+                        <td></td>
+                      </tr>
+                      <tr>
+                        <th>+ Zukauf</th>
+                        <td><input class="input" id="lager-z2-datum" type="date" /></td>
+                        <td><input class="input" id="lager-z2-menge" type="number" min="0" step="0.01" /></td>
+                        <td></td>
+                      </tr>
+                      <tr>
+                        <th>− Endbestand</th>
+                        <td><input class="input" id="lager-ende-datum" type="date" /></td>
+                        <td></td>
+                        <td>
+                          <div class="lager-stock">
+                            <input class="input" id="lager-ende-bestand" type="number" min="0" step="0.01" />
+                            <button class="btn btn--ghost" type="button" data-tank-target="ende" title="Über Tankgeometrie rechnen">…</button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <p id="lager-result" class="lager-result"></p>
+                  <span class="field__error" data-error-for="anfangBestand"></span>
+                  <span class="field__error" data-error-for="anfangDatum"></span>
+                  <span class="field__error" data-error-for="endeDatum"></span>
+                </div>
+                <div class="lager-tank">
+                  <h3>Tankvolumen</h3>
+                  <div class="choice-group" role="radiogroup" aria-label="Tankform">
+                    <label class="choice"><input type="radio" name="tankform" value="rechteck" checked /><span>Rechtecktank</span></label>
+                    <label class="choice"><input type="radio" name="tankform" value="stehend" /><span>Stehender Zylinder</span></label>
+                    <label class="choice"><input type="radio" name="tankform" value="liegend" /><span>Liegender Zylinder</span></label>
+                    <label class="choice"><input type="radio" name="tankform" value="kugel" /><span>Kugel</span></label>
+                  </div>
+                  <div class="field" style="margin-top: 0.75rem">
+                    <label class="field__label" for="lager-max">Maximale Lagermenge</label>
+                    <input class="input" id="lager-max" type="number" min="0" step="0.01" />
+                  </div>
+                  <div id="tank-dims" class="grid-2" style="margin-top: 0.75rem"></div>
+                  <p id="tank-volume" class="field__hint"></p>
+                  <div class="grid-2">
+                    <div class="field">
+                      <label class="field__label" for="lager-fuell-anfang">Füllhöhe Anfang (cm)</label>
+                      <input class="input" id="lager-fuell-anfang" type="number" min="0" step="0.1" />
+                    </div>
+                    <div class="field">
+                      <label class="field__label" for="lager-fuell-ende">Füllhöhe Ende (cm)</label>
+                      <input class="input" id="lager-fuell-ende" type="number" min="0" step="0.1" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="grid-2" id="period-setup" style="margin-top: 1rem">
               <div class="field">
                 <label class="field__label" for="startYear">Beginn erstes Abrechnungsjahr</label>
                 <input class="input" id="startYear" name="startYear" type="number" min="2015" max="2026" required />

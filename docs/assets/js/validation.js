@@ -55,6 +55,22 @@ export function validateConsumption(consumption) {
   if (!consumption.energietraeger) {
     errors.energietraeger = 'Bitte einen Energieträger wählen.';
   }
+  const storable = ['heizoel', 'holz', 'pellets'].includes(consumption.energietraeger);
+  if (storable) {
+    const lager = consumption.lager || {};
+    const from = Date.parse(lager.anfangDatum || '');
+    const to = Date.parse(lager.endeDatum || '');
+    if (!Number.isFinite(from)) errors.anfangDatum = 'Bitte das Datum des Anfangsbestands angeben.';
+    if (!Number.isFinite(to)) errors.endeDatum = 'Bitte das Datum des Endbestands angeben.';
+    if (Number.isFinite(from) && Number.isFinite(to) && to - from < 3 * 365.25 * 24 * 60 * 60 * 1000) {
+      errors.endeDatum = 'Zwischen Anfangs- und Endbestand müssen mindestens drei Jahre liegen.';
+    }
+    const total = Number(lager.consumption);
+    if (!Number.isFinite(total) || total <= 0) {
+      errors.anfangBestand = 'Verbrauch muss größer 0 sein (Anfangsbestand + Zukäufe − Endbestand).';
+    }
+    return errors;
+  }
   const year = Number(consumption.startYear);
   if (year < 2015 || year > 2026) {
     errors.startYear = 'Jahr zwischen 2015 und 2026 wählen.';

@@ -4,6 +4,17 @@
 
 import { ENERGY_CARRIERS } from './units.js';
 import { allPeriodOptions, buildThreePeriods } from './periods.js';
+import {
+  emptyLager,
+  encodeLagerHsv,
+  fillVolumeLiters,
+  isStorableCarrier,
+  lagerConsumption,
+  litersToStock,
+  periodsFromLager,
+  tankVolumeLiters,
+  unitLabel,
+} from './lager.js';
 import { getState, patchConsumption } from './state.js';
 import { validateConsumption, isEmpty } from './validation.js';
 import { clearFormErrors, qs, setFieldError } from './utils.js';
@@ -20,6 +31,121 @@ function keepPeriodValues(oldPeriods, nextPeriods) {
         }
       : period;
   });
+}
+
+function currentLager() {
+  return { ...emptyLager(), ...(getState().consumption.lager || {}) };
+}
+
+function readLagerForm() {
+  const prev = currentLager();
+  return {
+    ...prev,
+    anfangDatum: qs('#lager-anfang-datum')?.value || prev.anfangDatum,
+    anfangBestand: qs('#lager-anfang-bestand')?.value || '',
+    endeDatum: qs('#lager-ende-datum')?.value || prev.endeDatum,
+    endeBestand: qs('#lager-ende-bestand')?.value || '',
+    zukaeufe: [0, 1, 2].map((i) => ({
+      datum: qs(`#lager-z${i}-datum`)?.value || '',
+      menge: qs(`#lager-z${i}-menge`)?.value || '',
+    })),
+    tankform: qs('input[name="tankform"]:checked')?.value || prev.tankform,
+    maxLager: qs('#lager-max')?.value || prev.maxLager,
+    breite: qs('#tank-breite')?.value || prev.breite,
+    tiefe: qs('#tank-tiefe')?.value || prev.tiefe,
+    hoehe: qs('#tank-hoehe')?.value || prev.hoehe,
+    durchmesser: qs('#tank-durchmesser')?.value || prev.durchmesser,
+    laenge: qs('#tank-laenge')?.value || prev.laenge,
+    fuellAnfang: qs('#lager-fuell-anfang')?.value || '',
+    fuellEnde: qs('#lager-fuell-ende')?.value || '',
+  };
+}
+
+function writeLagerForm(lager) {
+  const set = (id, value) => {
+    const el = qs(id);
+    if (el && value != null) el.value = value;
+  };
+  set('#lager-anfang-datum', lager.anfangDatum);
+  set('#lager-anfang-bestand', lager.anfangBestand);
+  set('#lager-ende-datum', lager.endeDatum);
+  set('#lager-ende-bestand', lager.endeBestand);
+  set('#lager-max', lager.maxLager);
+  set('#lager-fuell-anfang', lager.fuellAnfang);
+  set('#lager-fuell-ende', lager.fuellEnde);
+  (lager.zukaeufe || []).forEach((row, i) => {
+    set(`#lager-z${i}-datum`, row.datum);
+    set(`#lager-z${i}-menge`, row.menge);
+  });
+  const formRadio = qs(`input[name="tankform"][value="${lager.tankform || 'rechteck'}"]`);
+  if (formRadio) formRadio.checked = true;
+}
+
+function renderTankDims(lager) {
+  const root = qs('#tank-dims');
+  if (!root) return;
+  const form = lager.tankform || 'rechteck';
+  if (form === 'rechteck') {
+    root.innerHTML = `
+      <div class="field"><label class="field__label" for="tank-breite">Breite b (cm)</label>
+        <input class="input" id="tank-breite" type="number" min="0" step="0.1" value="${lager.breite || ''}" /></div>
+      <div class="field"><label class="field__label" for="tank-tiefe">Tiefe t (cm)</label>
+        <input class="input" id="tank-tiefe" type="number" min="0" step="0.1" value="${lager.tiefe || ''}" /></div>
+      <div class="field"><label class="field__label" for="tank-hoehe">Höhe h (cm)</label>
+        <input class="input" id="tank-hoehe" type="number" min="0" step="0.1" value="${lager.hoehe || ''}" /></div>`;
+    return;
+  }
+  if (form === 'liegend') {
+    root.innerHTML = `
+      <div class="field"><label class="field__label" for="tank-durchmesser">Durchmesser (cm)</label>
+        <input class="input" id="tank-durchmesser" type="number" min="0" step="0.1" value="${lager.durchmesser || ''}" /></div>
+      <div class="field"><label class="field__label" for="tank-laenge">Länge (cm)</label>
+        <input class="input" id="tank-laenge" type="number" min="0" step="0.1" value="${lager.laenge || ''}" /></div>`;
+    return;
+  }
+  root.innerHTML = `
+    <div class="field"><label class="field__label" for="tank-durchmesser">Durchmesser (cm)</label>
+      <input class="input" id="tank-durchmesser" type="number" min="0" step="0.1" value="${lager.durchmesser || ''}" /></div>
+    <div class="field"><label class="field__label" for="tank-hoehe">Höhe h (cm)</label>
+      <input class="input" id="tank-hoehe" type="number" min="0" step="0.1" value="${lager.hoehe || ''}" /></div>`;
+}
+
+function applyTankFill(target) {
+  const lager = readLagerForm();
+  const fill = target === 'ende' ? lager.fuellEnde : lager.fuellAnfang;
+  const liters = fillVolumeLiters(lager, fill);
+  const { consumption } = getState();
+  const stock = Math.round(litersToStock(liters, consumption.energietraeger, consumption.unit) * 100) / 100;
+  if (target === 'ende') {
+    qs('#lager-ende-bestand').value = String(stock);
+  } else {
+    qs('#lager-anfang-bestand').value = String(stock);
+  }
+  syncLager();
+}
+
+function syncLager() {
+  const { consumption } = getState();
+  if (!isStorableCarrier(consumption.energietraeger)) return;
+  const lager = readLagerForm();
+  const total = lagerConsumption(lager);
+  const unit = unitLabel(consumption.unit);
+  const liters = tankVolumeLiters(lager);
+  const result = qs('#lager-result');
+  if (result) {
+    result.textContent = `Ermittelter Verbrauch: ${total.toLocaleString('de-DE', {
+      maximumFractionDigits: 2,
+    })} ${unit}`;
+  }
+  const vol = qs('#tank-volume');
+  if (vol) vol.textContent = `Tankvolumen: ${Math.round(liters)} Liter`;
+  const periods = periodsFromLager(lager, total);
+  patchConsumption({
+    lager: { ...lager, consumption: total, hsv: encodeLagerHsv(lager) },
+    periods: periods.length ? periods : consumption.periods,
+    startYear: periods[0]?.from?.year || consumption.startYear,
+  });
+  renderPeriodCards();
 }
 
 export function renderCarriers() {
@@ -51,7 +177,20 @@ export function renderPeriodSelect() {
 export function renderPeriodCards() {
   const { consumption, building } = getState();
   const showWw = building.warmwasser !== 'enthalten';
+  const storable = isStorableCarrier(consumption.energietraeger);
   const root = qs('#periods-container');
+  if (storable) {
+    root.innerHTML = `<p class="field__hint">Die Jahreswerte werden automatisch aus der Lagermengen-Ermittlung übernommen.</p>
+      ${consumption.periods
+        .map(
+          (period) => `<article class="period-card">
+        <h3>${period.label}</h3>
+        <p>Verbrauch: <strong>${period.consumption || '–'} ${consumption.unit || ''}</strong></p>
+      </article>`
+        )
+        .join('')}`;
+    return;
+  }
   root.innerHTML = consumption.periods
     .map(
       (period, index) => `<article class="period-card">
@@ -84,8 +223,27 @@ export function renderPeriodCards() {
     .join('');
 }
 
+function toggleLagerUi() {
+  const { consumption } = getState();
+  const storable = isStorableCarrier(consumption.energietraeger);
+  const panel = qs('#lager-panel');
+  const setup = qs('#period-setup');
+  if (panel) panel.hidden = !storable;
+  if (setup) setup.hidden = storable;
+  if (storable) {
+    const lager = currentLager();
+    writeLagerForm(lager);
+    renderTankDims(lager);
+    syncLager();
+  }
+}
+
 export function syncPeriodsFromInputs() {
   const { consumption } = getState();
+  if (isStorableCarrier(consumption.energietraeger)) {
+    toggleLagerUi();
+    return;
+  }
   const year = Number(qs('#startYear').value);
   const month = Number(qs('#periodStartMonth').value);
   const generated = buildThreePeriods(year, month);
@@ -117,7 +275,7 @@ function renderUnitHint() {
     bar.id = 'unit-bar';
     bar.className = 'field';
     bar.style.marginTop = '1rem';
-    qs('#form-consumption').insertBefore(bar, qs('#periods-container'));
+    qs('#form-consumption').insertBefore(bar, qs('#lager-panel') || qs('#periods-container'));
   }
   bar.innerHTML = `<span class="field__label">Einheit</span>
     <div class="choice-group" role="radiogroup" aria-label="Einheit">
@@ -135,19 +293,32 @@ function renderUnitHint() {
 }
 
 export function bindConsumption() {
+  const state = getState();
+  if (!state.consumption.lager) patchConsumption({ lager: emptyLager() });
   qs('#startYear').value = getState().consumption.startYear;
   renderCarriers();
   renderPeriodSelect();
   syncPeriodsFromInputs();
+  toggleLagerUi();
 
   qs('#form-consumption').addEventListener('change', (event) => {
     if (event.target.name === 'unit') {
       patchConsumption({ unit: event.target.value });
       renderPeriodCards();
+      if (isStorableCarrier(getState().consumption.energietraeger)) syncLager();
       return;
     }
     if (event.target.name === 'energietraeger') {
       patchConsumption({ energietraeger: event.target.value, unit: '' });
+    }
+    if (event.target.name === 'tankform') {
+      renderTankDims(readLagerForm());
+      syncLager();
+      return;
+    }
+    if (event.target.closest('#lager-panel')) {
+      syncLager();
+      return;
     }
     if (
       event.target.id === 'startYear' ||
@@ -156,6 +327,16 @@ export function bindConsumption() {
     ) {
       syncPeriodsFromInputs();
     }
+  });
+
+  qs('#form-consumption').addEventListener('input', (event) => {
+    if (event.target.closest('#lager-panel')) syncLager();
+  });
+
+  qs('#lager-panel')?.addEventListener('click', (event) => {
+    const btn = event.target.closest('[data-tank-target]');
+    if (!btn) return;
+    applyTankFill(btn.dataset.tankTarget);
   });
 
   qs('#periods-container').addEventListener('input', (event) => {
@@ -173,6 +354,9 @@ export function bindConsumption() {
 export function validateStepConsumption() {
   const form = qs('#form-consumption');
   clearFormErrors(form);
+  if (isStorableCarrier(getState().consumption.energietraeger)) {
+    syncLager();
+  }
   const errors = validateConsumption(getState().consumption);
   Object.entries(errors).forEach(([name, message]) => {
     setFieldError(form, name, message);

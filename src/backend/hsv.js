@@ -565,7 +565,7 @@ export function buildHsvContent(body, now = new Date()) {
     kv('SystemPrimFaktorManuell0', '0'),
     kv('SystemCO2Faktor0', fuel.co2),
     kv('SystemCO2FaktorManuell0', '0'),
-    kv('SystemLagerdaten0', ''),
+    kv('SystemLagerdaten0', consumption.lager?.hsv || ''),
     kv('SystemVerbrauchEKZ0', '0'),
     kv('SystemWarmwassertyp0', warmwasserTyp(building.warmwasser)),
     kv('SystemWarmwasserprozent0', '0,18'),

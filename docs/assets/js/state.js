@@ -42,6 +42,7 @@ const state = {
     startYear: 2023,
     periodStartMonth: 1,
     periods: [],
+    lager: null,
   },
   documents: {
     heatingBills: [],
@@ -147,6 +148,7 @@ export function serializeForBackend() {
         warmWater: p.warmWater,
         climateFactor: p.climateFactor,
       })),
+      lager: state.consumption.lager || null,
     },
     calculation: state.calculation
       ? {
