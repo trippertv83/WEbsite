@@ -35,6 +35,8 @@ const state = {
   calculation: null,
   registered: false,
   customer: {
+    customerType: '',
+    companyName: '',
     firstName: '',
     lastName: '',
     name: '',
@@ -122,6 +124,8 @@ export function serializeForBackend() {
     },
     calculation: state.calculation,
     customer: {
+      customerType: state.customer.customerType,
+      companyName: state.customer.companyName,
       firstName: state.customer.firstName,
       lastName: state.customer.lastName,
       email: state.customer.email,

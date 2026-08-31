@@ -66,8 +66,17 @@ export async function post_registerCustomer(request) {
       });
     }
 
-    if (!c.firstName || !c.lastName || !c.plz || !c.ort || !c.strasse) {
-      return json(400, { error: 'Name, Anschrift und E-Mail sind Pflicht.' });
+    if (!['firma', 'herr', 'frau'].includes(c.customerType)) {
+      return json(400, { error: 'Bitte Firma, Herr oder Frau wählen.' });
+    }
+    if (c.customerType === 'firma' && !c.companyName) {
+      return json(400, { error: 'Firmenname ist Pflicht.' });
+    }
+    if (c.customerType !== 'firma' && (!c.firstName || !c.lastName)) {
+      return json(400, { error: 'Vor- und Nachname sind Pflicht.' });
+    }
+    if (!c.plz || !c.ort || !c.strasse) {
+      return json(400, { error: 'Anschrift und E-Mail sind Pflicht.' });
     }
 
     const customer = await createCustomer({ customer: c });
@@ -76,6 +85,7 @@ export async function post_registerCustomer(request) {
       existing: Boolean(customer.existing),
       sevdeskCustomerId: customer.id,
       customerName: customer.name || `${c.firstName} ${c.lastName}`,
+      customerNumber: customer.customerNumber || null,
       email: c.email,
     });
   } catch (error) {

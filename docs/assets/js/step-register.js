@@ -19,13 +19,27 @@ function setAlert(message, kind = 'error') {
   el.className = kind === 'ok' ? 'notice' : 'notice notice--error';
 }
 
+function currentParty() {
+  return qs('input[name="customerType"]:checked')?.value || '';
+}
+
 export function readRegisterForm() {
   const form = qs('#form-register');
   const data = Object.fromEntries(new FormData(form).entries());
+  const customerType = currentParty();
+  const companyName = data.companyName || '';
+  const firstName = data.firstName || '';
+  const lastName = data.lastName || '';
+  const name =
+    customerType === 'firma'
+      ? companyName.trim()
+      : `${firstName} ${lastName}`.trim();
   patchCustomer({
-    firstName: data.firstName || '',
-    lastName: data.lastName || '',
-    name: `${data.firstName || ''} ${data.lastName || ''}`.trim(),
+    customerType,
+    companyName,
+    firstName,
+    lastName,
+    name,
     email: data.email || '',
     strasse: data.strasse || '',
     hausnummer: data.hausnummer || '',
@@ -55,6 +69,12 @@ export function showWizard() {
   patch({ registered: true });
 }
 
+function syncPartyUi() {
+  const type = currentParty();
+  qs('#company-name-fields').hidden = type !== 'firma';
+  qs('#person-name-fields').hidden = type !== 'herr' && type !== 'frau';
+}
+
 function syncModeUi() {
   const login = currentMode() === 'login';
   qs('#register-new-fields').hidden = login;
@@ -63,8 +83,9 @@ function syncModeUi() {
     : 'Neu registrieren und zum Erfassungsbogen';
   qs('#register-lead').textContent = login
     ? 'Bereits Kunde? Melden Sie sich mit der E-Mail-Adresse an, die in SevDesk hinterlegt ist. Es wird kein neues Konto angelegt.'
-    : 'Neu hier? Wir legen Sie mit Name, Anschrift und E-Mail als Kunden in SevDesk an.';
+    : 'Neu hier? Bitte Anrede oder Firma wählen. Die Kundennummer in SevDesk wird fortlaufend vergeben.';
   setAlert('');
+  if (!login) syncPartyUi();
 }
 
 export async function submitRegistration() {
@@ -91,7 +112,7 @@ export async function submitRegistration() {
     showToast(
       result.existing
         ? 'Bestehender SevDesk-Kunde gefunden.'
-        : 'Kunde in SevDesk angelegt.'
+        : `Kunde in SevDesk angelegt${result.customerNumber ? ` (Nr. ${result.customerNumber})` : ''}.`
     );
     showWizard();
     return true;
@@ -109,6 +130,9 @@ export function bindRegister() {
   qs('#form-register').addEventListener('input', () => readRegisterForm());
   qs('#auth-mode-register').addEventListener('change', syncModeUi);
   qs('#auth-mode-login').addEventListener('change', syncModeUi);
+  qs('#form-register').addEventListener('change', (event) => {
+    if (event.target.name === 'customerType') syncPartyUi();
+  });
   qs('#btn-register').addEventListener('click', () => submitRegistration());
   syncModeUi();
 }

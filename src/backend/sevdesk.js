@@ -91,6 +91,67 @@ function customerAddress(body) {
   };
 }
 
+export async function getNextCustomerNumber() {
+  try {
+    const res = await sevdeskFetch('/Contact/Factory/getNextCustomerNumber');
+    const raw = res.objects;
+    if (typeof raw === 'string' || typeof raw === 'number') {
+      return String(raw);
+    }
+    if (raw && raw.customerNumber) return String(raw.customerNumber);
+  } catch (error) {
+    console.error('getNextCustomerNumber nicht verfügbar:', error);
+  }
+
+  const listed = await sevdeskFetch('/Contact?depth=0&limit=200');
+  const last = asList(listed)
+    .map((c) => String(c.customerNumber || ''))
+    .filter(Boolean)
+    .reduce((best, current) => pickLaterCustomerNumber(best, current), '');
+  return incrementCustomerNumber(last || '0');
+}
+
+function numericTail(value) {
+  const match = String(value).match(/(\d+)\s*$/);
+  return match ? Number(match[1]) : -1;
+}
+
+function pickLaterCustomerNumber(a, b) {
+  return numericTail(b) >= numericTail(a) ? b : a;
+}
+
+function incrementCustomerNumber(last) {
+  const match = String(last).match(/^(.*?)(\d+)$/);
+  if (!match) return '1';
+  const next = String(Number(match[2]) + 1).padStart(match[2].length, '0');
+  return `${match[1]}${next}`;
+}
+
+function contactPayload(c, customerNumber) {
+  const type = c.customerType;
+  if (type === 'firma') {
+    const name = String(c.companyName || c.name || '').trim();
+    return {
+      name,
+      category: { id: 3, objectName: 'Category' },
+      status: 1000,
+      customerNumber,
+    };
+  }
+  const first = String(c.firstName || '').trim();
+  const last = String(c.lastName || '').trim();
+  const name = `${first} ${last}`.trim();
+  return {
+    name,
+    surename: first,
+    familyname: last,
+    gender: type === 'frau' ? 1 : 0,
+    category: { id: 3, objectName: 'Category' },
+    status: 1000,
+    customerNumber,
+  };
+}
+
 export async function createCustomer(body) {
   const c = body.customer || {};
   if (c.email) {
@@ -98,19 +159,10 @@ export async function createCustomer(body) {
     if (existing) return existing;
   }
 
-  const first = String(c.firstName || '').trim();
-  const last = String(c.lastName || '').trim();
-  const name = String(c.name || `${first} ${last}`).trim() || 'Unbekannt';
+  const customerNumber = await getNextCustomerNumber();
   const created = await sevdeskFetch('/Contact', {
     method: 'POST',
-    body: {
-      name,
-      surename: first || name,
-      familyname: last || name,
-      category: { id: 3, objectName: 'Category' },
-      status: 1000,
-      customerNumber: body.orderNumber || `WEB-${Date.now()}`,
-    },
+    body: contactPayload(c, customerNumber),
   });
   const id = extractId(created);
   if (!id) {
@@ -149,7 +201,12 @@ export async function createCustomer(body) {
     });
   }
 
-  return { id, name, existing: false };
+  return {
+    id,
+    name: contactPayload(c, customerNumber).name,
+    customerNumber,
+    existing: false,
+  };
 }
 
 export async function createOrder(body) {

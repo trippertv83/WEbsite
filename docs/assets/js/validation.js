@@ -78,8 +78,17 @@ export function validateLogin(customer) {
 
 export function validateRegistration(customer) {
   const errors = {};
-  if (!customer.firstName?.trim()) errors.firstName = 'Vorname ist erforderlich.';
-  if (!customer.lastName?.trim()) errors.lastName = 'Nachname ist erforderlich.';
+  if (!['firma', 'herr', 'frau'].includes(customer.customerType)) {
+    errors.customerType = 'Bitte Firma, Herr oder Frau wählen.';
+  }
+  if (customer.customerType === 'firma') {
+    if (!customer.companyName?.trim()) {
+      errors.companyName = 'Firmenname ist erforderlich.';
+    }
+  } else {
+    if (!customer.firstName?.trim()) errors.firstName = 'Vorname ist erforderlich.';
+    if (!customer.lastName?.trim()) errors.lastName = 'Nachname ist erforderlich.';
+  }
   if (!EMAIL.test(customer.email || '')) {
     errors.email = 'Bitte eine gültige E-Mail-Adresse angeben.';
   }

@@ -48,15 +48,38 @@
         <p id="register-alert" class="notice notice--error" hidden role="alert"></p>
         <form id="form-register" novalidate>
           <div id="register-new-fields">
-          <div class="grid-2">
+          <div class="field">
+            <span class="field__label" id="party-label">Ich bin</span>
+            <div class="choice-group" role="radiogroup" aria-labelledby="party-label">
+              <label class="choice">
+                <input type="radio" name="customerType" value="firma" />
+                <span>Firma</span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="customerType" value="herr" />
+                <span>Herr</span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="customerType" value="frau" />
+                <span>Frau</span>
+              </label>
+            </div>
+            <span class="field__error" data-error-for="customerType"></span>
+          </div>
+          <div id="company-name-fields" hidden class="field" style="margin-top: 1rem">
+            <label class="field__label" for="reg-companyName">Firmenname</label>
+            <input class="input" id="reg-companyName" name="companyName" autocomplete="organization" />
+            <span class="field__error" data-error-for="companyName"></span>
+          </div>
+          <div id="person-name-fields" class="grid-2" style="margin-top: 1rem" hidden>
             <div class="field">
               <label class="field__label" for="reg-firstName">Vorname</label>
-              <input class="input" id="reg-firstName" name="firstName" required autocomplete="given-name" />
+              <input class="input" id="reg-firstName" name="firstName" autocomplete="given-name" />
               <span class="field__error" data-error-for="firstName"></span>
             </div>
             <div class="field">
               <label class="field__label" for="reg-lastName">Nachname</label>
-              <input class="input" id="reg-lastName" name="lastName" required autocomplete="family-name" />
+              <input class="input" id="reg-lastName" name="lastName" autocomplete="family-name" />
               <span class="field__error" data-error-for="lastName"></span>
             </div>
           </div>
