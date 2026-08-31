@@ -77,10 +77,9 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.choice-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
+.choice-group--stack {
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .choice {
@@ -136,27 +135,48 @@
   background: #f8fafc;
 }
 
-.lager h2,
-.lager h3 {
+.lager-dialog {
+  width: min(720px, calc(100vw - 1.5rem));
+  max-height: min(90vh, 900px);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  overflow: auto;
+}
+
+.lager-dialog::backdrop {
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.lager-dialog__inner {
+  padding: 1.25rem;
+}
+
+.lager-dialog h2,
+.lager-tank h3 {
   margin: 0 0 0.5rem;
 }
 
-.lager__grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+.lager-table-wrap {
+  overflow-x: auto;
 }
 
 .lager-table {
   width: 100%;
+  min-width: 520px;
   border-collapse: collapse;
 }
 
 .lager-table th,
 .lager-table td {
-  padding: 0.35rem;
+  padding: 0.4rem 0.35rem;
   vertical-align: middle;
   text-align: left;
+}
+
+.lager-table .input {
+  min-height: 44px;
+  min-width: 0;
 }
 
 .lager-stock {
@@ -167,14 +187,15 @@
 
 .lager-result {
   font-weight: 700;
-  margin: 0.75rem 0 0;
+  margin: 0.75rem 0;
 }
 
 .lager-tank {
+  margin-top: 1rem;
   padding: 0.85rem;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-md);
-  background: #fff;
+  background: #f8fafc;
 }
 
 @media (max-width: 900px) {

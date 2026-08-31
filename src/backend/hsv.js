@@ -328,14 +328,15 @@ function lueftungHsv(building) {
   return [...new Set(items)].join(' | ');
 }
 
-function eeNutzung(value, fallback = '') {
-  const raw = String(value || fallback || '').trim();
-  if (!raw) return '';
-  const lower = raw.toLowerCase();
-  if (lower === 'heizung' || lower.includes('heiz')) return 'heizung';
-  if (lower === 'ww' || lower.includes('warm') || lower.includes('wasser')) return 'ww';
-  if (lower === 'strom' || lower.includes('strom')) return 'strom';
-  return raw;
+function eeNutzung(value) {
+  return String(value || '').trim();
+}
+
+function eeHas(value, key) {
+  return String(value || '')
+    .toLowerCase()
+    .split(/[\s+,|]+/)
+    .includes(key);
 }
 
 function eeArt(value, fallback = '') {
@@ -403,7 +404,15 @@ export function buildHsvContent(body, now = new Date()) {
   const today = todayGerman(now);
   const isStrom =
     consumption.energietraeger === 'strom' || consumption.energietraeger === 'waermepumpe';
-  const recs = selectedRecommendations(building.recommendations || body.recommendations || []);
+  const recs =
+    building.keineEmpfehlungen === '1'
+      ? []
+      : selectedRecommendations(building.recommendations || body.recommendations || []);
+  const inspectionOn =
+    building.gekuehlt === 'ja' &&
+    (building.klimaanlage12kWohne === '1' ||
+      building.klimaanlage12kWmit === '1' ||
+      building.klimaanlage70kW === '1');
   const nPeriods = periods.length;
   const customerName =
     customer.name ||
@@ -449,7 +458,7 @@ export function buildHsvContent(body, now = new Date()) {
     kv('Lueftung', lueftungHsv(building)),
     kv('BaujahrGeb', building.baujahr || ''),
     kv('BaujahrAnlage', building.baujahrHeizung || ''),
-    kv('BaujahrKlimaanlage', building.gekuehlt === 'ja' ? building.baujahrKlimaanlage || '' : ''),
+    kv('BaujahrKlimaanlage', inspectionOn ? building.baujahrKlimaanlage || '' : ''),
     kv(
       'AnzahlWohnungen',
       building.anzahlWohnungen || (gebaeudetypHsv(building.gebaeudetyp) === 'Einfamilienhaus' ? '1' : '')
@@ -462,23 +471,18 @@ export function buildHsvContent(body, now = new Date()) {
     kv('Foto', ''),
     kv('FotoDrehung', '0'),
     kv('FotoRelativ', ''),
-    kv('KlimaanlageAnzahl', building.gekuehlt === 'ja' ? String(building.klimaanlageAnzahl || '0') : '0'),
+    kv('KlimaanlageAnzahl', inspectionOn ? String(building.klimaanlageAnzahl || '1') : '0'),
     kv(
       'KlimaanlageFaelligkeit',
-      building.gekuehlt === 'ja'
-        ? germanFromInput(building.klimaanlageFaelligkeit, today)
-        : today
+      inspectionOn ? germanFromInput(building.klimaanlageFaelligkeit, today) : today
     ),
-    kv('Klimaanlage12kWohne', building.gekuehlt === 'ja' && building.klimaanlage12kWohne === '1' ? '1' : '0'),
-    kv('Klimaanlage12kWmit', building.gekuehlt === 'ja' && building.klimaanlage12kWmit === '1' ? '1' : '0'),
-    kv('Klimaanlage70kW', building.gekuehlt === 'ja' && building.klimaanlage70kW === '1' ? '1' : '0'),
-    kv(
-      'EE24_NutzungHz',
-      eeNutzung(building.erneuerbareEnergien) === 'heizung' ? '1' : '0'
-    ),
+    kv('Klimaanlage12kWohne', inspectionOn && building.klimaanlage12kWohne === '1' ? '1' : '0'),
+    kv('Klimaanlage12kWmit', inspectionOn && building.klimaanlage12kWmit === '1' ? '1' : '0'),
+    kv('Klimaanlage70kW', inspectionOn && building.klimaanlage70kW === '1' ? '1' : '0'),
+    kv('EE24_NutzungHz', eeHas(building.erneuerbareEnergien, 'heizung') ? '1' : '0'),
     kv(
       'EE24_NutzungDHW',
-      eeNutzung(building.erneuerbareEnergien) === 'ww' || building.warmwasserSolar ? '1' : '0'
+      eeHas(building.erneuerbareEnergien, 'ww') || building.warmwasserSolar ? '1' : '0'
     ),
     kv('EE24_65ProzEERegel', '0'),
     kv('EE24_65ProzEERegelPauschal', '0'),
@@ -521,7 +525,7 @@ export function buildHsvContent(body, now = new Date()) {
     kv('ZusatzSonstiges', [customer.email, customer.phone].filter(Boolean).join(' | ')),
     kv('ZusatzNutzflaeche', areaN ? deNum(areaN, 1) : ''),
     '[Druck]',
-    kv('MitEmpfehlungen', recs.length ? '1' : '1'),
+    kv('MitEmpfehlungen', recs.length ? '1' : '0'),
     kv('MitUnterlagen', '0'),
     '[Modernisierungsempfehlungen]',
     kv('Anzahl', String(recs.length)),
@@ -542,7 +546,7 @@ export function buildHsvContent(body, now = new Date()) {
   });
 
   lines.push(
-    kv('EmpfehlungenMoeglich', '1'),
+    kv('EmpfehlungenMoeglich', recs.length ? '1' : '0'),
     kv('WeiteresBlatt', '0'),
     kv(
       'GenauereEmpfehlungen',
@@ -565,7 +569,7 @@ export function buildHsvContent(body, now = new Date()) {
     kv('SystemPrimFaktorManuell0', '0'),
     kv('SystemCO2Faktor0', fuel.co2),
     kv('SystemCO2FaktorManuell0', '0'),
-    kv('SystemLagerdaten0', consumption.lager?.hsv || ''),
+    kv('SystemLagerdaten0', consumption.useLager && consumption.lager?.hsv ? consumption.lager.hsv : ''),
     kv('SystemVerbrauchEKZ0', '0'),
     kv('SystemWarmwassertyp0', warmwasserTyp(building.warmwasser)),
     kv('SystemWarmwasserprozent0', '0,18'),

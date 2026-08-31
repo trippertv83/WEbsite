@@ -121,12 +121,11 @@ function applyTankFill(target) {
   } else {
     qs('#lager-anfang-bestand').value = String(stock);
   }
-  syncLager();
+  previewLager();
 }
 
-function syncLager() {
+function previewLager() {
   const { consumption } = getState();
-  if (!isStorableCarrier(consumption.energietraeger)) return;
   const lager = readLagerForm();
   const total = lagerConsumption(lager);
   const unit = unitLabel(consumption.unit);
@@ -139,13 +138,25 @@ function syncLager() {
   }
   const vol = qs('#tank-volume');
   if (vol) vol.textContent = `Tankvolumen: ${Math.round(liters)} Liter`;
+  return { lager, total };
+}
+
+function applyLager() {
+  const { consumption } = getState();
+  const { lager, total } = previewLager();
   const periods = periodsFromLager(lager, total);
+  if (!periods.length || total <= 0) return false;
   patchConsumption({
+    useLager: true,
     lager: { ...lager, consumption: total, hsv: encodeLagerHsv(lager) },
-    periods: periods.length ? periods : consumption.periods,
+    periods,
     startYear: periods[0]?.from?.year || consumption.startYear,
   });
+  if (qs('#startYear') && periods[0]?.from?.year) {
+    qs('#startYear').value = String(periods[0].from.year);
+  }
   renderPeriodCards();
+  return true;
 }
 
 export function renderCarriers() {
@@ -177,20 +188,7 @@ export function renderPeriodSelect() {
 export function renderPeriodCards() {
   const { consumption, building } = getState();
   const showWw = building.warmwasser !== 'enthalten';
-  const storable = isStorableCarrier(consumption.energietraeger);
   const root = qs('#periods-container');
-  if (storable) {
-    root.innerHTML = `<p class="field__hint">Die Jahreswerte werden automatisch aus der Lagermengen-Ermittlung übernommen.</p>
-      ${consumption.periods
-        .map(
-          (period) => `<article class="period-card">
-        <h3>${period.label}</h3>
-        <p>Verbrauch: <strong>${period.consumption || '–'} ${consumption.unit || ''}</strong></p>
-      </article>`
-        )
-        .join('')}`;
-    return;
-  }
   root.innerHTML = consumption.periods
     .map(
       (period, index) => `<article class="period-card">
@@ -223,27 +221,35 @@ export function renderPeriodCards() {
     .join('');
 }
 
+function lagerDialog() {
+  return qs('#lager-dialog');
+}
+
 function toggleLagerUi() {
   const { consumption } = getState();
   const storable = isStorableCarrier(consumption.energietraeger);
-  const panel = qs('#lager-panel');
+  const wrap = qs('#lager-open-wrap');
+  if (wrap) wrap.hidden = !storable;
   const setup = qs('#period-setup');
-  if (panel) panel.hidden = !storable;
-  if (setup) setup.hidden = storable;
-  if (storable) {
-    const lager = currentLager();
-    writeLagerForm(lager);
-    renderTankDims(lager);
-    syncLager();
-  }
+  if (setup) setup.hidden = false;
+}
+
+function openLagerDialog() {
+  const lager = currentLager();
+  writeLagerForm(lager);
+  renderTankDims(lager);
+  previewLager();
+  const dialog = lagerDialog();
+  if (dialog?.showModal) dialog.showModal();
+}
+
+function closeLagerDialog() {
+  const dialog = lagerDialog();
+  if (dialog?.open) dialog.close();
 }
 
 export function syncPeriodsFromInputs() {
   const { consumption } = getState();
-  if (isStorableCarrier(consumption.energietraeger)) {
-    toggleLagerUi();
-    return;
-  }
   const year = Number(qs('#startYear').value);
   const month = Number(qs('#periodStartMonth').value);
   const generated = buildThreePeriods(year, month);
@@ -260,9 +266,11 @@ export function syncPeriodsFromInputs() {
     startYear: year,
     periodStartMonth: month,
     periods,
+    useLager: isStorableCarrier(carrierId) ? consumption.useLager : false,
   });
   renderPeriodCards();
   renderUnitHint();
+  toggleLagerUi();
 }
 
 function renderUnitHint() {
@@ -275,7 +283,7 @@ function renderUnitHint() {
     bar.id = 'unit-bar';
     bar.className = 'field';
     bar.style.marginTop = '1rem';
-    qs('#form-consumption').insertBefore(bar, qs('#lager-panel') || qs('#periods-container'));
+    qs('#form-consumption').insertBefore(bar, qs('#lager-open-wrap') || qs('#periods-container'));
   }
   bar.innerHTML = `<span class="field__label">Einheit</span>
     <div class="choice-group" role="radiogroup" aria-label="Einheit">
@@ -299,26 +307,15 @@ export function bindConsumption() {
   renderCarriers();
   renderPeriodSelect();
   syncPeriodsFromInputs();
-  toggleLagerUi();
 
   qs('#form-consumption').addEventListener('change', (event) => {
     if (event.target.name === 'unit') {
       patchConsumption({ unit: event.target.value });
       renderPeriodCards();
-      if (isStorableCarrier(getState().consumption.energietraeger)) syncLager();
       return;
     }
     if (event.target.name === 'energietraeger') {
-      patchConsumption({ energietraeger: event.target.value, unit: '' });
-    }
-    if (event.target.name === 'tankform') {
-      renderTankDims(readLagerForm());
-      syncLager();
-      return;
-    }
-    if (event.target.closest('#lager-panel')) {
-      syncLager();
-      return;
+      patchConsumption({ energietraeger: event.target.value, unit: '', useLager: false });
     }
     if (
       event.target.id === 'startYear' ||
@@ -329,11 +326,19 @@ export function bindConsumption() {
     }
   });
 
-  qs('#form-consumption').addEventListener('input', (event) => {
-    if (event.target.closest('#lager-panel')) syncLager();
+  qs('#btn-open-lager')?.addEventListener('click', openLagerDialog);
+  qs('#btn-lager-cancel')?.addEventListener('click', closeLagerDialog);
+  qs('#btn-lager-apply')?.addEventListener('click', () => {
+    if (applyLager()) closeLagerDialog();
   });
-
-  qs('#lager-panel')?.addEventListener('click', (event) => {
+  lagerDialog()?.addEventListener('change', (event) => {
+    if (event.target.name === 'tankform') {
+      renderTankDims(readLagerForm());
+    }
+    previewLager();
+  });
+  lagerDialog()?.addEventListener('input', previewLager);
+  lagerDialog()?.addEventListener('click', (event) => {
     const btn = event.target.closest('[data-tank-target]');
     if (!btn) return;
     applyTankFill(btn.dataset.tankTarget);
@@ -347,16 +352,13 @@ export function bindConsumption() {
     const periods = getState().consumption.periods.map((p, i) =>
       i === index ? { ...p, [field]: input.value } : p
     );
-    patchConsumption({ periods });
+    patchConsumption({ periods, useLager: false });
   });
 }
 
 export function validateStepConsumption() {
   const form = qs('#form-consumption');
   clearFormErrors(form);
-  if (isStorableCarrier(getState().consumption.energietraeger)) {
-    syncLager();
-  }
   const errors = validateConsumption(getState().consumption);
   Object.entries(errors).forEach(([name, message]) => {
     setFieldError(form, name, message);

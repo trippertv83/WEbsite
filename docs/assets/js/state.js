@@ -30,6 +30,7 @@ const state = {
     klimaanlage70kW: '0',
     baujahrKlimaanlage: '',
     warmwasserSolar: '',
+    keineEmpfehlungen: '',
     recommendations: [],
     baujahr: '',
     baujahrHeizung: '',
@@ -43,6 +44,7 @@ const state = {
     periodStartMonth: 1,
     periods: [],
     lager: null,
+    useLager: false,
   },
   documents: {
     heatingBills: [],
@@ -149,6 +151,7 @@ export function serializeForBackend() {
         climateFactor: p.climateFactor,
       })),
       lager: state.consumption.lager || null,
+      useLager: Boolean(state.consumption.useLager),
     },
     calculation: state.calculation
       ? {

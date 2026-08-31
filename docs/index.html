@@ -281,13 +281,22 @@
             </div>
             <div class="grid-2" style="margin-top: 1rem">
               <div class="field">
-                <label class="field__label" for="erneuerbareEnergien">Erneuerbare Energien (Verwendung)</label>
-                <select class="select" id="erneuerbareEnergien" name="erneuerbareEnergien">
-                  <option value="">keine</option>
-                  <option value="heizung">Heizung</option>
-                  <option value="ww">Warmwasser</option>
-                  <option value="strom">Strom</option>
-                </select>
+                <span class="field__label" id="ee-use-label">Erneuerbare Energien (Verwendung)</span>
+                <div class="choice-group choice-group--stack" role="group" aria-labelledby="ee-use-label">
+                  <label class="choice">
+                    <input type="checkbox" name="eeVerwendung" value="heizung" />
+                    <span>Heizung</span>
+                  </label>
+                  <label class="choice">
+                    <input type="checkbox" name="eeVerwendung" value="ww" />
+                    <span>Warmwasser</span>
+                  </label>
+                  <label class="choice">
+                    <input type="checkbox" name="eeVerwendung" value="strom" />
+                    <span>Strom</span>
+                  </label>
+                </div>
+                <p class="field__hint">Auch Kombinationen möglich, z. B. Heizung und Warmwasser.</p>
               </div>
               <div class="field">
                 <label class="field__label" for="erneuerbareEnergienA">Erneuerbare Energien (Art)</label>
@@ -357,35 +366,6 @@
             </div>
             <details class="fold" id="cooling-panel" hidden>
               <summary>Parameter Kühlung / Klimaanlage</summary>
-              <div class="grid-2" style="margin-top: 1rem">
-                <div class="field">
-                  <label class="field__label" for="klimaanlageAnzahl">Anzahl inspektionspflichtiger Klimaanlagen</label>
-                  <input class="input" id="klimaanlageAnzahl" name="klimaanlageAnzahl" type="number" min="0" max="99" value="0" />
-                </div>
-                <div class="field">
-                  <label class="field__label" for="klimaanlageFaelligkeit">Nächstes Fälligkeitsdatum der Inspektion</label>
-                  <input class="input" id="klimaanlageFaelligkeit" name="klimaanlageFaelligkeit" type="date" />
-                </div>
-              </div>
-              <div class="field" style="margin-top: 1rem">
-                <label class="field__label" for="baujahrKlimaanlage">Baujahr Klimaanlage</label>
-                <input class="input" id="baujahrKlimaanlage" name="baujahrKlimaanlage" type="number" min="1800" max="2026" />
-              </div>
-              <fieldset style="margin-top: 1rem; border: 0; padding: 0">
-                <legend class="field__label">Klimaanlage größer 12 kW / 70 kW</legend>
-                <label class="checkbox">
-                  <input type="checkbox" name="klimaanlage12kWohne" value="1" />
-                  <span>größer als 12 kW ohne Gebäudeautomation (inspektionspflichtig)</span>
-                </label>
-                <label class="checkbox">
-                  <input type="checkbox" name="klimaanlage12kWmit" value="1" />
-                  <span>größer als 12 kW mit Gebäudeautomation (inspektionspflichtig)</span>
-                </label>
-                <label class="checkbox">
-                  <input type="checkbox" name="klimaanlage70kW" value="1" />
-                  <span>größer als 70 kW, nach DIN SPEC 15240 zu bewerten</span>
-                </label>
-              </fieldset>
               <div class="field" style="margin-top: 1rem">
                 <span class="field__label" id="kuehlart-label">Art der Kühlung</span>
                 <div class="choice-group choice-group--stack" role="group" aria-labelledby="kuehlart-label">
@@ -405,6 +385,37 @@
                     <input type="checkbox" name="kuehlungArt" value="Gelieferte Kälte" />
                     <span>Gelieferte Kälte</span>
                   </label>
+                </div>
+              </div>
+              <fieldset style="margin-top: 1rem; border: 0; padding: 0">
+                <legend class="field__label">Inspektionspflicht nur bei Anlagen ab 12 kW</legend>
+                <label class="checkbox">
+                  <input type="checkbox" name="klimaanlage12kWohne" value="1" />
+                  <span>größer als 12 kW ohne Gebäudeautomation (inspektionspflichtig)</span>
+                </label>
+                <label class="checkbox">
+                  <input type="checkbox" name="klimaanlage12kWmit" value="1" />
+                  <span>größer als 12 kW mit Gebäudeautomation (inspektionspflichtig)</span>
+                </label>
+                <label class="checkbox">
+                  <input type="checkbox" name="klimaanlage70kW" value="1" />
+                  <span>größer als 70 kW, nach DIN SPEC 15240 zu bewerten</span>
+                </label>
+              </fieldset>
+              <div id="inspection-fields" hidden>
+                <div class="grid-2" style="margin-top: 1rem">
+                  <div class="field">
+                    <label class="field__label" for="klimaanlageAnzahl">Anzahl inspektionspflichtiger Klimaanlagen</label>
+                    <input class="input" id="klimaanlageAnzahl" name="klimaanlageAnzahl" type="number" min="1" max="99" value="1" />
+                  </div>
+                  <div class="field">
+                    <label class="field__label" for="klimaanlageFaelligkeit">Nächstes Fälligkeitsdatum der Inspektion</label>
+                    <input class="input" id="klimaanlageFaelligkeit" name="klimaanlageFaelligkeit" type="date" />
+                  </div>
+                </div>
+                <div class="field" style="margin-top: 1rem">
+                  <label class="field__label" for="baujahrKlimaanlage">Baujahr Klimaanlage</label>
+                  <input class="input" id="baujahrKlimaanlage" name="baujahrKlimaanlage" type="number" min="1800" max="2026" />
                 </div>
               </div>
             </details>
@@ -432,7 +443,12 @@
             </div>
             <fieldset style="margin-top: 1.5rem; border: 0; padding: 0">
               <legend class="field__label">Modernisierungsempfehlungen</legend>
-              <p class="field__hint">Wie in HS Verbrauchspass – nur ankreuzen, was empfohlen werden soll.</p>
+              <p class="field__hint">Genau zwei Maßnahmen ankreuzen – oder „keine möglich“.</p>
+              <span class="field__error" data-error-for="recommendations"></span>
+              <label class="checkbox">
+                <input type="checkbox" name="keineEmpfehlungen" value="1" />
+                <span>Keine Modernisierungsempfehlungen möglich</span>
+              </label>
               <label class="checkbox"><input type="checkbox" name="recommendation" value="waerme-wp" /><span>Wärmeerzeugung: Wärmepumpe</span></label>
               <label class="checkbox"><input type="checkbox" name="recommendation" value="hydraulisch" /><span>Heizungsanlage: hydraulischer Abgleich</span></label>
               <label class="checkbox"><input type="checkbox" name="recommendation" value="solar-ww" /><span>Warmwasser: Solar / PV</span></label>
@@ -453,7 +469,7 @@
           <div class="panel__head">
             <div>
               <h1 tabindex="-1">Verbrauch</h1>
-              <p>Energieträger und Verbrauch. Bei Heizöl, Holz und Pellets über den Lagermengen-Ermittler wie in HS Verbrauchspass.</p>
+              <p>Energieträger und die drei Abrechnungsperioden eintragen. Bei Heizöl, Holz oder Pellets kann zusätzlich die Lagermengen-Ermittlung geöffnet werden.</p>
             </div>
           </div>
           <form id="form-consumption" novalidate>
@@ -462,98 +478,11 @@
               <div class="carrier-grid" id="carrier-grid" role="radiogroup" aria-labelledby="carrier-label"></div>
               <span class="field__error" data-error-for="energietraeger"></span>
             </div>
-            <div id="lager-panel" class="lager" hidden>
-              <h2>Verbrauchsermittlung für lagerfähige Brennstoffe</h2>
-              <p class="field__hint">
-                Zwei Zeitpunkte mit bekannter Lagermenge. Dazwischen müssen mindestens drei Jahre liegen.
-                Verbrauch = Anfangsbestand + Zukäufe − Endbestand.
-              </p>
-              <div class="lager__grid">
-                <div>
-                  <table class="lager-table">
-                    <thead>
-                      <tr>
-                        <th></th>
-                        <th>Datum</th>
-                        <th>Zukäufe</th>
-                        <th>Bestand</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <th>Anfangsbestand</th>
-                        <td><input class="input" id="lager-anfang-datum" type="date" /></td>
-                        <td></td>
-                        <td>
-                          <div class="lager-stock">
-                            <input class="input" id="lager-anfang-bestand" type="number" min="0" step="0.01" />
-                            <button class="btn btn--ghost" type="button" data-tank-target="anfang" title="Über Tankgeometrie rechnen">…</button>
-                          </div>
-                        </td>
-                      </tr>
-                      <tr>
-                        <th>+ Zukauf</th>
-                        <td><input class="input" id="lager-z0-datum" type="date" /></td>
-                        <td><input class="input" id="lager-z0-menge" type="number" min="0" step="0.01" /></td>
-                        <td></td>
-                      </tr>
-                      <tr>
-                        <th>+ Zukauf</th>
-                        <td><input class="input" id="lager-z1-datum" type="date" /></td>
-                        <td><input class="input" id="lager-z1-menge" type="number" min="0" step="0.01" /></td>
-                        <td></td>
-                      </tr>
-                      <tr>
-                        <th>+ Zukauf</th>
-                        <td><input class="input" id="lager-z2-datum" type="date" /></td>
-                        <td><input class="input" id="lager-z2-menge" type="number" min="0" step="0.01" /></td>
-                        <td></td>
-                      </tr>
-                      <tr>
-                        <th>− Endbestand</th>
-                        <td><input class="input" id="lager-ende-datum" type="date" /></td>
-                        <td></td>
-                        <td>
-                          <div class="lager-stock">
-                            <input class="input" id="lager-ende-bestand" type="number" min="0" step="0.01" />
-                            <button class="btn btn--ghost" type="button" data-tank-target="ende" title="Über Tankgeometrie rechnen">…</button>
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <p id="lager-result" class="lager-result"></p>
-                  <span class="field__error" data-error-for="anfangBestand"></span>
-                  <span class="field__error" data-error-for="anfangDatum"></span>
-                  <span class="field__error" data-error-for="endeDatum"></span>
-                </div>
-                <div class="lager-tank">
-                  <h3>Tankvolumen</h3>
-                  <div class="choice-group" role="radiogroup" aria-label="Tankform">
-                    <label class="choice"><input type="radio" name="tankform" value="rechteck" checked /><span>Rechtecktank</span></label>
-                    <label class="choice"><input type="radio" name="tankform" value="stehend" /><span>Stehender Zylinder</span></label>
-                    <label class="choice"><input type="radio" name="tankform" value="liegend" /><span>Liegender Zylinder</span></label>
-                    <label class="choice"><input type="radio" name="tankform" value="kugel" /><span>Kugel</span></label>
-                  </div>
-                  <div class="field" style="margin-top: 0.75rem">
-                    <label class="field__label" for="lager-max">Maximale Lagermenge</label>
-                    <input class="input" id="lager-max" type="number" min="0" step="0.01" />
-                  </div>
-                  <div id="tank-dims" class="grid-2" style="margin-top: 0.75rem"></div>
-                  <p id="tank-volume" class="field__hint"></p>
-                  <div class="grid-2">
-                    <div class="field">
-                      <label class="field__label" for="lager-fuell-anfang">Füllhöhe Anfang (cm)</label>
-                      <input class="input" id="lager-fuell-anfang" type="number" min="0" step="0.1" />
-                    </div>
-                    <div class="field">
-                      <label class="field__label" for="lager-fuell-ende">Füllhöhe Ende (cm)</label>
-                      <input class="input" id="lager-fuell-ende" type="number" min="0" step="0.1" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <p id="lager-open-wrap" hidden style="margin-top: 1rem">
+              <button class="btn btn--ghost" type="button" id="btn-open-lager">
+                Verbrauchsermittlung für lagerfähige Brennstoffe
+              </button>
+            </p>
             <div class="grid-2" id="period-setup" style="margin-top: 1rem">
               <div class="field">
                 <label class="field__label" for="startYear">Beginn erstes Abrechnungsjahr</label>
@@ -674,6 +603,102 @@
         <span>Keine Speicherung von Dateien vor der verbindlichen Bestellung</span>
       </div>
     </footer>
+    <dialog id="lager-dialog" class="lager-dialog">
+      <div class="lager-dialog__inner">
+        <h2>Verbrauchsermittlung für lagerfähige Brennstoffe</h2>
+        <p class="field__hint">
+          Zwei Zeitpunkte mit bekannter Lagermenge. Dazwischen müssen mindestens drei Jahre liegen.
+          Verbrauch = Anfangsbestand + Zukäufe − Endbestand.
+        </p>
+        <div class="lager-table-wrap">
+          <table class="lager-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Datum</th>
+                <th>Zukäufe</th>
+                <th>Bestand</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>Anfangsbestand</th>
+                <td><input class="input" id="lager-anfang-datum" type="date" /></td>
+                <td></td>
+                <td>
+                  <div class="lager-stock">
+                    <input class="input" id="lager-anfang-bestand" type="number" min="0" step="0.01" />
+                    <button class="btn btn--ghost" type="button" data-tank-target="anfang">…</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th>+ Zukauf</th>
+                <td><input class="input" id="lager-z0-datum" type="date" /></td>
+                <td><input class="input" id="lager-z0-menge" type="number" min="0" step="0.01" /></td>
+                <td></td>
+              </tr>
+              <tr>
+                <th>+ Zukauf</th>
+                <td><input class="input" id="lager-z1-datum" type="date" /></td>
+                <td><input class="input" id="lager-z1-menge" type="number" min="0" step="0.01" /></td>
+                <td></td>
+              </tr>
+              <tr>
+                <th>+ Zukauf</th>
+                <td><input class="input" id="lager-z2-datum" type="date" /></td>
+                <td><input class="input" id="lager-z2-menge" type="number" min="0" step="0.01" /></td>
+                <td></td>
+              </tr>
+              <tr>
+                <th>− Endbestand</th>
+                <td><input class="input" id="lager-ende-datum" type="date" /></td>
+                <td></td>
+                <td>
+                  <div class="lager-stock">
+                    <input class="input" id="lager-ende-bestand" type="number" min="0" step="0.01" />
+                    <button class="btn btn--ghost" type="button" data-tank-target="ende">…</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p id="lager-result" class="lager-result"></p>
+        <span class="field__error" data-error-for="anfangBestand"></span>
+        <span class="field__error" data-error-for="anfangDatum"></span>
+        <span class="field__error" data-error-for="endeDatum"></span>
+        <div class="lager-tank">
+          <h3>Tankvolumen (optional)</h3>
+          <div class="choice-group" role="radiogroup" aria-label="Tankform">
+            <label class="choice"><input type="radio" name="tankform" value="rechteck" checked /><span>Rechtecktank</span></label>
+            <label class="choice"><input type="radio" name="tankform" value="stehend" /><span>Stehender Zylinder</span></label>
+            <label class="choice"><input type="radio" name="tankform" value="liegend" /><span>Liegender Zylinder</span></label>
+            <label class="choice"><input type="radio" name="tankform" value="kugel" /><span>Kugel</span></label>
+          </div>
+          <div class="field" style="margin-top: 0.75rem">
+            <label class="field__label" for="lager-max">Maximale Lagermenge</label>
+            <input class="input" id="lager-max" type="number" min="0" step="0.01" />
+          </div>
+          <div id="tank-dims" class="grid-2" style="margin-top: 0.75rem"></div>
+          <p id="tank-volume" class="field__hint"></p>
+          <div class="grid-2">
+            <div class="field">
+              <label class="field__label" for="lager-fuell-anfang">Füllhöhe Anfang (cm)</label>
+              <input class="input" id="lager-fuell-anfang" type="number" min="0" step="0.1" />
+            </div>
+            <div class="field">
+              <label class="field__label" for="lager-fuell-ende">Füllhöhe Ende (cm)</label>
+              <input class="input" id="lager-fuell-ende" type="number" min="0" step="0.1" />
+            </div>
+          </div>
+        </div>
+        <div class="btn-row" style="margin-top: 1.25rem">
+          <button class="btn btn--ghost" type="button" id="btn-lager-cancel">Abbrechen</button>
+          <button class="btn btn--primary" type="button" id="btn-lager-apply">Übernehmen</button>
+        </div>
+      </div>
+    </dialog>
     <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
     <script type="module" src="app.js"></script>
   </body>

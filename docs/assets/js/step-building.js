@@ -20,13 +20,24 @@ function syncNutzflaeche(form) {
   return nutz;
 }
 
+function eeUsage(form) {
+  return [...form.querySelectorAll('input[name="eeVerwendung"]:checked')].map((el) => el.value);
+}
+
 function syncErneuerbare(form) {
-  const usage = form.elements.erneuerbareEnergien;
   const art = form.elements.erneuerbareEnergienA;
-  if (!usage || !art) return;
-  const on = Boolean(usage.value);
+  if (!art) return;
+  const on = eeUsage(form).length > 0;
   art.disabled = !on;
   if (!on) art.value = '';
+}
+
+function inspectionRequired(form) {
+  return Boolean(
+    form.querySelector('[name="klimaanlage12kWohne"]')?.checked ||
+      form.querySelector('[name="klimaanlage12kWmit"]')?.checked ||
+      form.querySelector('[name="klimaanlage70kW"]')?.checked
+  );
 }
 
 function syncCoolingPanel(form) {
@@ -35,6 +46,27 @@ function syncCoolingPanel(form) {
   const cooled = form.querySelector('input[name="gekuehlt"]:checked')?.value === 'ja';
   panel.hidden = !cooled;
   panel.open = cooled;
+  const inspect = qs('#inspection-fields');
+  if (inspect) inspect.hidden = !cooled || !inspectionRequired(form);
+}
+
+function syncRecommendations(form, event) {
+  const none = form.querySelector('[name="keineEmpfehlungen"]');
+  const boxes = [...form.querySelectorAll('input[name="recommendation"]')];
+  if (none?.checked) {
+    boxes.forEach((box) => {
+      box.checked = false;
+      box.disabled = true;
+    });
+    return;
+  }
+  boxes.forEach((box) => {
+    box.disabled = false;
+  });
+  const checked = boxes.filter((box) => box.checked);
+  if (event?.target?.name === 'recommendation' && checked.length > 2) {
+    event.target.checked = false;
+  }
 }
 
 export function readBuildingForm() {
@@ -42,13 +74,16 @@ export function readBuildingForm() {
   const data = Object.fromEntries(new FormData(form).entries());
   delete data.recommendation;
   delete data.kuehlungArt;
+  delete data.eeVerwendung;
   data.recommendations = [...form.querySelectorAll('input[name="recommendation"]:checked')].map(
     (el) => el.value
   );
+  data.keineEmpfehlungen = form.querySelector('[name="keineEmpfehlungen"]')?.checked ? '1' : '';
   data.lueftung = [...form.querySelectorAll('input[name="lueftung"]:checked')].map((el) => el.value);
   data.kuehlungArt = [...form.querySelectorAll('input[name="kuehlungArt"]:checked')].map(
     (el) => el.value
   );
+  data.erneuerbareEnergien = eeUsage(form).join(' ');
   data.warmwasserSolar = form.querySelector('[name="warmwasserSolar"]')?.checked ? '1' : '';
   data.klimaanlage12kWohne = form.querySelector('[name="klimaanlage12kWohne"]')?.checked ? '1' : '0';
   data.klimaanlage12kWmit = form.querySelector('[name="klimaanlage12kWmit"]')?.checked ? '1' : '0';
@@ -60,6 +95,11 @@ export function readBuildingForm() {
     data.klimaanlage12kWohne = '0';
     data.klimaanlage12kWmit = '0';
     data.klimaanlage70kW = '0';
+  }
+  if (!inspectionRequired(form) || data.gekuehlt !== 'ja') {
+    data.klimaanlageAnzahl = '0';
+    data.klimaanlageFaelligkeit = '';
+    data.baujahrKlimaanlage = '';
   }
   if (!data.erneuerbareEnergien) data.erneuerbareEnergienA = '';
   patchBuilding(data);
@@ -87,7 +127,8 @@ export function validateStepBuilding() {
 
 export function bindBuildingLive() {
   const form = qs('#form-building');
-  const refresh = () => {
+  const refresh = (event) => {
+    syncRecommendations(form, event);
     syncNutzflaeche(form);
     syncErneuerbare(form);
     syncCoolingPanel(form);

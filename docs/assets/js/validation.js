@@ -31,9 +31,17 @@ export function validateBuilding(building) {
   if (building.erneuerbareEnergien && !building.erneuerbareEnergienA) {
     errors.erneuerbareEnergienA = 'Bitte die Art der erneuerbaren Energie wählen.';
   }
+  const none = building.keineEmpfehlungen === '1';
+  const recCount = (building.recommendations || []).length;
+  if (!none && recCount !== 2) {
+    errors.recommendations = 'Bitte genau zwei Sanierungsmaßnahmen ankreuzen oder „keine möglich“.';
+  }
   if (building.gekuehlt === 'ja') {
-    const count = Number(building.klimaanlageAnzahl);
-    if (Number.isFinite(count) && count > 0 && !building.klimaanlageFaelligkeit) {
+    const inspect =
+      building.klimaanlage12kWohne === '1' ||
+      building.klimaanlage12kWmit === '1' ||
+      building.klimaanlage70kW === '1';
+    if (inspect && !building.klimaanlageFaelligkeit) {
       errors.klimaanlageFaelligkeit = 'Bitte das nächste Inspektionsdatum angeben.';
     }
   }
@@ -56,7 +64,7 @@ export function validateConsumption(consumption) {
     errors.energietraeger = 'Bitte einen Energieträger wählen.';
   }
   const storable = ['heizoel', 'holz', 'pellets'].includes(consumption.energietraeger);
-  if (storable) {
+  if (storable && consumption.useLager) {
     const lager = consumption.lager || {};
     const from = Date.parse(lager.anfangDatum || '');
     const to = Date.parse(lager.endeDatum || '');
