@@ -281,8 +281,11 @@ function climateOf(body, index) {
 }
 
 function gebaeudetypHsv(id) {
-  if (id === 'mfh' || id === 'Mehrfamilienhaus') return 'Mehrfamilienhaus';
-  if (id === 'zfh' || id === 'Zweifamilienhaus') return 'Zweifamilienhaus';
+  const raw = String(id || '').trim();
+  if (raw === 'mfh') return 'Mehrfamilienhaus';
+  if (raw === 'zfh') return 'Zweifamilienhaus';
+  if (raw === 'efh') return 'Einfamilienhaus';
+  if (raw) return raw;
   return 'Einfamilienhaus';
 }
 
@@ -318,6 +321,9 @@ function lueftungHsv(building) {
       items = joined.split('|').map((part) => mapLueftungItem(part.trim())).filter(Boolean);
     }
   }
+  if (building?.gekuehlt === 'ja' && Array.isArray(building.kuehlungArt)) {
+    items.push(...building.kuehlungArt.map(mapLueftungItem).filter(Boolean));
+  }
   if (!items.length) items = ['Fensterlüftung'];
   return [...new Set(items)].join(' | ');
 }
@@ -326,8 +332,9 @@ function eeNutzung(value, fallback = '') {
   const raw = String(value || fallback || '').trim();
   if (!raw) return '';
   const lower = raw.toLowerCase();
-  if (lower.includes('heiz')) return 'heizung';
-  if (lower.includes('warm') || lower === 'ww' || lower.includes('wasser')) return 'ww';
+  if (lower === 'heizung' || lower.includes('heiz')) return 'heizung';
+  if (lower === 'ww' || lower.includes('warm') || lower.includes('wasser')) return 'ww';
+  if (lower === 'strom' || lower.includes('strom')) return 'strom';
   return raw;
 }
 
@@ -335,11 +342,21 @@ function eeArt(value, fallback = '') {
   const raw = String(value || fallback || '').trim();
   if (!raw) return '';
   const lower = raw.toLowerCase();
+  if (lower.includes('solar') || lower.includes('pv')) return 'solar';
+  if (lower.includes('umwelt') || lower.includes('waerme') || lower.includes('wärme')) {
+    return 'umweltwaerme';
+  }
   if (lower.includes('holz') || lower.includes('stück') || lower.includes('stueck')) return 'holz';
   if (lower.includes('pellet')) return 'pellets';
-  if (lower.includes('solar') || lower.includes('pv')) return 'solar';
   if (lower.includes('wärmepumpe') || lower.includes('waermepumpe') || lower === 'wp') return 'wp';
   return raw;
+}
+
+function germanFromInput(value, fallback = '') {
+  const iso = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) return `${iso[3]}.${iso[2]}.${iso[1]}`;
+  if (String(value || '').includes('.')) return String(value).trim();
+  return fallback;
 }
 
 function warmwasserTyp(mode) {
@@ -386,7 +403,6 @@ export function buildHsvContent(body, now = new Date()) {
   const today = todayGerman(now);
   const isStrom =
     consumption.energietraeger === 'strom' || consumption.energietraeger === 'waermepumpe';
-  const isHolz = consumption.energietraeger === 'holz' || consumption.energietraeger === 'pellets';
   const recs = selectedRecommendations(building.recommendations || body.recommendations || []);
   const nPeriods = periods.length;
   const customerName =
@@ -428,12 +444,12 @@ export function buildHsvContent(body, now = new Date()) {
     kv('Strasse', street),
     kv('Gebaeudeteil', building.gebaeudeteil || 'Ganzes Gebäude'),
     kv('Bundesland', bundeslandFromPlz(plz)),
-    kv('ErneuerbareEnergien', eeNutzung(building.erneuerbareEnergien, isHolz ? 'heizung' : '')),
-    kv('ErneuerbareEnergienA', eeArt(building.erneuerbareEnergienA, isHolz ? 'holz' : '')),
+    kv('ErneuerbareEnergien', eeNutzung(building.erneuerbareEnergien)),
+    kv('ErneuerbareEnergienA', building.erneuerbareEnergien ? eeArt(building.erneuerbareEnergienA) : ''),
     kv('Lueftung', lueftungHsv(building)),
     kv('BaujahrGeb', building.baujahr || ''),
     kv('BaujahrAnlage', building.baujahrHeizung || ''),
-    kv('BaujahrKlimaanlage', ''),
+    kv('BaujahrKlimaanlage', building.gekuehlt === 'ja' ? building.baujahrKlimaanlage || '' : ''),
     kv(
       'AnzahlWohnungen',
       building.anzahlWohnungen || (gebaeudetypHsv(building.gebaeudetyp) === 'Einfamilienhaus' ? '1' : '')
@@ -446,14 +462,19 @@ export function buildHsvContent(body, now = new Date()) {
     kv('Foto', ''),
     kv('FotoDrehung', '0'),
     kv('FotoRelativ', ''),
-    kv('KlimaanlageAnzahl', '0'),
-    kv('KlimaanlageFaelligkeit', today),
-    kv('Klimaanlage12kWohne', '0'),
-    kv('Klimaanlage12kWmit', '0'),
-    kv('Klimaanlage70kW', '0'),
+    kv('KlimaanlageAnzahl', building.gekuehlt === 'ja' ? String(building.klimaanlageAnzahl || '0') : '0'),
+    kv(
+      'KlimaanlageFaelligkeit',
+      building.gekuehlt === 'ja'
+        ? germanFromInput(building.klimaanlageFaelligkeit, today)
+        : today
+    ),
+    kv('Klimaanlage12kWohne', building.gekuehlt === 'ja' && building.klimaanlage12kWohne === '1' ? '1' : '0'),
+    kv('Klimaanlage12kWmit', building.gekuehlt === 'ja' && building.klimaanlage12kWmit === '1' ? '1' : '0'),
+    kv('Klimaanlage70kW', building.gekuehlt === 'ja' && building.klimaanlage70kW === '1' ? '1' : '0'),
     kv(
       'EE24_NutzungHz',
-      eeNutzung(building.erneuerbareEnergien, isHolz ? 'heizung' : '') === 'heizung' ? '1' : '0'
+      eeNutzung(building.erneuerbareEnergien) === 'heizung' ? '1' : '0'
     ),
     kv(
       'EE24_NutzungDHW',

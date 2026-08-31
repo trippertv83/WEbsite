@@ -211,22 +211,25 @@
                   <option value="Einfamilienhaus">Einfamilienhaus</option>
                   <option value="Zweifamilienhaus">Zweifamilienhaus</option>
                   <option value="Mehrfamilienhaus">Mehrfamilienhaus</option>
+                  <option value="einseitig angebautes Gebäude">einseitig angebautes Gebäude</option>
+                  <option value="beidseitig angebautes Gebäude">beidseitig angebautes Gebäude</option>
+                  <option value="Wohnteil gemischt genutztes Gebäude">Wohnteil gemischt genutztes Gebäude</option>
+                  <option value="sonstiges Wohngebäude">sonstiges Wohngebäude</option>
                 </select>
                 <span class="field__error" data-error-for="gebaeudetyp"></span>
               </div>
               <div class="field">
-                <label class="field__label" for="nutzflaeche">Nutzfläche A<sub>N</sub> nach GEG (m²)</label>
+                <label class="field__label" for="nutzflaeche">Nutzfläche (m²)</label>
                 <input
                   class="input"
                   id="nutzflaeche"
                   name="nutzflaeche"
                   type="number"
-                  min="20"
-                  max="20000"
                   step="0.1"
+                  readonly
+                  disabled
+                  tabindex="-1"
                 />
-                <span class="field__hint">Leer = 1,2 × Wohnfläche (wie in Hottgenroth).</span>
-                <span class="field__error" data-error-for="nutzflaeche"></span>
               </div>
             </div>
             <div class="grid-2" style="margin-top: 1rem">
@@ -273,33 +276,27 @@
                     <input type="checkbox" name="lueftung" value="Lüftungsanlage ohne Wärmerückgewinnung" />
                     <span>Lüftungsanlage ohne Wärmerückgewinnung</span>
                   </label>
-                  <label class="choice">
-                    <input type="checkbox" name="lueftung" value="Passive Kühlung" />
-                    <span>Passive Kühlung</span>
-                  </label>
-                  <label class="choice">
-                    <input type="checkbox" name="lueftung" value="Kühlung aus Strom" />
-                    <span>Kühlung aus Strom</span>
-                  </label>
-                  <label class="choice">
-                    <input type="checkbox" name="lueftung" value="Kühlung aus Wärme" />
-                    <span>Kühlung aus Wärme</span>
-                  </label>
-                  <label class="choice">
-                    <input type="checkbox" name="lueftung" value="Gelieferte Kälte" />
-                    <span>Gelieferte Kälte</span>
-                  </label>
                 </div>
               </div>
             </div>
             <div class="grid-2" style="margin-top: 1rem">
               <div class="field">
-                <label class="field__label" for="erneuerbareEnergien">Erneuerbare Energien (Nutzung)</label>
-                <input class="input" id="erneuerbareEnergien" name="erneuerbareEnergien" placeholder="z. B. Heizung" />
+                <label class="field__label" for="erneuerbareEnergien">Erneuerbare Energien (Verwendung)</label>
+                <select class="select" id="erneuerbareEnergien" name="erneuerbareEnergien">
+                  <option value="">keine</option>
+                  <option value="heizung">Heizung</option>
+                  <option value="ww">Warmwasser</option>
+                  <option value="strom">Strom</option>
+                </select>
               </div>
               <div class="field">
                 <label class="field__label" for="erneuerbareEnergienA">Erneuerbare Energien (Art)</label>
-                <input class="input" id="erneuerbareEnergienA" name="erneuerbareEnergienA" placeholder="z. B. Holz" />
+                <select class="select" id="erneuerbareEnergienA" name="erneuerbareEnergienA" disabled>
+                  <option value="">keine</option>
+                  <option value="solar">Solar</option>
+                  <option value="umweltwaerme">Umweltwärme</option>
+                  <option value="holz">Holz</option>
+                </select>
               </div>
             </div>
             <div class="grid-2" style="margin-top: 1rem">
@@ -353,11 +350,64 @@
                 </label>
                 <label class="choice">
                   <input type="radio" name="gekuehlt" value="ja" />
-                  <span>Das Gebäude wird gekühlt</span>
+                  <span>Ja</span>
                 </label>
               </div>
               <span class="field__error" data-error-for="gekuehlt"></span>
             </div>
+            <details class="fold" id="cooling-panel" hidden>
+              <summary>Parameter Kühlung / Klimaanlage</summary>
+              <div class="grid-2" style="margin-top: 1rem">
+                <div class="field">
+                  <label class="field__label" for="klimaanlageAnzahl">Anzahl inspektionspflichtiger Klimaanlagen</label>
+                  <input class="input" id="klimaanlageAnzahl" name="klimaanlageAnzahl" type="number" min="0" max="99" value="0" />
+                </div>
+                <div class="field">
+                  <label class="field__label" for="klimaanlageFaelligkeit">Nächstes Fälligkeitsdatum der Inspektion</label>
+                  <input class="input" id="klimaanlageFaelligkeit" name="klimaanlageFaelligkeit" type="date" />
+                </div>
+              </div>
+              <div class="field" style="margin-top: 1rem">
+                <label class="field__label" for="baujahrKlimaanlage">Baujahr Klimaanlage</label>
+                <input class="input" id="baujahrKlimaanlage" name="baujahrKlimaanlage" type="number" min="1800" max="2026" />
+              </div>
+              <fieldset style="margin-top: 1rem; border: 0; padding: 0">
+                <legend class="field__label">Klimaanlage größer 12 kW / 70 kW</legend>
+                <label class="checkbox">
+                  <input type="checkbox" name="klimaanlage12kWohne" value="1" />
+                  <span>größer als 12 kW ohne Gebäudeautomation (inspektionspflichtig)</span>
+                </label>
+                <label class="checkbox">
+                  <input type="checkbox" name="klimaanlage12kWmit" value="1" />
+                  <span>größer als 12 kW mit Gebäudeautomation (inspektionspflichtig)</span>
+                </label>
+                <label class="checkbox">
+                  <input type="checkbox" name="klimaanlage70kW" value="1" />
+                  <span>größer als 70 kW, nach DIN SPEC 15240 zu bewerten</span>
+                </label>
+              </fieldset>
+              <div class="field" style="margin-top: 1rem">
+                <span class="field__label" id="kuehlart-label">Art der Kühlung</span>
+                <div class="choice-group choice-group--stack" role="group" aria-labelledby="kuehlart-label">
+                  <label class="choice">
+                    <input type="checkbox" name="kuehlungArt" value="Passive Kühlung" />
+                    <span>Passive Kühlung</span>
+                  </label>
+                  <label class="choice">
+                    <input type="checkbox" name="kuehlungArt" value="Kühlung aus Strom" />
+                    <span>Kühlung aus Strom</span>
+                  </label>
+                  <label class="choice">
+                    <input type="checkbox" name="kuehlungArt" value="Kühlung aus Wärme" />
+                    <span>Kühlung aus Wärme</span>
+                  </label>
+                  <label class="choice">
+                    <input type="checkbox" name="kuehlungArt" value="Gelieferte Kälte" />
+                    <span>Gelieferte Kälte</span>
+                  </label>
+                </div>
+              </div>
+            </details>
             <div class="field" style="margin-top: 1rem">
               <span class="field__label" id="ww-label">Warmwasser</span>
               <div class="choice-group" role="radiogroup" aria-labelledby="ww-label">
@@ -479,14 +529,14 @@
           <div class="panel__head">
             <div>
               <h1 tabindex="-1">Bestellung</h1>
-              <p>Prüfen Sie die Angaben und bestellen Sie den Verbrauchsausweis kostenpflichtig.</p>
+              <p>Prüfen Sie die Angaben und legen Sie den Verbrauchsausweis in den Warenkorb.</p>
             </div>
           </div>
           <div id="order-root"></div>
           <div class="btn-row">
             <button class="btn btn--ghost" type="button" data-prev>Zurück</button>
             <button class="btn btn--primary" type="button" id="btn-checkout">
-              Jetzt kostenpflichtig bestellen
+              In den Warenkorb legen
             </button>
           </div>
         </section>

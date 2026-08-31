@@ -22,6 +22,13 @@ const state = {
     erneuerbareEnergien: '',
     erneuerbareEnergienA: '',
     gekuehlt: 'nein',
+    kuehlungArt: [],
+    klimaanlageAnzahl: '0',
+    klimaanlageFaelligkeit: '',
+    klimaanlage12kWohne: '0',
+    klimaanlage12kWmit: '0',
+    klimaanlage70kW: '0',
+    baujahrKlimaanlage: '',
     warmwasserSolar: '',
     recommendations: [],
     baujahr: '',
@@ -141,7 +148,16 @@ export function serializeForBackend() {
         climateFactor: p.climateFactor,
       })),
     },
-    calculation: state.calculation,
+    calculation: state.calculation
+      ? {
+          efficiencyClass: state.calculation.efficiencyClass,
+          endSpecific: state.calculation.endSpecific,
+          primarySpecific: state.calculation.primarySpecific,
+          climateFactors: state.calculation.climateFactors,
+          yearly: state.calculation.yearly,
+          carrierLabel: state.calculation.carrierLabel,
+        }
+      : null,
     customer: {
       customerType: state.customer.customerType,
       companyName: state.customer.companyName,

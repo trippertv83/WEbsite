@@ -77,8 +77,6 @@ async function ensureCollection() {
 export async function createCertificateOrder(body) {
   await ensureCollection();
   const now = new Date();
-  const fileUrls = await storeAttachments(body.orderNumber, body.attachments || []);
-
   const hsvContent = buildHsvContent(body);
   const hsvName = hsvFileName(body);
 
@@ -101,7 +99,7 @@ export async function createCertificateOrder(body) {
         consumption: body.consumption || {},
       },
     },
-    fileUrls,
+    fileUrls: [],
     hsvContent,
     hsvFileName: hsvName,
     hsvDownloadToken: randomToken(),
@@ -247,6 +245,121 @@ export async function downloadUrlFor(fileUrl, minutes = 60 * 24 * 14) {
 
 function randomToken() {
   return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
+}
+
+export async function appendOrderAttachment(orderNumber, file) {
+  await ensureCollection();
+  const existing = await getCertificateOrder(orderNumber);
+  if (!existing) throw new Error(`Auftrag ${orderNumber} nicht gefunden.`);
+  const urls = await storeAttachments(orderNumber, [file]);
+  return wixData.update(
+    COLLECTION,
+    {
+      ...existing,
+      fileUrls: [...(existing.fileUrls || []), ...urls],
+      updatedAt: new Date(),
+    },
+    OPTIONS
+  );
+}
+
+const CHUNKS = 'OrderFileChunks';
+
+export async function receiveFileChunk({
+  orderNumber,
+  fileName,
+  category,
+  mimeType,
+  index,
+  total,
+  chunk,
+}) {
+  await ensureCollection();
+  if (!orderNumber || chunk == null || index == null || !total) {
+    throw new Error('Unvollständiger Datei-Upload.');
+  }
+  try {
+    await wixData.insert(
+      CHUNKS,
+      {
+        orderNumber,
+        fileName: sanitize(fileName) || 'dokument.pdf',
+        category: category || 'other',
+        mimeType: mimeType || 'application/pdf',
+        index: Number(index),
+        total: Number(total),
+        chunk: String(chunk),
+        createdAt: new Date(),
+      },
+      OPTIONS
+    );
+  } catch (error) {
+    try {
+      await collections.createDataCollection({
+        _id: CHUNKS,
+        displayName: 'Auftragsdatei-Teile',
+        displayField: 'fileName',
+        permissions: {
+          read: 'ADMIN',
+          insert: 'ADMIN',
+          update: 'ADMIN',
+          remove: 'ADMIN',
+        },
+        fields: [
+          field('orderNumber', 'Bestellnummer', 'TEXT'),
+          field('fileName', 'Datei', 'TEXT'),
+          field('category', 'Kategorie', 'TEXT'),
+          field('mimeType', 'MIME', 'TEXT'),
+          field('index', 'Index', 'NUMBER'),
+          field('total', 'Gesamt', 'NUMBER'),
+          field('chunk', 'Teil', 'TEXT'),
+          field('createdAt', 'Erstellt', 'DATETIME'),
+        ],
+      });
+    } catch {
+      /* existiert */
+    }
+    await wixData.insert(
+      CHUNKS,
+      {
+        orderNumber,
+        fileName: sanitize(fileName) || 'dokument.pdf',
+        category: category || 'other',
+        mimeType: mimeType || 'application/pdf',
+        index: Number(index),
+        total: Number(total),
+        chunk: String(chunk),
+        createdAt: new Date(),
+      },
+      OPTIONS
+    );
+  }
+
+  if (Number(index) + 1 < Number(total)) {
+    return { complete: false, received: Number(index) + 1, total: Number(total) };
+  }
+
+  const result = await wixData
+    .query(CHUNKS)
+    .eq('orderNumber', orderNumber)
+    .eq('fileName', sanitize(fileName) || 'dokument.pdf')
+    .limit(1000)
+    .find(OPTIONS);
+  const parts = [...result.items].sort((a, b) => Number(a.index) - Number(b.index));
+  if (parts.length < Number(total)) {
+    return { complete: false, received: parts.length, total: Number(total) };
+  }
+  const contentBase64 = parts.map((item) => item.chunk).join('');
+  await appendOrderAttachment(orderNumber, {
+    name: fileName,
+    category,
+    mimeType,
+    contentBase64,
+  });
+  await Promise.all(
+    parts.map((item) => wixData.remove(CHUNKS, item._id, OPTIONS).catch(() => null))
+  );
+  return { complete: true };
 }
 
 async function storeAttachments(orderNumber, attachments) {

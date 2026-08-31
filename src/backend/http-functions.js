@@ -3,7 +3,7 @@
  */
 
 import { response } from 'wix-http-functions';
-import { createCertificateOrder } from 'backend/database';
+import { createCertificateOrder, appendOrderAttachment, receiveFileChunk } from 'backend/database';
 import { createCustomer, findCustomerByEmail } from 'backend/sevdesk';
 import { getCertificateProduct } from 'backend/payment';
 import { lookupClimateFactor } from 'backend/climate';
@@ -32,6 +32,10 @@ export function options_registerCustomer() {
 }
 
 export function options_createCertificateOrder() {
+  return json(200, { ok: true });
+}
+
+export function options_uploadOrderFile() {
   return json(200, { ok: true });
 }
 
@@ -200,5 +204,34 @@ export async function post_createCertificateOrder(request) {
   } catch (error) {
     console.error(error);
     return json(500, { error: error.message || 'Interner Fehler' });
+  }
+}
+
+export async function post_uploadOrderFile(request) {
+  try {
+    const body = await request.body.json();
+    if (!body?.orderNumber) {
+      return json(400, { error: 'Auftragsnummer fehlt.' });
+    }
+    if (body.chunk != null) {
+      const result = await receiveFileChunk({
+        orderNumber: body.orderNumber,
+        fileName: body.fileName,
+        category: body.category,
+        mimeType: body.mimeType,
+        index: body.index,
+        total: body.total,
+        chunk: body.chunk,
+      });
+      return json(200, { ok: true, ...result });
+    }
+    if (!body?.file?.contentBase64) {
+      return json(400, { error: 'Datei fehlt.' });
+    }
+    await appendOrderAttachment(body.orderNumber, body.file);
+    return json(200, { ok: true, orderNumber: body.orderNumber, complete: true });
+  } catch (error) {
+    console.error(error);
+    return json(500, { error: error.message || 'Upload fehlgeschlagen.' });
   }
 }

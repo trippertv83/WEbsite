@@ -87,14 +87,13 @@ async function onCheckout() {
     showToast(
       cart.mode === 'demo'
         ? `Auftrag ${orderNumber} im Demo-Modus erfasst.`
-        : `Auftrag ${saved.orderNumber} – weiter zur Kasse.`
+        : `Auftrag ${saved.orderNumber} liegt im Warenkorb.`
     );
     patch({ order: { number: orderNumber, status: 'submitted' } });
   } catch (error) {
     console.error(error);
     showToast(error.message || 'Bestellung fehlgeschlagen.');
     patch({ order: { number: orderNumber, status: 'error' } });
-  } finally {
     btn.disabled = false;
   }
 }

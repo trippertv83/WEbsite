@@ -28,6 +28,15 @@ export function validateBuilding(building) {
     errors.anzahlWohnungen = 'Anzahl Wohnungen mindestens 1.';
   }
   if (!building.gekuehlt) errors.gekuehlt = 'Bitte Kühlung angeben.';
+  if (building.erneuerbareEnergien && !building.erneuerbareEnergienA) {
+    errors.erneuerbareEnergienA = 'Bitte die Art der erneuerbaren Energie wählen.';
+  }
+  if (building.gekuehlt === 'ja') {
+    const count = Number(building.klimaanlageAnzahl);
+    if (Number.isFinite(count) && count > 0 && !building.klimaanlageFaelligkeit) {
+      errors.klimaanlageFaelligkeit = 'Bitte das nächste Inspektionsdatum angeben.';
+    }
+  }
   const year = Number(building.baujahr);
   if (year < 1800 || year > 2026) errors.baujahr = 'Baujahr prüfen.';
   const heatYear = Number(building.baujahrHeizung);

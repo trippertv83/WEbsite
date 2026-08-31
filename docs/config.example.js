@@ -26,13 +26,13 @@ export const AppConfig = {
   productPriceEuro: 59.99,
 
   /** Maximalgröße je PDF in Megabyte */
-  maxFileSizeMb: 10,
+  maxFileSizeMb: 4,
 
   /** Pflicht: Heizkostenabrechnungen (eine Datei darf alle Jahre enthalten) */
   minHeatingBills: 1,
 
   /** Maximalgröße aller Uploads zusammen in Megabyte */
-  maxTotalUploadMb: 40,
+  maxTotalUploadMb: 12,
 
   /**
    * false = Wix-Warenkorb + Checkout.
