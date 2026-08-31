@@ -61,10 +61,12 @@ export async function updateOrderStatus(orderNumber, status) {
 
 async function storeAttachments(orderNumber, attachments) {
   const urls = [];
+  const folder = `/energieausweis/${String(orderNumber || 'ohne-nummer')}`;
   for (const file of attachments) {
+    if (!file?.contentBase64) continue;
     const buffer = Buffer.from(file.contentBase64, 'base64');
-    const path = `/energieausweis/${orderNumber}/${sanitize(file.name)}`;
-    const uploaded = await mediaManager.upload(path, buffer, {
+    const fileName = sanitize(file.name) || 'dokument.pdf';
+    const uploaded = await mediaManager.upload(folder, buffer, fileName, {
       mediaOptions: {
         mimeType: file.mimeType || 'application/pdf',
         mediaType: 'document',
