@@ -30,13 +30,24 @@
         <div class="panel__head">
           <div>
             <h1 tabindex="-1">Registrierung</h1>
-            <p>
-              Bevor Sie den Erfassungsbogen ausfüllen, legen wir Sie als Kunden in unserer
-              Buchhaltung (SevDesk) an. Pflicht: Name, Anschrift und E-Mail.
+            <p id="register-lead">
+              Neu hier? Wir legen Sie mit Name, Anschrift und E-Mail als Kunden in SevDesk an.
             </p>
           </div>
         </div>
+        <div class="choice-group" role="radiogroup" aria-label="Anmeldeart" style="margin-bottom: 1rem">
+          <label class="choice">
+            <input type="radio" name="authMode" id="auth-mode-register" value="register" checked />
+            <span>Neuer Kunde</span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="authMode" id="auth-mode-login" value="login" />
+            <span>Ich bin schon Kunde</span>
+          </label>
+        </div>
+        <p id="register-alert" class="notice notice--error" hidden role="alert"></p>
         <form id="form-register" novalidate>
+          <div id="register-new-fields">
           <div class="grid-2">
             <div class="field">
               <label class="field__label" for="reg-firstName">Vorname</label>
@@ -48,11 +59,6 @@
               <input class="input" id="reg-lastName" name="lastName" required autocomplete="family-name" />
               <span class="field__error" data-error-for="lastName"></span>
             </div>
-          </div>
-          <div class="field" style="margin-top: 1rem">
-            <label class="field__label" for="reg-email">E-Mail</label>
-            <input class="input" id="reg-email" name="email" type="email" required autocomplete="email" />
-            <span class="field__error" data-error-for="email"></span>
           </div>
           <div class="grid-3" style="margin-top: 1rem">
             <div class="field">
@@ -76,13 +82,19 @@
             <input class="input" id="reg-ort" name="ort" required autocomplete="address-level2" />
             <span class="field__error" data-error-for="ort"></span>
           </div>
+          </div>
+          <div class="field" style="margin-top: 1rem">
+            <label class="field__label" for="reg-email">E-Mail</label>
+            <input class="input" id="reg-email" name="email" type="email" required autocomplete="email" />
+            <span class="field__error" data-error-for="email"></span>
+          </div>
           <div class="legal">
             <label class="checkbox">
               <input type="checkbox" id="accept-register-privacy" name="acceptRegisterPrivacy" />
               <span>
-                Ich willige ein, dass Name, Anschrift und E-Mail zur Kundenanlage in SevDesk
-                und zur späteren Auftragserfüllung verarbeitet werden.
-              </span>
+              Ich willige ein, dass meine Angaben zur Kundenanlage bzw. zur Zuordnung
+              in SevDesk verarbeitet werden.
+            </span>
             </label>
             <span class="field__error" data-error-for="acceptRegisterPrivacy"></span>
           </div>

@@ -36,6 +36,50 @@ function extractId(payload) {
   return obj.id || null;
 }
 
+function asList(payload) {
+  const obj = payload?.objects;
+  if (!obj) return [];
+  return Array.isArray(obj) ? obj : [obj];
+}
+
+function contactDisplayName(rec) {
+  if (!rec) return '';
+  const full = [rec.surename, rec.familyname].filter(Boolean).join(' ');
+  return full || rec.name || '';
+}
+
+export async function findCustomerByEmail(email) {
+  const needle = String(email || '').trim().toLowerCase();
+  if (!needle) return null;
+
+  const queried = await sevdeskFetch(
+    `/CommunicationWay?type=EMAIL&value=${encodeURIComponent(needle)}`
+  ).catch(() => ({ objects: [] }));
+
+  let ways = asList(queried);
+  if (!ways.length) {
+    const all = await sevdeskFetch('/CommunicationWay?limit=500');
+    ways = asList(all).filter((w) => String(w.type).toUpperCase() === 'EMAIL');
+  }
+
+  const match = ways.find(
+    (w) => String(w.value || '').trim().toLowerCase() === needle
+  );
+  if (!match) return null;
+
+  const contactId = match.contact?.id;
+  if (!contactId) return null;
+
+  const contact = await sevdeskFetch(`/Contact/${contactId}`);
+  const rec = asList(contact)[0];
+  return {
+    id: rec?.id || contactId,
+    name: contactDisplayName(rec),
+    email: needle,
+    existing: true,
+  };
+}
+
 function customerAddress(body) {
   const c = body.customer || {};
   const b = body.building || {};
@@ -49,6 +93,11 @@ function customerAddress(body) {
 
 export async function createCustomer(body) {
   const c = body.customer || {};
+  if (c.email) {
+    const existing = await findCustomerByEmail(c.email);
+    if (existing) return existing;
+  }
+
   const first = String(c.firstName || '').trim();
   const last = String(c.lastName || '').trim();
   const name = String(c.name || `${first} ${last}`).trim() || 'Unbekannt';
@@ -65,7 +114,7 @@ export async function createCustomer(body) {
   });
   const id = extractId(created);
   if (!id) {
-    throw new Error('SevDesk hat keine Kontakt-ID zurückgegeben.');
+    throw new Error('SevDesk hat keine Kontakt-ID zurückgegeben. Token und API-Recht „Kontakte“ prüfen.');
   }
 
   if (c.email) {
@@ -78,6 +127,8 @@ export async function createCustomer(body) {
         key: { id: 1, objectName: 'CommunicationWayKey' },
         main: 1,
       },
+    }).catch((error) => {
+      console.error('SevDesk E-Mail konnte nicht gespeichert werden:', error);
     });
   }
 
@@ -93,10 +144,12 @@ export async function createCustomer(body) {
         country: { id: 1, objectName: 'StaticCountry' },
         category: { id: 47, objectName: 'Category' },
       },
+    }).catch((error) => {
+      console.error('SevDesk-Adresse konnte nicht gespeichert werden:', error);
     });
   }
 
-  return { id, raw: created };
+  return { id, name, existing: false };
 }
 
 export async function createOrder(body) {

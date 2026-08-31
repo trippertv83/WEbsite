@@ -64,6 +64,18 @@ export function validateDocuments(documents, minBills) {
   return errors;
 }
 
+export function validateLogin(customer) {
+  const errors = {};
+  if (!EMAIL.test(customer.email || '')) {
+    errors.email = 'Bitte die E-Mail-Adresse angeben, die in SevDesk hinterlegt ist.';
+  }
+  if (!customer.acceptRegisterPrivacy) {
+    errors.acceptRegisterPrivacy =
+      'Bitte der Abfrage Ihres Kundendatensatzes in SevDesk zustimmen.';
+  }
+  return errors;
+}
+
 export function validateRegistration(customer) {
   const errors = {};
   if (!customer.firstName?.trim()) errors.firstName = 'Vorname ist erforderlich.';

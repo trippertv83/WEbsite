@@ -1,14 +1,17 @@
 /**
- * HTTP-Functions. CORS für Aufrufe vom GitHub-Pages-Wizard.
- *
- * POST /_functions/registerCustomer
- * POST /_functions/createCertificateOrder
+ * HTTP-Functions. CORS für den GitHub-Pages-Wizard.
  */
 
-import { created, badRequest, serverError, ok } from 'wix-http-functions';
+import { response } from 'wix-http-functions';
 import { createCertificateOrder } from 'backend/database';
 import { sendOrderEmails } from 'backend/email';
-import { createCustomer, createInvoice, createOrder, uploadDocuments } from 'backend/sevdesk';
+import {
+  createCustomer,
+  createInvoice,
+  createOrder,
+  findCustomerByEmail,
+  uploadDocuments,
+} from 'backend/sevdesk';
 import { registerPaidOrder } from 'backend/payment';
 
 function corsHeaders() {
@@ -20,38 +23,67 @@ function corsHeaders() {
   };
 }
 
+function json(status, body) {
+  return response({
+    status,
+    headers: corsHeaders(),
+    body,
+  });
+}
+
 export function options_registerCustomer() {
-  return ok({ headers: corsHeaders() });
+  return json(200, { ok: true });
 }
 
 export function options_createCertificateOrder() {
-  return ok({ headers: corsHeaders() });
+  return json(200, { ok: true });
 }
 
 export async function post_registerCustomer(request) {
   try {
     const body = await request.body.json();
     const c = body?.customer || {};
-    if (!c.email || !c.firstName || !c.lastName || !c.plz || !c.ort || !c.strasse) {
-      return badRequest({
-        headers: corsHeaders(),
-        body: { error: 'Name, Anschrift und E-Mail sind Pflicht.' },
+    const mode = body?.mode === 'login' ? 'login' : 'register';
+
+    if (!c.email) {
+      return json(400, { error: 'E-Mail ist Pflicht.' });
+    }
+
+    if (mode === 'login') {
+      const found = await findCustomerByEmail(c.email);
+      if (!found) {
+        return json(404, {
+          error:
+            'Kein SevDesk-Kunde mit dieser E-Mail. Bitte „Neuer Kunde“ wählen und registrieren.',
+        });
+      }
+      return json(200, {
+        ok: true,
+        existing: true,
+        sevdeskCustomerId: found.id,
+        customerName: found.name,
+        email: c.email,
       });
     }
 
+    if (!c.firstName || !c.lastName || !c.plz || !c.ort || !c.strasse) {
+      return json(400, { error: 'Name, Anschrift und E-Mail sind Pflicht.' });
+    }
+
     const customer = await createCustomer({ customer: c });
-    return created({
-      headers: corsHeaders(),
-      body: {
-        ok: true,
-        sevdeskCustomerId: customer.id,
-      },
+    return json(201, {
+      ok: true,
+      existing: Boolean(customer.existing),
+      sevdeskCustomerId: customer.id,
+      customerName: customer.name || `${c.firstName} ${c.lastName}`,
+      email: c.email,
     });
   } catch (error) {
     console.error(error);
-    return serverError({
-      headers: corsHeaders(),
-      body: { error: error.message || 'SevDesk-Kunde konnte nicht angelegt werden.' },
+    return json(500, {
+      error:
+        error.message ||
+        'SevDesk-Kunde konnte nicht angelegt werden. Secret SEVDESK_API_TOKEN und API-Rechte prüfen.',
     });
   }
 }
@@ -60,10 +92,7 @@ export async function post_createCertificateOrder(request) {
   try {
     const body = await request.body.json();
     if (!body?.building || !body?.consumption || !body?.orderNumber) {
-      return badRequest({
-        headers: corsHeaders(),
-        body: { error: 'Unvollständige Bestelldaten.' },
-      });
+      return json(400, { error: 'Unvollständige Bestelldaten.' });
     }
 
     const record = await createCertificateOrder(body);
@@ -84,7 +113,10 @@ export async function post_createCertificateOrder(request) {
         sevdeskCustomerId: customer.id,
         sevdeskOrderId: order.id,
       });
-      await registerPaidOrder({ orderNumber: body.orderNumber, recordId: record._id });
+      await registerPaidOrder({
+        orderNumber: body.orderNumber,
+        recordId: record._id,
+      });
       await sendOrderEmails({ ...body, record, invoice: null, media });
     } catch (integrationError) {
       console.error(
@@ -93,19 +125,13 @@ export async function post_createCertificateOrder(request) {
       );
     }
 
-    return created({
-      headers: corsHeaders(),
-      body: {
-        ok: true,
-        orderNumber: body.orderNumber,
-        id: record._id,
-      },
+    return json(201, {
+      ok: true,
+      orderNumber: body.orderNumber,
+      id: record._id,
     });
   } catch (error) {
     console.error(error);
-    return serverError({
-      headers: corsHeaders(),
-      body: { error: error.message || 'Interner Fehler' },
-    });
+    return json(500, { error: error.message || 'Interner Fehler' });
   }
 }
