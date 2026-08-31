@@ -19,6 +19,21 @@ export function isPlaceholderProductId(productId) {
   return !productId || String(productId).startsWith('00000000');
 }
 
+function flattenCustomer(customer = {}) {
+  return {
+    email: customer.email || '',
+    phone: customer.phone || '',
+    firstName: customer.firstName || customer.contactFirstName || '',
+    lastName: customer.lastName || customer.contactLastName || '',
+    companyName: customer.companyName || '',
+    strasse: customer.strasse || '',
+    hausnummer: customer.hausnummer || '',
+    plz: customer.plz || '',
+    ort: customer.ort || '',
+    name: customer.name || '',
+  };
+}
+
 export async function addCertificateToCart(payload) {
   if (isPlaceholderProductId(payload.productId)) {
     throw new Error(
@@ -38,17 +53,19 @@ export async function addCertificateToCart(payload) {
   const inIframe =
     typeof window !== 'undefined' && window.parent && window.parent !== window;
   if (inIframe) {
+    const flat = flattenCustomer(payload.customer || {});
     const message = {
       type: 'ADD_TO_CART',
       productId: payload.productId,
       orderNumber: payload.orderNumber,
       efficiencyClass: payload.efficiencyClass,
-      customer: payload.customer || null,
+      ...flat,
     };
-    window.parent.postMessage(message, '*');
+    const encoded = JSON.stringify(message);
+    window.parent.postMessage(encoded, '*');
     try {
       if (window.top && window.top !== window.parent) {
-        window.top.postMessage(message, '*');
+        window.top.postMessage(encoded, '*');
       }
     } catch {
       /* cross-origin top */

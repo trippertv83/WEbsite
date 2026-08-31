@@ -2,7 +2,7 @@
  * Warenkorb + Kasse. HTML-Komponente: #wizardHtml
  */
 
-import { currentCart } from 'wix-ecom-backend';
+import { checkout, currentCart } from 'wix-ecom-backend';
 import wixEcomFrontend from 'wix-ecom-frontend';
 import { cart } from 'wix-stores-frontend';
 
@@ -92,51 +92,94 @@ function checkoutPhone(raw) {
   return `+49${compact}`;
 }
 
-function checkoutBuyer(customer = {}) {
-  const firstName =
-    customer.firstName ||
-    customer.contactFirstName ||
-    String(customer.name || 'Kunde').trim().split(/\s+/)[0] ||
-    'Kunde';
-  const lastName =
-    customer.lastName ||
-    customer.contactLastName ||
-    String(customer.name || '').trim().split(/\s+/).slice(1).join(' ') ||
-    firstName;
-  const phone = checkoutPhone(customer.phone);
-  const address = {
+function phoneForCheckoutForm(raw) {
+  const intl = checkoutPhone(raw);
+  if (intl.startsWith('+49')) return `0${intl.slice(3)}`;
+  return String(raw || '').replace(/\s/g, '');
+}
+
+function buyerFromMessage(data) {
+  const nested = data.customer && typeof data.customer === 'object' ? data.customer : {};
+  return {
+    email: data.email || nested.email || '',
+    phone: data.phone || nested.phone || '',
+    firstName: data.firstName || nested.firstName || nested.contactFirstName || '',
+    lastName: data.lastName || nested.lastName || nested.contactLastName || '',
+    companyName: data.companyName || nested.companyName || '',
+    strasse: data.strasse || nested.strasse || '',
+    hausnummer: data.hausnummer || nested.hausnummer || '',
+    plz: data.plz || nested.plz || '',
+    ort: data.ort || nested.ort || '',
+    name: data.name || nested.name || '',
+  };
+}
+
+function wixAddress(customer) {
+  const street = customer.strasse || '';
+  const number = String(customer.hausnummer || '');
+  const line = `${street} ${number}`.trim();
+  return {
     country: 'DE',
     city: customer.ort || '',
     postalCode: String(customer.plz || ''),
-    addressLine1: `${customer.strasse || ''} ${customer.hausnummer || ''}`.trim(),
+    addressLine: line,
+    addressLine1: line,
     streetAddress: {
-      name: customer.strasse || '',
-      number: String(customer.hausnummer || ''),
+      name: street,
+      number,
     },
-    phone,
   };
+}
+
+function contactDetails(customer) {
+  const firstName =
+    customer.firstName || String(customer.name || 'Kunde').trim().split(/\s+/)[0] || 'Kunde';
+  const lastName =
+    customer.lastName ||
+    String(customer.name || '').trim().split(/\s+/).slice(1).join(' ') ||
+    firstName;
+  return {
+    firstName,
+    lastName,
+    phone: phoneForCheckoutForm(customer.phone),
+    company: customer.companyName || '',
+  };
+}
+
+function createCheckoutOptions(customer) {
+  const address = wixAddress(customer);
   return {
     channelType: 'WEB',
     email: customer.email || '',
     shippingAddress: address,
-    billingInfo: {
-      address,
-      contactDetails: {
-        firstName,
-        lastName,
-        phone,
-        company: customer.companyName || '',
-      },
-    },
+    billingAddress: address,
+  };
+}
+
+function updateCheckoutInfo(customer) {
+  const address = wixAddress(customer);
+  const details = contactDetails(customer);
+  const withContact = { address, contactDetails: details };
+  return {
+    buyerInfo: { email: customer.email || '' },
+    billingInfo: withContact,
+    shippingInfo: { shippingDestination: withContact },
   };
 }
 
 async function goToCheckout(customer) {
   await wixEcomFrontend.refreshCart();
   try {
-    const created = await currentCart.createCheckoutFromCurrentCart(checkoutBuyer(customer));
+    const created = await currentCart.createCheckoutFromCurrentCart(
+      createCheckoutOptions(customer)
+    );
     const id = checkoutIdOf(created);
     if (!id) throw new Error('Keine Checkout-ID');
+    try {
+      await checkout.updateCheckout(id, updateCheckoutInfo(customer), {});
+    } catch (updateError) {
+      console.error('Checkout-Daten:', updateError);
+    }
     await wixEcomFrontend.navigateToCheckoutPage(id, {
       skipDeliveryStep: true,
     });
@@ -158,7 +201,7 @@ async function handleAddToCart(data) {
   if (data.orderNumber && data.orderNumber === lastOrder) return;
   lastOrder = data.orderNumber || String(Date.now());
   await addLine(data.productId, data.orderNumber, data.efficiencyClass);
-  await goToCheckout(data.customer);
+  await goToCheckout(buyerFromMessage(data));
 }
 
 export function bindWizardCart() {
