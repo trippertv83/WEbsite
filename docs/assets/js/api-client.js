@@ -8,6 +8,36 @@ import { AppConfig } from '../../config.example.js';
 import { fileToBase64 } from './utils.js';
 import { collectAllFiles } from './upload.js';
 
+export async function registerCustomer(customer) {
+  const base = AppConfig.wixHttpFunctionsBaseUrl || '';
+  if (!base || base.includes('ihre-site')) {
+    throw new Error(
+      'Wix-Backend-URL fehlt. In config.example.js wixHttpFunctionsBaseUrl eintragen.'
+    );
+  }
+
+  const url = `${base.replace(/\/$/, '')}/registerCustomer`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ customer }),
+  });
+
+  const text = await response.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { error: text };
+  }
+
+  if (!response.ok) {
+    throw new Error(data.error || `Registrierung fehlgeschlagen (${response.status}).`);
+  }
+
+  return data;
+}
+
 export async function submitOrder({ payload, documents }) {
   const files = collectAllFiles(documents);
   const attachments = [];

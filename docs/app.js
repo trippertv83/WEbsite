@@ -6,6 +6,7 @@ import { AppConfig } from './config.example.js';
 import { getState, patch, serializeForBackend } from './assets/js/state.js';
 import { createOrderNumber, qs, showToast } from './assets/js/utils.js';
 import { bindStepper, renderStepper, showStep } from './assets/js/wizard.js';
+import { bindRegister } from './assets/js/step-register.js';
 import { bindBuildingLive, validateStepBuilding } from './assets/js/step-building.js';
 import {
   bindConsumption,
@@ -22,6 +23,7 @@ import { addCertificateToCart, getProductId } from './assets/js/checkout.js';
 import { submitOrder } from './assets/js/api-client.js';
 
 function canEnterStep(target) {
+  if (!getState().registered) return false;
   if (target <= getState().step) return true;
   if (target === 2) return validateStepBuilding();
   if (target === 3) return validateStepBuilding() && validateStepConsumption();
@@ -103,6 +105,7 @@ function bindNav() {
 }
 
 function init() {
+  bindRegister();
   renderStepper();
   bindStepper(canEnterStep);
   bindBuildingLive();

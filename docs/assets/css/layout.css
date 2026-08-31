@@ -50,13 +50,21 @@
   font-weight: 400;
 }
 
-.site-main {
+#main {
   width: min(100% - 2rem, var(--max-width));
   margin: var(--space-6) auto var(--space-8);
+}
+
+.site-main {
   display: grid;
   grid-template-columns: 260px 1fr;
   gap: var(--space-6);
   align-items: start;
+}
+
+#wizard-app[hidden],
+#register-gate[hidden] {
+  display: none !important;
 }
 
 .site-footer {
@@ -88,6 +96,18 @@
 
 .skip-link:focus {
   top: 1rem;
+}
+
+body.is-register-only .site-main {
+  grid-template-columns: 1fr;
+}
+
+body.is-register-only .stepper {
+  display: none;
+}
+
+.register-gate {
+  max-width: 640px;
 }
 
 @media (max-width: 900px) {

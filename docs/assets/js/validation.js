@@ -64,6 +64,26 @@ export function validateDocuments(documents, minBills) {
   return errors;
 }
 
+export function validateRegistration(customer) {
+  const errors = {};
+  if (!customer.firstName?.trim()) errors.firstName = 'Vorname ist erforderlich.';
+  if (!customer.lastName?.trim()) errors.lastName = 'Nachname ist erforderlich.';
+  if (!EMAIL.test(customer.email || '')) {
+    errors.email = 'Bitte eine gültige E-Mail-Adresse angeben.';
+  }
+  if (!customer.strasse?.trim()) errors.strasse = 'Straße ist erforderlich.';
+  if (!customer.hausnummer?.trim()) errors.hausnummer = 'Hausnummer ist erforderlich.';
+  if (!PLZ.test(String(customer.plz || ''))) {
+    errors.plz = 'Bitte eine gültige 5-stellige PLZ angeben.';
+  }
+  if (!customer.ort?.trim()) errors.ort = 'Ort ist erforderlich.';
+  if (!customer.acceptRegisterPrivacy) {
+    errors.acceptRegisterPrivacy =
+      'Bitte der Speicherung in SevDesk zur Auftragserfassung zustimmen.';
+  }
+  return errors;
+}
+
 export function validateCustomer(customer) {
   const errors = {};
   if (!customer.name?.trim()) errors.name = 'Name ist erforderlich.';

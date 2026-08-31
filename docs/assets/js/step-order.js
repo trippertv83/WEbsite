@@ -15,7 +15,11 @@ export function renderOrder() {
       <div class="card" style="box-shadow:none">
         <h2 style="margin-top:0">Zusammenfassung</h2>
         <dl>
-          <dt>Adresse</dt>
+          <dt>Kunde</dt>
+          <dd>${customer.name}<br />${customer.email}</dd>
+          <dt>Kundenanschrift</dt>
+          <dd>${customer.strasse} ${customer.hausnummer}, ${customer.plz} ${customer.ort}</dd>
+          <dt>Gebäude</dt>
           <dd>${building.strasse} ${building.hausnummer}, ${building.plz} ${building.ort}</dd>
           <dt>Wohnfläche</dt>
           <dd>${formatDeNumber(Number(building.wohnflaeche), 1)} m²</dd>
@@ -34,18 +38,9 @@ export function renderOrder() {
         </div>
       </div>
       <form id="form-order" novalidate>
-        <div class="grid-2">
-          <div class="field">
-            <label class="field__label" for="customer-name">Name</label>
-            <input class="input" id="customer-name" name="name" value="${customer.name}" required autocomplete="name" />
-            <span class="field__error" data-error-for="name"></span>
-          </div>
-          <div class="field">
-            <label class="field__label" for="customer-email">E-Mail</label>
-            <input class="input" id="customer-email" name="email" type="email" value="${customer.email}" required autocomplete="email" />
-            <span class="field__error" data-error-for="email"></span>
-          </div>
-        </div>
+        <p class="field__hint">Kontaktdaten stammen aus der Registrierung (SevDesk-Kunde ${customer.sevdeskCustomerId || 'wird zugeordnet'}).</p>
+        <input type="hidden" id="customer-name" value="${customer.name}" />
+        <input type="hidden" id="customer-email" value="${customer.email}" />
         <div class="legal">
           <label class="checkbox">
             <input type="checkbox" id="accept-agb" ${customer.acceptAgb ? 'checked' : ''} />

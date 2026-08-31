@@ -10,7 +10,7 @@
     <title>Verbrauchsausweis bestellen | Energieausweis Pro</title>
     <link rel="stylesheet" href="style.css" />
   </head>
-  <body>
+  <body class="is-register-only">
     <a class="skip-link" href="#main">Zum Inhalt springen</a>
     <header class="site-header">
       <div class="site-header__inner">
@@ -25,7 +25,77 @@
       </div>
     </header>
 
-    <main id="main" class="site-main">
+    <main id="main">
+      <section class="panel card register-gate" id="register-gate">
+        <div class="panel__head">
+          <div>
+            <h1 tabindex="-1">Registrierung</h1>
+            <p>
+              Bevor Sie den Erfassungsbogen ausfüllen, legen wir Sie als Kunden in unserer
+              Buchhaltung (SevDesk) an. Pflicht: Name, Anschrift und E-Mail.
+            </p>
+          </div>
+        </div>
+        <form id="form-register" novalidate>
+          <div class="grid-2">
+            <div class="field">
+              <label class="field__label" for="reg-firstName">Vorname</label>
+              <input class="input" id="reg-firstName" name="firstName" required autocomplete="given-name" />
+              <span class="field__error" data-error-for="firstName"></span>
+            </div>
+            <div class="field">
+              <label class="field__label" for="reg-lastName">Nachname</label>
+              <input class="input" id="reg-lastName" name="lastName" required autocomplete="family-name" />
+              <span class="field__error" data-error-for="lastName"></span>
+            </div>
+          </div>
+          <div class="field" style="margin-top: 1rem">
+            <label class="field__label" for="reg-email">E-Mail</label>
+            <input class="input" id="reg-email" name="email" type="email" required autocomplete="email" />
+            <span class="field__error" data-error-for="email"></span>
+          </div>
+          <div class="grid-3" style="margin-top: 1rem">
+            <div class="field">
+              <label class="field__label" for="reg-strasse">Straße</label>
+              <input class="input" id="reg-strasse" name="strasse" required autocomplete="address-line1" />
+              <span class="field__error" data-error-for="strasse"></span>
+            </div>
+            <div class="field">
+              <label class="field__label" for="reg-hausnummer">Hausnummer</label>
+              <input class="input" id="reg-hausnummer" name="hausnummer" required autocomplete="address-line2" />
+              <span class="field__error" data-error-for="hausnummer"></span>
+            </div>
+            <div class="field">
+              <label class="field__label" for="reg-plz">PLZ</label>
+              <input class="input" id="reg-plz" name="plz" inputmode="numeric" maxlength="5" required autocomplete="postal-code" />
+              <span class="field__error" data-error-for="plz"></span>
+            </div>
+          </div>
+          <div class="field" style="margin-top: 1rem">
+            <label class="field__label" for="reg-ort">Ort</label>
+            <input class="input" id="reg-ort" name="ort" required autocomplete="address-level2" />
+            <span class="field__error" data-error-for="ort"></span>
+          </div>
+          <div class="legal">
+            <label class="checkbox">
+              <input type="checkbox" id="accept-register-privacy" name="acceptRegisterPrivacy" />
+              <span>
+                Ich willige ein, dass Name, Anschrift und E-Mail zur Kundenanlage in SevDesk
+                und zur späteren Auftragserfüllung verarbeitet werden.
+              </span>
+            </label>
+            <span class="field__error" data-error-for="acceptRegisterPrivacy"></span>
+          </div>
+        </form>
+        <div class="btn-row">
+          <span></span>
+          <button class="btn btn--primary" type="button" id="btn-register">
+            Registrieren und zum Erfassungsbogen
+          </button>
+        </div>
+      </section>
+
+      <div id="wizard-app" class="site-main" hidden>
       <nav class="stepper card" aria-label="Bestellschritte">
         <ol class="stepper__list" id="stepper-list"></ol>
       </nav>
@@ -244,6 +314,7 @@
             </button>
           </div>
         </section>
+      </div>
       </div>
     </main>
 
