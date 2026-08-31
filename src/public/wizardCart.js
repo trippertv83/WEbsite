@@ -156,18 +156,20 @@ function createCheckoutOptions(customer) {
   };
 }
 
-function updateCheckoutInfo(customer) {
+function updateCheckoutInfo(customer, orderNumber) {
   const address = wixAddress(customer);
   const details = contactDetails(customer);
   const withContact = { address, contactDetails: details };
+  const note = orderNumber ? `Bestellnummer ${orderNumber}` : '';
   return {
     buyerInfo: { email: customer.email || '' },
     billingInfo: withContact,
     shippingInfo: { shippingDestination: withContact },
+    buyerNote: note,
   };
 }
 
-async function goToCheckout(customer) {
+async function goToCheckout(customer, orderNumber) {
   await wixEcomFrontend.refreshCart();
   try {
     const created = await currentCart.createCheckoutFromCurrentCart(
@@ -176,7 +178,7 @@ async function goToCheckout(customer) {
     const id = checkoutIdOf(created);
     if (!id) throw new Error('Keine Checkout-ID');
     try {
-      await checkout.updateCheckout(id, updateCheckoutInfo(customer), {});
+      await checkout.updateCheckout(id, updateCheckoutInfo(customer, orderNumber), {});
     } catch (updateError) {
       console.error('Checkout-Daten:', updateError);
     }
@@ -201,7 +203,7 @@ async function handleAddToCart(data) {
   if (data.orderNumber && data.orderNumber === lastOrder) return;
   lastOrder = data.orderNumber || String(Date.now());
   await addLine(data.productId, data.orderNumber, data.efficiencyClass);
-  await goToCheckout(buyerFromMessage(data));
+  await goToCheckout(buyerFromMessage(data), data.orderNumber);
 }
 
 export function bindWizardCart() {

@@ -30,10 +30,14 @@ const COLLECTION_SCHEMA = {
     field('status', 'Status', 'TEXT'),
     field('customerName', 'Kundenname', 'TEXT'),
     field('customerEmail', 'E-Mail', 'TEXT'),
+    field('customer', 'Kunde', 'OBJECT'),
     field('building', 'Gebäude', 'OBJECT'),
     field('consumption', 'Verbrauch', 'OBJECT'),
     field('calculation', 'Berechnung', 'OBJECT'),
     field('fileUrls', 'Dateien', 'OBJECT'),
+    field('hsvFileName', 'HSV-Datei', 'TEXT'),
+    field('hsvFileUrl', 'HSV-URL', 'TEXT'),
+    field('hsvDownloadToken', 'HSV-Token', 'TEXT'),
     field('createdAt', 'Erstellt', 'DATETIME'),
     field('updatedAt', 'Aktualisiert', 'DATETIME'),
   ],
@@ -78,10 +82,12 @@ export async function createCertificateOrder(body) {
     status: 'received',
     customerName: body.customer?.name || '',
     customerEmail: body.customer?.email || '',
+    customer: body.customer || {},
     building: body.building,
     consumption: body.consumption,
     calculation: body.calculation,
     fileUrls,
+    hsvDownloadToken: randomToken(),
     createdAt: now,
     updatedAt: now,
   };
@@ -107,25 +113,87 @@ export async function createCertificateOrder(body) {
   return wixData.insert(COLLECTION, item, OPTIONS);
 }
 
-export async function updateOrderStatus(orderNumber, status) {
+export async function getCertificateOrder(orderNumber) {
   await ensureCollection();
+  if (!orderNumber) return null;
   const result = await wixData
     .query(COLLECTION)
     .eq('orderNumber', orderNumber)
     .limit(1)
     .find(OPTIONS);
-  if (!result.items.length) {
+  return result.items[0] || null;
+}
+
+export async function findCertificateOrderByEmail(email) {
+  await ensureCollection();
+  if (!email) return null;
+  const result = await wixData
+    .query(COLLECTION)
+    .eq('customerEmail', String(email).trim())
+    .descending('createdAt')
+    .limit(1)
+    .find(OPTIONS);
+  return result.items[0] || null;
+}
+
+export async function updateOrderStatus(orderNumber, status, extra = {}) {
+  const existing = await getCertificateOrder(orderNumber);
+  if (!existing) {
     throw new Error(`Auftrag ${orderNumber} nicht gefunden.`);
   }
   return wixData.update(
     COLLECTION,
     {
-      ...result.items[0],
+      ...existing,
+      ...extra,
       status,
       updatedAt: new Date(),
     },
     OPTIONS
   );
+}
+
+export async function saveHsvFile(orderNumber, { fileName, content }) {
+  const existing = await getCertificateOrder(orderNumber);
+  if (!existing) throw new Error(`Auftrag ${orderNumber} nicht gefunden.`);
+  const folder = `/energieausweis/${String(orderNumber || 'ohne-nummer')}`;
+  const buffer = Buffer.from(content, 'utf8');
+  const uploaded = await mediaManager.upload(folder, buffer, fileName, {
+    mediaOptions: {
+      mimeType: 'text/plain',
+      mediaType: 'document',
+    },
+    metadataOptions: {
+      isPrivate: true,
+      isVisitorUpload: false,
+    },
+  });
+  const token = existing.hsvDownloadToken || randomToken();
+  return wixData.update(
+    COLLECTION,
+    {
+      ...existing,
+      hsvFileName: fileName,
+      hsvFileUrl: uploaded.fileUrl,
+      hsvDownloadToken: token,
+      updatedAt: new Date(),
+    },
+    OPTIONS
+  );
+}
+
+export async function downloadUrlFor(fileUrl, minutes = 60 * 24 * 14) {
+  if (!fileUrl) return '';
+  try {
+    return await mediaManager.getDownloadUrl(fileUrl, minutes);
+  } catch (error) {
+    console.error('Download-URL:', error);
+    return '';
+  }
+}
+
+function randomToken() {
+  return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
 }
 
 async function storeAttachments(orderNumber, attachments) {

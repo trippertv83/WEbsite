@@ -1,0 +1,22 @@
+import { extractVaOrderNumber, handlePaidOrderEvent, notifyPaidCertificate } from 'backend/paid-notify';
+
+export async function notifyPaymentComplete(payload = {}) {
+  if (payload.wixOrder) {
+    return handlePaidOrderEvent({ order: payload.wixOrder });
+  }
+  const query = payload.query || {};
+  const blob = { ...query, ...payload };
+  const orderNumber =
+    extractVaOrderNumber(blob) || payload.orderNumber || query.orderNumber || query.va || '';
+  const email = payload.email || query.email || '';
+  const wixOrderId = String(query.orderId || query.id || payload.wixOrderId || '');
+  if (!orderNumber && !email && !wixOrderId) {
+    return { ok: false, skipped: true, reason: 'keine Bestelldaten' };
+  }
+  return notifyPaidCertificate({
+    orderNumber,
+    buyerEmail: email,
+    wixOrderNumber: wixOrderId,
+    wixOrderId,
+  });
+}

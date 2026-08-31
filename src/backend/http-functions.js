@@ -4,7 +4,6 @@
 
 import { response } from 'wix-http-functions';
 import { createCertificateOrder } from 'backend/database';
-import { sendOrderEmails } from 'backend/email';
 import {
   createCustomer,
   createInvoice,
@@ -14,6 +13,8 @@ import {
 } from 'backend/sevdesk';
 import { getCertificateProduct, registerPaidOrder } from 'backend/payment';
 import { lookupClimateFactor } from 'backend/climate';
+import { hsvForDownload } from 'backend/paid-notify';
+import { sendResendConnectionTest } from 'backend/email';
 
 function corsHeaders() {
   return {
@@ -44,7 +45,15 @@ export function options_climateFactor() {
   return json(200, { ok: true });
 }
 
+export function options_downloadHsv() {
+  return json(200, { ok: true });
+}
+
 export function options_productPrice() {
+  return json(200, { ok: true });
+}
+
+export function options_testResendMail() {
   return json(200, { ok: true });
 }
 
@@ -88,6 +97,36 @@ export async function get_productPrice(request) {
   } catch (error) {
     console.error(error);
     return json(500, { error: error.message || 'Produktpreis nicht lesbar.' });
+  }
+}
+
+export async function get_downloadHsv(request) {
+  try {
+    const order = queryParam(request, 'order');
+    const token = queryParam(request, 't');
+    const file = await hsvForDownload(order, token);
+    return response({
+      status: 200,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Content-Disposition': `attachment; filename="${file.fileName}"`,
+        'Access-Control-Allow-Origin': '*',
+      },
+      body: file.content,
+    });
+  } catch (error) {
+    console.error(error);
+    return json(404, { error: error.message || 'HSV nicht gefunden.' });
+  }
+}
+
+export async function get_testResendMail() {
+  try {
+    const result = await sendResendConnectionTest();
+    return json(result.ok ? 200 : 500, result);
+  } catch (error) {
+    console.error(error);
+    return json(500, { ok: false, error: error.message || String(error) });
   }
 }
 
@@ -180,7 +219,6 @@ export async function post_createCertificateOrder(request) {
         orderNumber: body.orderNumber,
         recordId: record._id,
       });
-      await sendOrderEmails({ ...body, record, invoice: null, media });
     } catch (integrationError) {
       console.error(
         'Auftrag in Wix gespeichert. SevDesk-Auftrag/E-Mail übersprungen:',
