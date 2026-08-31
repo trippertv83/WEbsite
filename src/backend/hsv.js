@@ -274,18 +274,31 @@ function lastDayOfMonth(year, month) {
 }
 
 export function periodBounds(period) {
-  if (!period) return { from: '30.12.1899', to: '30.12.1899' };
+  if (!period) return { from: '30.12.1899', to: '30.12.1899', sort: 0 };
+  const fy = Number(period.fromYear ?? period.from?.year ?? period.from?.Year);
+  const fm = Number(period.fromMonth ?? period.from?.month ?? period.from?.Month);
+  const ty = Number(period.toYear ?? period.to?.year ?? period.to?.Year);
+  const tm = Number(period.toMonth ?? period.to?.month ?? period.to?.Month);
+  if (fy && fm) {
+    const endY = ty || fy;
+    const endM = tm || fm;
+    return {
+      from: germanDate(fy, fm, 1),
+      to: germanDate(endY, endM, lastDayOfMonth(endY, endM)),
+      sort: fy * 100 + fm,
+    };
+  }
   const from = period.from;
   const to = period.to;
   if (from && typeof from === 'object' && from.year) {
-    const fy = Number(from.year);
-    const fm = Number(from.month);
-    const ty = Number(to?.year || fy);
-    const tm = Number(to?.month || fm);
+    const y = Number(from.year);
+    const m = Number(from.month);
+    const y2 = Number(to?.year || y);
+    const m2 = Number(to?.month || m);
     return {
-      from: germanDate(fy, fm, 1),
-      to: germanDate(ty, tm, lastDayOfMonth(ty, tm)),
-      sort: fy * 100 + fm,
+      from: germanDate(y, m, 1),
+      to: germanDate(y2, m2, lastDayOfMonth(y2, m2)),
+      sort: y * 100 + m,
     };
   }
   const fromStr = String(from || '');
@@ -299,10 +312,36 @@ export function periodBounds(period) {
       sort: Number(iso[1]) * 100 + Number(iso[2]),
     };
   }
+  const label = String(period.label || '');
+  const years = label.match(/(\d{4})/g);
+  if (years && years.length) {
+    const y = Number(years[0]);
+    const y2 = Number(years[years.length - 1] || years[0]);
+    return {
+      from: germanDate(y, 1, 1),
+      to: germanDate(y2, 12, 31),
+      sort: y * 100 + 1,
+    };
+  }
   return {
     from: fromStr || '30.12.1899',
     to: String(to || fromStr || '30.12.1899'),
     sort: 0,
+  };
+}
+
+export function orderBodyFromRecord(record = {}) {
+  const calc = record.calculation || {};
+  const snap = calc.orderSnapshot || record.orderSnapshot || {};
+  return {
+    orderNumber: record.orderNumber || snap.orderNumber || '',
+    customer: record.customer || snap.customer || {
+      name: record.customerName || '',
+      email: record.customerEmail || '',
+    },
+    building: record.building || snap.building || {},
+    consumption: record.consumption || snap.consumption || {},
+    calculation: calc,
   };
 }
 
@@ -379,8 +418,14 @@ export function hsvTemplateKeys() {
 }
 
 export function buildHsvContent(body) {
-  const building = body.building || {};
+  const building = {
+    ...(body.building || {}),
+  };
   const customer = body.customer || {};
+  if (!String(building.strasse || '').trim()) building.strasse = customer.strasse || '';
+  if (!String(building.hausnummer || '').trim()) building.hausnummer = customer.hausnummer || '';
+  if (!String(building.plz || '').trim()) building.plz = customer.plz || '';
+  if (!String(building.ort || '').trim()) building.ort = customer.ort || '';
   const consumption = body.consumption || {};
   const fuel = FUELS[consumption.energietraeger] || FUELS.heizoel;
   const unit = consumption.unit || 'liter';

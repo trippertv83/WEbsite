@@ -10,7 +10,7 @@ import {
   updateOrderStatus,
 } from 'backend/database';
 import { sendPaidOrderEmails } from 'backend/email';
-import { buildHsvContent, hsvFileName } from 'backend/hsv';
+import { buildHsvContent, hsvFileName, orderBodyFromRecord } from 'backend/hsv';
 
 export function extractVaOrderNumber(source) {
   const text = typeof source === 'string' ? source : JSON.stringify(source || {});
@@ -112,28 +112,17 @@ export async function notifyPaidCertificate({
     return { ok: true, skipped: true, orderNumber: record.orderNumber };
   }
 
-  const body = {
-    orderNumber: record.orderNumber,
-    customer: record.customer || {
-      name: record.customerName,
-      email: record.customerEmail,
-    },
-    building: record.building || {},
-    consumption: record.consumption || {},
-    calculation: record.calculation || {},
-    fileUrls: record.fileUrls || [],
-    wixOrderNumber: shopNumber,
-    wixOrderId,
-  };
+  const body = orderBodyFromRecord(record);
+  body.wixOrderNumber = shopNumber;
+  body.wixOrderId = wixOrderId;
+  body.fileUrls = record.fileUrls || [];
 
-  let hsvContent = '';
-  let fileName = hsvFileName(body);
-  try {
+  const storedHsv = record.hsvContent || record.calculation?.hsvContent || '';
+  const fileName =
+    record.hsvFileName || record.calculation?.hsvFileName || hsvFileName(body);
+  let hsvContent = storedHsv;
+  if (!hsvContent || !hsvContent.includes('[Verbrauch3]')) {
     hsvContent = buildHsvContent(body);
-  } catch (error) {
-    console.error('HSV erzeugen:', error);
-    hsvContent = `[Version]\r\nProgrammversion=HS Verbrauchspass 5.2.11\r\n[Gebauede]\r\nZusatzAuftragsnummer=${record.orderNumber || ''}\r\n`;
-    fileName = `${record.orderNumber || 'auftrag'}.hsv`;
   }
 
   const mailAttachments = [
@@ -176,18 +165,10 @@ export async function hsvForDownload(orderNumber, token) {
   if (!record || !token || record.hsvDownloadToken !== token) {
     throw new Error('HSV nicht gefunden oder Token ungültig.');
   }
-  const body = {
-    orderNumber: record.orderNumber,
-    customer: record.customer || {
-      name: record.customerName,
-      email: record.customerEmail,
-    },
-    building: record.building || {},
-    consumption: record.consumption || {},
-    calculation: record.calculation || {},
-  };
+  const body = orderBodyFromRecord(record);
+  const stored = record.hsvContent || record.calculation?.hsvContent;
   return {
-    fileName: hsvFileName(body),
-    content: buildHsvContent(body),
+    fileName: record.hsvFileName || record.calculation?.hsvFileName || hsvFileName(body),
+    content: stored && stored.includes('[Verbrauch3]') ? stored : buildHsvContent(body),
   };
 }

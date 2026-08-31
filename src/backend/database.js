@@ -7,6 +7,7 @@ import wixData from 'wix-data';
 import { collections } from 'wix-data.v2';
 import { mediaManager } from 'wix-media-backend';
 import { Buffer } from 'buffer';
+import { buildHsvContent, hsvFileName } from 'backend/hsv';
 
 const COLLECTION = 'CertificateOrders';
 const OPTIONS = { suppressAuth: true };
@@ -38,6 +39,7 @@ const COLLECTION_SCHEMA = {
     field('hsvFileName', 'HSV-Datei', 'TEXT'),
     field('hsvFileUrl', 'HSV-URL', 'TEXT'),
     field('hsvDownloadToken', 'HSV-Token', 'TEXT'),
+    field('hsvContent', 'HSV-Inhalt', 'TEXT'),
     field('createdAt', 'Erstellt', 'DATETIME'),
     field('updatedAt', 'Aktualisiert', 'DATETIME'),
   ],
@@ -77,6 +79,9 @@ export async function createCertificateOrder(body) {
   const now = new Date();
   const fileUrls = await storeAttachments(body.orderNumber, body.attachments || []);
 
+  const hsvContent = buildHsvContent(body);
+  const hsvName = hsvFileName(body);
+
   const item = {
     orderNumber: body.orderNumber,
     status: 'received',
@@ -85,8 +90,20 @@ export async function createCertificateOrder(body) {
     customer: body.customer || {},
     building: body.building,
     consumption: body.consumption,
-    calculation: body.calculation,
+    calculation: {
+      ...(body.calculation || {}),
+      hsvContent,
+      hsvFileName: hsvName,
+      orderSnapshot: {
+        orderNumber: body.orderNumber,
+        customer: body.customer || {},
+        building: body.building || {},
+        consumption: body.consumption || {},
+      },
+    },
     fileUrls,
+    hsvContent,
+    hsvFileName: hsvName,
     hsvDownloadToken: randomToken(),
     createdAt: now,
     updatedAt: now,
@@ -99,18 +116,36 @@ export async function createCertificateOrder(body) {
     .find(OPTIONS);
 
   if (existing.items.length) {
-    return wixData.update(
-      COLLECTION,
-      {
-        ...existing.items[0],
-        ...item,
-        _id: existing.items[0]._id,
-      },
-      OPTIONS
-    );
+    return writeOrder({ ...existing.items[0], ...item, _id: existing.items[0]._id }, true);
   }
 
-  return wixData.insert(COLLECTION, item, OPTIONS);
+  return writeOrder(item, false);
+}
+
+async function writeOrder(item, isUpdate) {
+  try {
+    return isUpdate
+      ? await wixData.update(COLLECTION, item, OPTIONS)
+      : await wixData.insert(COLLECTION, item, OPTIONS);
+  } catch (error) {
+    console.error('Auftrag mit HSV-Feldern nicht speicherbar, Fallback:', error);
+    const slim = {
+      orderNumber: item.orderNumber,
+      status: item.status,
+      customerName: item.customerName,
+      customerEmail: item.customerEmail,
+      building: item.building,
+      consumption: item.consumption,
+      calculation: item.calculation,
+      fileUrls: item.fileUrls,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+    };
+    if (isUpdate && item._id) slim._id = item._id;
+    return isUpdate
+      ? wixData.update(COLLECTION, slim, OPTIONS)
+      : wixData.insert(COLLECTION, slim, OPTIONS);
+  }
 }
 
 export async function getCertificateOrder(orderNumber) {
