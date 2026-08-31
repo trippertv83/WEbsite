@@ -36,24 +36,27 @@ export async function sendPaidOrderEmails(body) {
     attachments,
   });
 
-  const triggered = await sendTriggeredFallback({
-    adminEmail,
-    customerEmail: body.customer?.email,
-    customerName: body.customer?.name || 'Kunde',
-    variables: {
-      orderNumber: String(body.orderNumber || ''),
-      customerName: String(body.customer?.name || ''),
-      customerEmail: String(body.customer?.email || ''),
-      address: formatAddress(body.building),
-      efficiencyClass: String(body.calculation?.efficiencyClass || ''),
-      endEnergy: String(Math.round(body.calculation?.endSpecific || 0)),
-      htmlSummary: html.slice(0, 15000),
-      hsvDownloadUrl: String(body.hsvDownloadUrl || ''),
-    },
-  }).catch((error) => {
-    console.error('Triggered Email:', error);
-    return { ok: false, error: String(error.message || error) };
-  });
+  let triggered = { ok: false, skipped: true };
+  if (!httpResult.ok) {
+    triggered = await sendTriggeredFallback({
+      adminEmail,
+      customerEmail: body.customer?.email,
+      customerName: body.customer?.name || 'Kunde',
+      variables: {
+        orderNumber: String(body.orderNumber || ''),
+        customerName: String(body.customer?.name || ''),
+        customerEmail: String(body.customer?.email || ''),
+        address: formatAddress(body.building),
+        efficiencyClass: String(body.calculation?.efficiencyClass || ''),
+        endEnergy: String(Math.round(body.calculation?.endSpecific || 0)),
+        htmlSummary: html.slice(0, 15000),
+        hsvDownloadUrl: String(body.hsvDownloadUrl || ''),
+      },
+    }).catch((error) => {
+      console.error('Triggered Email:', error);
+      return { ok: false, error: String(error.message || error) };
+    });
+  }
 
   return {
     ok: Boolean(httpResult.ok || triggered.ok),

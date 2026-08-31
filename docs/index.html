@@ -255,12 +255,41 @@
                 <span class="field__error" data-error-for="anlass"></span>
               </div>
               <div class="field">
-                <label class="field__label" for="lueftung">Lüftung</label>
-                <select class="select" id="lueftung" name="lueftung">
-                  <option value="Fensterlüftung">Fensterlüftung</option>
-                  <option value="Schachtlüftung">Schachtlüftung</option>
-                  <option value="Lüftungsanlage">Lüftungsanlage</option>
-                </select>
+                <span class="field__label" id="lueftung-label">Lüftung (zutreffendes ankreuzen)</span>
+                <div class="choice-group choice-group--stack" role="group" aria-labelledby="lueftung-label">
+                  <label class="choice">
+                    <input type="checkbox" name="lueftung" value="Fensterlüftung" checked />
+                    <span>Fensterlüftung</span>
+                  </label>
+                  <label class="choice">
+                    <input type="checkbox" name="lueftung" value="Schachtlüftung" />
+                    <span>Schachtlüftung</span>
+                  </label>
+                  <label class="choice">
+                    <input type="checkbox" name="lueftung" value="Lüftungsanlage mit Wärmerückgewinnung" />
+                    <span>Lüftungsanlage mit Wärmerückgewinnung</span>
+                  </label>
+                  <label class="choice">
+                    <input type="checkbox" name="lueftung" value="Lüftungsanlage ohne Wärmerückgewinnung" />
+                    <span>Lüftungsanlage ohne Wärmerückgewinnung</span>
+                  </label>
+                  <label class="choice">
+                    <input type="checkbox" name="lueftung" value="Passive Kühlung" />
+                    <span>Passive Kühlung</span>
+                  </label>
+                  <label class="choice">
+                    <input type="checkbox" name="lueftung" value="Kühlung aus Strom" />
+                    <span>Kühlung aus Strom</span>
+                  </label>
+                  <label class="choice">
+                    <input type="checkbox" name="lueftung" value="Kühlung aus Wärme" />
+                    <span>Kühlung aus Wärme</span>
+                  </label>
+                  <label class="choice">
+                    <input type="checkbox" name="lueftung" value="Gelieferte Kälte" />
+                    <span>Gelieferte Kälte</span>
+                  </label>
+                </div>
               </div>
             </div>
             <div class="grid-2" style="margin-top: 1rem">

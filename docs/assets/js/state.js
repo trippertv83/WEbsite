@@ -18,7 +18,7 @@ const state = {
     anzahlWohnungen: '1',
     gebaeudeteil: 'Ganzes Gebäude',
     anlass: 'Vermietung / Verkauf',
-    lueftung: 'Fensterlüftung',
+    lueftung: ['Fensterlüftung'],
     erneuerbareEnergien: '',
     erneuerbareEnergienA: '',
     gekuehlt: 'nein',

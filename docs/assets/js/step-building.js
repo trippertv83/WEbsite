@@ -13,6 +13,7 @@ export function readBuildingForm() {
   data.recommendations = [...form.querySelectorAll('input[name="recommendation"]:checked')].map(
     (el) => el.value
   );
+  data.lueftung = [...form.querySelectorAll('input[name="lueftung"]:checked')].map((el) => el.value);
   data.warmwasserSolar = form.querySelector('[name="warmwasserSolar"]')?.checked ? '1' : '';
   const living = Number(data.wohnflaeche);
   if ((!data.nutzflaeche || data.nutzflaeche === '') && Number.isFinite(living) && living > 0) {

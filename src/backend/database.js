@@ -171,6 +171,24 @@ export async function findCertificateOrderByEmail(email) {
   return result.items[0] || null;
 }
 
+export async function tryClaimPaidMail(orderNumber) {
+  const existing = await getCertificateOrder(orderNumber);
+  if (!existing) return { claimed: false, record: null };
+  if (existing.status === 'paid_notified' || existing.status === 'mail_sending') {
+    return { claimed: false, record: existing };
+  }
+  await wixData.update(
+    COLLECTION,
+    {
+      ...existing,
+      status: 'mail_sending',
+      updatedAt: new Date(),
+    },
+    OPTIONS
+  );
+  return { claimed: true, record: existing };
+}
+
 export async function updateOrderStatus(orderNumber, status, extra = {}) {
   const existing = await getCertificateOrder(orderNumber);
   if (!existing) {
@@ -192,7 +210,7 @@ export async function saveHsvFile(orderNumber, { fileName, content }) {
   const existing = await getCertificateOrder(orderNumber);
   if (!existing) throw new Error(`Auftrag ${orderNumber} nicht gefunden.`);
   const folder = `/energieausweis/${String(orderNumber || 'ohne-nummer')}`;
-  const buffer = Buffer.from(content, 'utf8');
+  const buffer = Buffer.from(content, 'latin1');
   const uploaded = await mediaManager.upload(folder, buffer, fileName, {
     mediaOptions: {
       mimeType: 'text/plain',

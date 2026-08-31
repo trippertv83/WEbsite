@@ -4,14 +4,8 @@
 
 import { response } from 'wix-http-functions';
 import { createCertificateOrder } from 'backend/database';
-import {
-  createCustomer,
-  createInvoice,
-  createOrder,
-  findCustomerByEmail,
-  uploadDocuments,
-} from 'backend/sevdesk';
-import { getCertificateProduct, registerPaidOrder } from 'backend/payment';
+import { createCustomer, findCustomerByEmail } from 'backend/sevdesk';
+import { getCertificateProduct } from 'backend/payment';
 import { lookupClimateFactor } from 'backend/climate';
 import { hsvForDownload } from 'backend/paid-notify';
 import { sendResendConnectionTest } from 'backend/email';
@@ -108,7 +102,7 @@ export async function get_downloadHsv(request) {
     return response({
       status: 200,
       headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
+        'Content-Type': 'text/plain; charset=iso-8859-1',
         'Content-Disposition': `attachment; filename="${file.fileName}"`,
         'Access-Control-Allow-Origin': '*',
       },
@@ -198,34 +192,6 @@ export async function post_createCertificateOrder(request) {
     }
 
     const record = await createCertificateOrder(body);
-    const sevdeskCustomerId =
-      body.customer?.sevdeskCustomerId || body.sevdeskCustomerId;
-
-    try {
-      const customer = sevdeskCustomerId
-        ? { id: sevdeskCustomerId }
-        : await createCustomer(body);
-      const order = await createOrder({ ...body, sevdeskCustomerId: customer.id });
-      const media = await uploadDocuments({
-        orderNumber: body.orderNumber,
-        attachments: body.attachments || [],
-      });
-      await createInvoice({
-        ...body,
-        sevdeskCustomerId: customer.id,
-        sevdeskOrderId: order.id,
-      });
-      await registerPaidOrder({
-        orderNumber: body.orderNumber,
-        recordId: record._id,
-      });
-    } catch (integrationError) {
-      console.error(
-        'Auftrag in Wix gespeichert. SevDesk-Auftrag/E-Mail übersprungen:',
-        integrationError
-      );
-    }
-
     return json(201, {
       ok: true,
       orderNumber: body.orderNumber,

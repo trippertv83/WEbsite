@@ -1,6 +1,6 @@
 /**
- * HS Verbrauchspass – Layout wie lukas.hsv (5.2.16).
- * Nur vorhandene Schlüssel, Werte aus dem Erfassungsbogen.
+ * HS Verbrauchspass 5.2.11 – Schlüssel wie Hottgenroth / lukas.hsv.
+ * Nur Werte aus dem Erfassungsbogen, keine Musterperioden.
  */
 
 const RECOMMENDATION_OPTIONS = [
@@ -128,9 +128,12 @@ const FUELS = {
 };
 
 function deNum(value, digits = 0) {
-  const n = Number(value);
+  const n = Number(String(value).replace(',', '.'));
   if (!Number.isFinite(n)) return '0';
-  if (digits === 0 && Number.isInteger(n)) return String(n);
+  if (digits === 0) {
+    if (Number.isInteger(n)) return String(n);
+    return String(n).replace('.', ',');
+  }
   return n.toFixed(digits).replace('.', ',');
 }
 
@@ -283,6 +286,62 @@ function gebaeudetypHsv(id) {
   return 'Einfamilienhaus';
 }
 
+const LUEFTUNG_TYPES = [
+  'Fensterlüftung',
+  'Schachtlüftung',
+  'Lüftungsanlage mit Wärmerückgewinnung',
+  'Lüftungsanlage ohne Wärmerückgewinnung',
+  'Passive Kühlung',
+  'Kühlung aus Strom',
+  'Kühlung aus Wärme',
+  'Gelieferte Kälte',
+];
+
+function mapLueftungItem(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (raw === 'Lüftungsanlage') return 'Lüftungsanlage ohne Wärmerückgewinnung';
+  return raw;
+}
+
+function lueftungHsv(building) {
+  const raw = building?.lueftung;
+  let items = [];
+  if (Array.isArray(raw)) {
+    items = raw.map(mapLueftungItem).filter(Boolean);
+  } else if (typeof raw === 'string' && raw.trim()) {
+    const joined = raw.trim();
+    const dumped = LUEFTUNG_TYPES.every((type) => joined.includes(type));
+    if (dumped && joined.includes('|')) {
+      items = ['Fensterlüftung'];
+    } else {
+      items = joined.split('|').map((part) => mapLueftungItem(part.trim())).filter(Boolean);
+    }
+  }
+  if (!items.length) items = ['Fensterlüftung'];
+  return [...new Set(items)].join(' | ');
+}
+
+function eeNutzung(value, fallback = '') {
+  const raw = String(value || fallback || '').trim();
+  if (!raw) return '';
+  const lower = raw.toLowerCase();
+  if (lower.includes('heiz')) return 'heizung';
+  if (lower.includes('warm') || lower === 'ww' || lower.includes('wasser')) return 'ww';
+  return raw;
+}
+
+function eeArt(value, fallback = '') {
+  const raw = String(value || fallback || '').trim();
+  if (!raw) return '';
+  const lower = raw.toLowerCase();
+  if (lower.includes('holz') || lower.includes('stück') || lower.includes('stueck')) return 'holz';
+  if (lower.includes('pellet')) return 'pellets';
+  if (lower.includes('solar') || lower.includes('pv')) return 'solar';
+  if (lower.includes('wärmepumpe') || lower.includes('waermepumpe') || lower === 'wp') return 'wp';
+  return raw;
+}
+
 function warmwasserTyp(mode) {
   if (mode === 'separat') return 'wwMesswertkWh';
   if (mode === 'enthalten') return 'wwEnthalten';
@@ -329,7 +388,7 @@ export function buildHsvContent(body, now = new Date()) {
     consumption.energietraeger === 'strom' || consumption.energietraeger === 'waermepumpe';
   const isHolz = consumption.energietraeger === 'holz' || consumption.energietraeger === 'pellets';
   const recs = selectedRecommendations(building.recommendations || body.recommendations || []);
-  const nPeriods = Math.max(periods.length, 1);
+  const nPeriods = periods.length;
   const customerName =
     customer.name ||
     [customer.firstName, customer.lastName].filter(Boolean).join(' ') ||
@@ -338,14 +397,14 @@ export function buildHsvContent(body, now = new Date()) {
 
   const lines = [
     '[Version]',
-    kv('Programmversion', 'HS Verbrauchspass 5.2.16'),
+    kv('Programmversion', 'HS Verbrauchspass 5.2.11'),
     '[Energieausweis]',
     kv('EnEVAusgabe', 'GEG2024'),
     kv('IstNichtwohngebaeude', '0'),
     kv('DatenerfassungDurchEigentuemer', '1'),
     kv('MitZusatzInfos', building.mitZusatzInfos ? '1' : '0'),
     kv('AusstellerZeile1', 'Dieter Spaderna'),
-    kv('AusstellerZeile2', 'Energieberater ( HWK ) Schornsteinfegermeister'),
+    kv('AusstellerZeile2', 'Schornsteinfegermeister'),
     kv('AusstellerZeile3', 'Ziegelanger 5'),
     kv('AusstellerZeile4', '96250 Ebensfeld'),
     kv('Anlass', building.anlass || 'Vermietung / Verkauf'),
@@ -369,9 +428,9 @@ export function buildHsvContent(body, now = new Date()) {
     kv('Strasse', street),
     kv('Gebaeudeteil', building.gebaeudeteil || 'Ganzes Gebäude'),
     kv('Bundesland', bundeslandFromPlz(plz)),
-    kv('ErneuerbareEnergien', building.erneuerbareEnergien || (isHolz ? 'Heizung' : '')),
-    kv('ErneuerbareEnergienA', building.erneuerbareEnergienA || (isHolz ? 'Holz' : '')),
-    kv('Lueftung', building.lueftung || 'Fensterlüftung'),
+    kv('ErneuerbareEnergien', eeNutzung(building.erneuerbareEnergien, isHolz ? 'heizung' : '')),
+    kv('ErneuerbareEnergienA', eeArt(building.erneuerbareEnergienA, isHolz ? 'holz' : '')),
+    kv('Lueftung', lueftungHsv(building)),
     kv('BaujahrGeb', building.baujahr || ''),
     kv('BaujahrAnlage', building.baujahrHeizung || ''),
     kv('BaujahrKlimaanlage', ''),
@@ -392,8 +451,14 @@ export function buildHsvContent(body, now = new Date()) {
     kv('Klimaanlage12kWohne', '0'),
     kv('Klimaanlage12kWmit', '0'),
     kv('Klimaanlage70kW', '0'),
-    kv('EE24_NutzungHz', '0'),
-    kv('EE24_NutzungDHW', '0'),
+    kv(
+      'EE24_NutzungHz',
+      eeNutzung(building.erneuerbareEnergien, isHolz ? 'heizung' : '') === 'heizung' ? '1' : '0'
+    ),
+    kv(
+      'EE24_NutzungDHW',
+      eeNutzung(building.erneuerbareEnergien) === 'ww' || building.warmwasserSolar ? '1' : '0'
+    ),
     kv('EE24_65ProzEERegel', '0'),
     kv('EE24_65ProzEERegelPauschal', '0'),
     kv('EE24_P71b', '0'),
@@ -542,7 +607,7 @@ export function buildHsvContent(body, now = new Date()) {
     kv('Wohnflaeche', areaW ? deNum(areaW, 0) : '0'),
     kv('KellerBeheizt', building.beheizterKeller === 'ja' ? '1' : '0'),
     kv('Gekuehlt', building.gekuehlt === 'ja' ? '1' : '0'),
-    kv('FAnteilGekuehlt_WG', '0'),
+    kv('FAnteilGekuehlt_WG', building.gekuehlt === 'ja' ? '1' : '0'),
     '[Ergebnisse]',
     kv('Endenergieverbrauch', calc.endSpecific != null ? deNum(calc.endSpecific, 4) : '0'),
     kv('Primaerenergieverbrauch', calc.primarySpecific != null ? deNum(calc.primarySpecific, 4) : '0'),

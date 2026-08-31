@@ -1,5 +1,5 @@
 /**
- * Nach erfolgreicher Zahlung: HSV erzeugen, speichern, E-Mail an Admin.
+ * Nach erfolgreicher Zahlung: HSV einmal erzeugen und an Admin senden.
  */
 
 import { Buffer } from 'buffer';
@@ -7,6 +7,7 @@ import {
   findCertificateOrderByEmail,
   getCertificateOrder,
   saveHsvFile,
+  tryClaimPaidMail,
   updateOrderStatus,
 } from 'backend/database';
 import { sendPaidOrderEmails } from 'backend/email';
@@ -52,8 +53,7 @@ async function loadWixOrder(id) {
 
 export async function handlePaidOrderEvent(event) {
   const order = orderFromEvent(event);
-  const vaNumber =
-    extractVaOrderNumber(order) || extractVaOrderNumber(event);
+  const vaNumber = extractVaOrderNumber(order) || extractVaOrderNumber(event);
   const email = buyerEmailFrom(order);
   return notifyPaidCertificate({
     orderNumber: vaNumber,
@@ -89,27 +89,29 @@ export async function notifyPaidCertificate({
     if (
       candidate &&
       candidate.status !== 'paid' &&
-      candidate.status !== 'paid_notified'
+      candidate.status !== 'paid_notified' &&
+      candidate.status !== 'mail_sending'
     ) {
       record = candidate;
     }
   }
   if (!record) {
-    const diagnostic = await sendPaidOrderEmails({
-      orderNumber: vaNumber || 'UNBEKANNT',
-      customer: { name: 'Unbekannt', email: email || '' },
-      building: {},
-      consumption: {},
-      calculation: {},
-      wixOrderNumber: shopNumber,
-      wixOrderId,
-    }).catch((error) => ({ ok: false, error: String(error.message || error) }));
+    console.error('Kein Verbrauchsausweis-Auftrag nach Zahlung', {
+      vaNumber,
+      email,
+      shopNumber,
+    });
     throw new Error(
-      `Kein Verbrauchsausweis-Auftrag gefunden (${vaNumber || email || 'ohne Nummer'}). Mail-Versuch: ${JSON.stringify(diagnostic)}`
+      `Kein Verbrauchsausweis-Auftrag gefunden (${vaNumber || email || 'ohne Nummer'}).`
     );
   }
-  if (!force && (record.status === 'paid' || record.status === 'paid_notified')) {
-    return { ok: true, skipped: true, orderNumber: record.orderNumber };
+
+  if (!force) {
+    const claim = await tryClaimPaidMail(record.orderNumber);
+    if (!claim.claimed) {
+      return { ok: true, skipped: true, orderNumber: record.orderNumber };
+    }
+    record = claim.record || record;
   }
 
   const body = orderBodyFromRecord(record);
@@ -117,19 +119,15 @@ export async function notifyPaidCertificate({
   body.wixOrderId = wixOrderId;
   body.fileUrls = record.fileUrls || [];
 
-  const storedHsv = record.hsvContent || record.calculation?.hsvContent || '';
   const fileName =
     record.hsvFileName || record.calculation?.hsvFileName || hsvFileName(body);
-  let hsvContent = storedHsv;
-  if (!hsvContent || !hsvContent.includes('[Verbrauch3]')) {
-    hsvContent = buildHsvContent(body);
-  }
+  const hsvContent = buildHsvContent(body);
 
   const mailAttachments = [
     {
       name: fileName,
-      mimeType: 'text/plain',
-      contentBase64: Buffer.from(hsvContent, 'utf8').toString('base64'),
+      mimeType: 'text/plain; charset=iso-8859-1',
+      contentBase64: Buffer.from(hsvContent, 'latin1').toString('base64'),
     },
   ];
 
@@ -152,6 +150,7 @@ export async function notifyPaidCertificate({
 
   await updateOrderStatus(record.orderNumber, 'paid_notified', {
     hsvFileName: fileName,
+    hsvContent,
     wixOrderNumber: shopNumber || record.wixOrderNumber,
     wixOrderId: wixOrderId || record.wixOrderId,
     mailResult: mail,
@@ -166,9 +165,8 @@ export async function hsvForDownload(orderNumber, token) {
     throw new Error('HSV nicht gefunden oder Token ungültig.');
   }
   const body = orderBodyFromRecord(record);
-  const stored = record.hsvContent || record.calculation?.hsvContent;
   return {
     fileName: record.hsvFileName || record.calculation?.hsvFileName || hsvFileName(body),
-    content: stored && stored.includes('[Verbrauch3]') ? stored : buildHsvContent(body),
+    content: buildHsvContent(body),
   };
 }
