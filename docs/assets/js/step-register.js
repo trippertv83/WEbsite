@@ -30,6 +30,8 @@ export function readRegisterForm() {
   const companyName = data.companyName || '';
   const firstName = data.firstName || '';
   const lastName = data.lastName || '';
+  const contactFirstName = data.contactFirstName || '';
+  const contactLastName = data.contactLastName || '';
   const name =
     customerType === 'firma'
       ? companyName.trim()
@@ -37,6 +39,8 @@ export function readRegisterForm() {
   patchCustomer({
     customerType,
     companyName,
+    contactFirstName,
+    contactLastName,
     firstName,
     lastName,
     name,

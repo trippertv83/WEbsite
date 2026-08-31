@@ -66,10 +66,27 @@
             </div>
             <span class="field__error" data-error-for="customerType"></span>
           </div>
-          <div id="company-name-fields" hidden class="field" style="margin-top: 1rem">
-            <label class="field__label" for="reg-companyName">Firmenname</label>
-            <input class="input" id="reg-companyName" name="companyName" autocomplete="organization" />
-            <span class="field__error" data-error-for="companyName"></span>
+          <div id="company-name-fields" hidden>
+            <div class="field" style="margin-top: 1rem">
+              <label class="field__label" for="reg-companyName">Firmenname</label>
+              <input class="input" id="reg-companyName" name="companyName" autocomplete="organization" />
+              <span class="field__error" data-error-for="companyName"></span>
+            </div>
+            <div id="contact-person-fields" style="margin-top: 1rem">
+              <p class="field__label">Ansprechpartner</p>
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field__label" for="reg-contactFirst">Vorname</label>
+                  <input class="input" id="reg-contactFirst" name="contactFirstName" autocomplete="given-name" />
+                  <span class="field__error" data-error-for="contactFirstName"></span>
+                </div>
+                <div class="field">
+                  <label class="field__label" for="reg-contactLast">Nachname</label>
+                  <input class="input" id="reg-contactLast" name="contactLastName" autocomplete="family-name" />
+                  <span class="field__error" data-error-for="contactLastName"></span>
+                </div>
+              </div>
+            </div>
           </div>
           <div id="person-name-fields" class="grid-2" style="margin-top: 1rem" hidden>
             <div class="field">

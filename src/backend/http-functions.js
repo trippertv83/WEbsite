@@ -69,8 +69,8 @@ export async function post_registerCustomer(request) {
     if (!['firma', 'herr', 'frau'].includes(c.customerType)) {
       return json(400, { error: 'Bitte Firma, Herr oder Frau wählen.' });
     }
-    if (c.customerType === 'firma' && !c.companyName) {
-      return json(400, { error: 'Firmenname ist Pflicht.' });
+    if (c.customerType === 'firma' && (!c.companyName || !c.contactFirstName || !c.contactLastName)) {
+      return json(400, { error: 'Firmenname und Ansprechpartner (Vor- und Nachname) sind Pflicht.' });
     }
     if (c.customerType !== 'firma' && (!c.firstName || !c.lastName)) {
       return json(400, { error: 'Vor- und Nachname sind Pflicht.' });

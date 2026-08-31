@@ -85,6 +85,12 @@ export function validateRegistration(customer) {
     if (!customer.companyName?.trim()) {
       errors.companyName = 'Firmenname ist erforderlich.';
     }
+    if (!customer.contactFirstName?.trim()) {
+      errors.contactFirstName = 'Vorname des Ansprechpartners ist erforderlich.';
+    }
+    if (!customer.contactLastName?.trim()) {
+      errors.contactLastName = 'Nachname des Ansprechpartners ist erforderlich.';
+    }
   } else {
     if (!customer.firstName?.trim()) errors.firstName = 'Vorname ist erforderlich.';
     if (!customer.lastName?.trim()) errors.lastName = 'Nachname ist erforderlich.';

@@ -131,8 +131,12 @@ function contactPayload(c, customerNumber) {
   const type = c.customerType;
   if (type === 'firma') {
     const name = String(c.companyName || c.name || '').trim();
+    const first = String(c.contactFirstName || '').trim();
+    const last = String(c.contactLastName || '').trim();
     return {
       name,
+      surename: first,
+      familyname: last,
       category: { id: 3, objectName: 'Category' },
       status: 1000,
       customerNumber,

@@ -37,6 +37,8 @@ const state = {
   customer: {
     customerType: '',
     companyName: '',
+    contactFirstName: '',
+    contactLastName: '',
     firstName: '',
     lastName: '',
     name: '',
@@ -126,6 +128,8 @@ export function serializeForBackend() {
     customer: {
       customerType: state.customer.customerType,
       companyName: state.customer.companyName,
+      contactFirstName: state.customer.contactFirstName,
+      contactLastName: state.customer.contactLastName,
       firstName: state.customer.firstName,
       lastName: state.customer.lastName,
       email: state.customer.email,
