@@ -38,15 +38,20 @@ export async function addCertificateToCart(payload) {
   const inIframe =
     typeof window !== 'undefined' && window.parent && window.parent !== window;
   if (inIframe) {
-    window.parent.postMessage(
-      {
-        type: 'ADD_TO_CART',
-        productId: payload.productId,
-        orderNumber: payload.orderNumber,
-        efficiencyClass: payload.efficiencyClass,
-      },
-      '*'
-    );
+    const message = {
+      type: 'ADD_TO_CART',
+      productId: payload.productId,
+      orderNumber: payload.orderNumber,
+      efficiencyClass: payload.efficiencyClass,
+    };
+    window.parent.postMessage(message, '*');
+    try {
+      if (window.top && window.top !== window.parent) {
+        window.top.postMessage(message, '*');
+      }
+    } catch {
+      /* cross-origin top */
+    }
     return { ok: true, mode: 'wix-iframe' };
   }
 
