@@ -51,6 +51,7 @@ const state = {
     acceptAgb: false,
     acceptPrivacy: false,
     sevdeskCustomerId: null,
+    customerNumber: null,
   },
   order: {
     number: null,
@@ -139,6 +140,7 @@ export function serializeForBackend() {
       plz: state.customer.plz,
       ort: state.customer.ort,
       sevdeskCustomerId: state.customer.sevdeskCustomerId,
+      customerNumber: state.customer.customerNumber,
     },
     orderNumber: state.order.number,
   };

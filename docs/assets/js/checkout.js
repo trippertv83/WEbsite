@@ -15,7 +15,17 @@ import { AppConfig } from '../../config.example.js';
  * @param {string} payload.orderNumber
  * @param {string} payload.efficiencyClass
  */
+export function isPlaceholderProductId(productId) {
+  return !productId || String(productId).startsWith('00000000');
+}
+
 export async function addCertificateToCart(payload) {
+  if (isPlaceholderProductId(payload.productId)) {
+    throw new Error(
+      'Kein Wix-Produkt hinterlegt. Im Wix-Shop den Artikel „Verbrauchsausweis“ anlegen, die Produkt-ID in config.example.js (wixProductId) eintragen, Site veröffentlichen und GitHub Pages aktualisieren.'
+    );
+  }
+
   if (AppConfig.demoMode) {
     return {
       ok: true,

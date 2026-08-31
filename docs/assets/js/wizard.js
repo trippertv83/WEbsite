@@ -46,11 +46,14 @@ export function showStep(step) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-export function bindStepper(canEnterStep) {
+export function bindStepper(canEnterStep, onEnter) {
   qs('#stepper-list').addEventListener('click', (event) => {
     const btn = event.target.closest('[data-goto]');
     if (!btn || btn.disabled) return;
     const next = Number(btn.dataset.goto);
-    if (canEnterStep(next)) showStep(next);
+    if (canEnterStep(next)) {
+      showStep(next);
+      onEnter?.(next);
+    }
   });
 }

@@ -48,6 +48,42 @@ export async function postJson(url, payload) {
   return data;
 }
 
+export async function getJson(url) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 20000);
+  let response;
+  try {
+    response = await fetch(url, { method: 'GET', signal: controller.signal });
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error('Zeitüberschreitung beim Laden vom Wix-Backend.');
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+  const text = await response.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { error: text || `HTTP ${response.status}` };
+  }
+  if (!response.ok) {
+    throw new Error(data.error || `Serverfehler ${response.status}.`);
+  }
+  return data;
+}
+
+export async function fetchProductPrice(productId) {
+  const base = AppConfig.wixHttpFunctionsBaseUrl || '';
+  if (!base || !productId || String(productId).startsWith('00000000')) {
+    return null;
+  }
+  const url = `${base.replace(/\/$/, '')}/productPrice?productId=${encodeURIComponent(productId)}`;
+  return getJson(url);
+}
+
 export async function registerCustomer(customer, mode) {
   const base = AppConfig.wixHttpFunctionsBaseUrl || '';
   if (!base || base.includes('ihre-site')) {

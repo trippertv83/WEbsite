@@ -18,7 +18,7 @@ const CATEGORIES = [
   {
     id: 'heatingBills',
     title: 'Heizkostenabrechnungen',
-    hint: 'Mindestens drei PDF-Dateien der letzten Abrechnungsjahre.',
+    hint: 'Mindestens eine PDF. Alle Abrechnungsjahre dürfen in einer Datei liegen.',
     required: true,
   },
   {

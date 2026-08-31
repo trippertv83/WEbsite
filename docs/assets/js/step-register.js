@@ -110,6 +110,7 @@ export async function submitRegistration() {
     const result = await registerCustomer(customer, mode);
     patchCustomer({
       sevdeskCustomerId: result.sevdeskCustomerId || null,
+      customerNumber: result.customerNumber || customer.customerNumber || null,
       name: result.customerName || customer.name,
       email: result.email || customer.email,
     });

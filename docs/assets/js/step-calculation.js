@@ -3,23 +3,41 @@
  */
 
 import { calculateCertificate } from './calculation.js';
+import { lookupClimateFactors } from './climate-factors.js';
 import { getState, setCalculation } from './state.js';
 import { formatDeNumber, qs } from './utils.js';
 
-export function runCalculation() {
+export async function runCalculation() {
   const { building, consumption } = getState();
-  const result = calculateCertificate({ building, consumption, climateFactor: 1 });
+  const lookups = await lookupClimateFactors(building.plz, consumption.periods);
+  const climateFactors = lookups.map((item) => item.factor);
+  const result = calculateCertificate({
+    building,
+    consumption,
+    climateFactors,
+  });
+  result.climateLookups = lookups;
   setCalculation(result);
   return result;
 }
 
-export function renderCalculation() {
-  const result = runCalculation();
-  qs('#calculation-root').innerHTML = `
+export async function renderCalculation() {
+  const root = qs('#calculation-root');
+  root.innerHTML = '<p class="notice">Klimafaktoren werden vom DWD geladen…</p>';
+  const result = await runCalculation();
+  const rows = (result.climateLookups || [])
+    .map((item, index) => {
+      const label = result.yearly[index]?.label || `Periode ${index + 1}`;
+      const src = item.source === 'dwd' ? 'DWD' : 'ohne Treffer, Faktor 1,00';
+      return `<li>${label}: ${formatDeNumber(item.factor, 2)} (${src})</li>`;
+    })
+    .join('');
+  root.innerHTML = `
     <p class="notice">
-      Klimafaktor aktuell 1,00 (ohne Witterungsbereinigung). Die Schnittstelle
-      <code>applyClimateFactor</code> kann regionale Faktoren aufnehmen.
+      Witterungsbereinigung mit den offiziellen Klimakorrekturfaktoren des DWD
+      (GEG, PLZ-scharf, je 12-Monats-Fenster).
     </p>
+    <ul class="field__hint">${rows}</ul>
     <div class="kpi-row" style="padding:1.5rem 0 0">
       <div class="kpi">
         <strong>${formatDeNumber(result.endEnergy, 0)}</strong>

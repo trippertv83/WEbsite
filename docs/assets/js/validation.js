@@ -59,7 +59,10 @@ export function validateConsumption(consumption) {
 export function validateDocuments(documents, minBills) {
   const errors = {};
   if ((documents.heatingBills || []).length < minBills) {
-    errors.heatingBills = `Mindestens ${minBills} Heizkostenabrechnungen (PDF).`;
+    errors.heatingBills =
+      minBills === 1
+        ? 'Mindestens eine Heizkostenabrechnung als PDF hochladen.'
+        : `Mindestens ${minBills} Heizkostenabrechnungen (PDF).`;
   }
   return errors;
 }

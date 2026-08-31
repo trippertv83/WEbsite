@@ -17,19 +17,28 @@ export const AppConfig = {
    * Wix Stores Produkt-ID des Verbrauchsausweises.
    * Im Wix Dashboard unter Store → Produkte nachschlagen.
    */
-  wixProductId: '00000000-0000-0000-0000-000000000000',
+  wixProductId: '0786caad-15f2-40ac-bc15-9915ffd6d6d3',
+
+  /**
+   * Anzeigepreis in EUR, falls der Shop-Preis nicht geladen werden kann.
+   * Muss mit dem Wix-Stores-Artikel übereinstimmen.
+   */
+  productPriceEuro: 59.99,
 
   /** Maximalgröße je PDF in Megabyte */
   maxFileSizeMb: 10,
 
-  /** Pflicht: Heizkostenabrechnungen */
-  minHeatingBills: 3,
+  /** Pflicht: Heizkostenabrechnungen (eine Datei darf alle Jahre enthalten) */
+  minHeatingBills: 1,
 
   /** Maximalgröße aller Uploads zusammen in Megabyte */
   maxTotalUploadMb: 40,
 
-  /** Demo-Modus: Bestellung ohne Wix (nur lokale Entwicklung) */
-  demoMode: true,
+  /**
+   * false = Wix-Warenkorb + Checkout.
+   * true nur lokal, wenn kein Shop angebunden ist.
+   */
+  demoMode: false,
 
   /** Basis-URL der Wix-Site, sobald HTTP-Functions live sind */
   wixHttpFunctionsBaseUrl:

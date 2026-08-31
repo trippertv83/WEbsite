@@ -4,6 +4,7 @@
  */
 
 import { cart } from 'wix-stores-frontend';
+import wixLocation from 'wix-location';
 
 export function bindWizardCart() {
   const html = $w('#wizardHtml');
@@ -23,8 +24,6 @@ export function bindWizardCart() {
         },
       },
     ]);
-    if (typeof cart.showCart === 'function') {
-      await cart.showCart();
-    }
+    wixLocation.to('/checkout');
   });
 }

@@ -3,7 +3,7 @@
  *
  * Architektur:
  * - Endenergie aus drei Perioden, Leerstandskorrektur
- * - applyClimateFactor() als Erweiterungspunkt (aktuell 1.0)
+ * - applyClimateFactor() mit DWD-Klimafaktoren je Abrechnungsperiode
  * - Primärenergie- und CO2-Faktoren je Energieträger (GEG-orientiert)
  * - Effizienzklasse nach spezifischer Primärenergie
  *
@@ -90,23 +90,32 @@ function warmWaterAddition(warmwasserMode, area, periods) {
   return DEFAULT_WW_SPECIFIC * area;
 }
 
-export function calculateCertificate({ building, consumption, climateFactor = 1 }) {
+export function calculateCertificate({
+  building,
+  consumption,
+  climateFactor = 1,
+  climateFactors,
+}) {
   const area = Number(building.wohnflaeche);
   if (!area || area <= 0) throw new Error('Wohnfläche fehlt.');
   const carrier = getCarrier(consumption.energietraeger);
   if (!carrier) throw new Error('Energieträger fehlt.');
 
-  const yearly = consumption.periods.map((period) => {
+  const yearly = consumption.periods.map((period, index) => {
     const raw = convertToKwh(
       Number(period.consumption),
       consumption.energietraeger,
       consumption.unit
     );
     const vacantCorrected = correctVacancy(raw, period.vacancy);
-    const climateCorrected = applyClimateFactor(vacantCorrected, climateFactor);
+    const kf = Number(
+      climateFactors?.[index] ?? period.climateFactor ?? climateFactor
+    ) || 1;
+    const climateCorrected = applyClimateFactor(vacantCorrected, kf);
     return {
       label: period.label,
       kwh: climateCorrected,
+      climateFactor: kf,
     };
   });
 
@@ -127,7 +136,10 @@ export function calculateCertificate({ building, consumption, climateFactor = 1 
     carrierId: consumption.energietraeger,
     carrierLabel: carrier.label,
     unit: consumption.unit,
-    climateFactor,
+    climateFactor: climateFactors
+      ? climateFactors.reduce((a, b) => a + Number(b), 0) / climateFactors.length
+      : climateFactor,
+    climateFactors: yearly.map((y) => y.climateFactor),
     yearly,
     warmWaterKwh: ww,
     endEnergy,

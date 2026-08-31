@@ -12,14 +12,15 @@ import {
   findCustomerByEmail,
   uploadDocuments,
 } from 'backend/sevdesk';
-import { registerPaidOrder } from 'backend/payment';
+import { getCertificateProduct, registerPaidOrder } from 'backend/payment';
+import { lookupClimateFactor } from 'backend/climate';
 
 function corsHeaders() {
   return {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   };
 }
 
@@ -37,6 +38,57 @@ export function options_registerCustomer() {
 
 export function options_createCertificateOrder() {
   return json(200, { ok: true });
+}
+
+export function options_climateFactor() {
+  return json(200, { ok: true });
+}
+
+export function options_productPrice() {
+  return json(200, { ok: true });
+}
+
+function queryParam(request, name) {
+  const q = request.query;
+  if (!q) return undefined;
+  if (typeof q === 'function') return q(name);
+  if (typeof q.get === 'function') return q.get(name);
+  return q[name];
+}
+
+export async function get_climateFactor(request) {
+  try {
+    const plz = queryParam(request, 'plz');
+    const from = queryParam(request, 'from');
+    const to = queryParam(request, 'to');
+    if (!plz || !from || !to) {
+      return json(400, { error: 'plz, from und to sind Pflicht.' });
+    }
+    const result = await lookupClimateFactor(plz, from, to);
+    return json(200, { ok: true, ...result });
+  } catch (error) {
+    console.error(error);
+    return json(200, { ok: true, factor: 1, source: 'fallback' });
+  }
+}
+
+export async function get_productPrice(request) {
+  try {
+    const productId = queryParam(request, 'productId');
+    if (!productId || String(productId).startsWith('00000000')) {
+      return json(400, { error: 'Produkt-ID fehlt.' });
+    }
+    const product = await getCertificateProduct(productId);
+    return json(200, {
+      ok: true,
+      price: product.price,
+      currency: product.currency || 'EUR',
+      name: product.name,
+    });
+  } catch (error) {
+    console.error(error);
+    return json(500, { error: error.message || 'Produktpreis nicht lesbar.' });
+  }
 }
 
 export async function post_registerCustomer(request) {
@@ -62,6 +114,7 @@ export async function post_registerCustomer(request) {
         existing: true,
         sevdeskCustomerId: found.id,
         customerName: found.name,
+        customerNumber: found.customerNumber || null,
         email: c.email,
       });
     }

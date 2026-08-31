@@ -75,6 +75,7 @@ export async function findCustomerByEmail(email) {
   return {
     id: rec?.id || contactId,
     name: contactDisplayName(rec),
+    customerNumber: rec?.customerNumber ? String(rec.customerNumber) : null,
     email: needle,
     existing: true,
   };

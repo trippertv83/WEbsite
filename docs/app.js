@@ -19,7 +19,7 @@ import {
 import { renderCalculation } from './assets/js/step-calculation.js';
 import { renderPreview } from './assets/js/step-preview.js';
 import { renderOrder, validateStepOrder } from './assets/js/step-order.js';
-import { addCertificateToCart, getProductId } from './assets/js/checkout.js';
+import { addCertificateToCart, getProductId, isPlaceholderProductId } from './assets/js/checkout.js';
 import { submitOrder } from './assets/js/api-client.js';
 
 function canEnterStep(target) {
@@ -33,17 +33,21 @@ function canEnterStep(target) {
   return target <= getState().maxReached + 1;
 }
 
-function onNext(from) {
+function enterStep(step) {
+  if (step === 4) return renderCalculation();
+  if (step === 5) renderPreview();
+  if (step === 6) return renderOrder();
+  return undefined;
+}
+
+async function onNext(from) {
   if (from === 1 && !validateStepBuilding()) return;
   if (from === 2 && !validateStepConsumption()) return;
   if (from === 3 && !validateStepDocuments()) return;
-  if (from === 4) renderCalculation();
   const next = from + 1;
   if (next > 6) return;
   showStep(next);
-  if (next === 4) renderCalculation();
-  if (next === 5) renderPreview();
-  if (next === 6) renderOrder();
+  await enterStep(next);
 }
 
 function onPrev(from) {
@@ -53,6 +57,12 @@ function onPrev(from) {
 async function onCheckout() {
   if (!validateStepOrder()) {
     showToast('Bitte Pflichtfelder und Einwilligungen prüfen.');
+    return;
+  }
+  if (isPlaceholderProductId(getProductId())) {
+    showToast(
+      'Kein Shop-Artikel hinterlegt. Wix-Produkt-ID in config.example.js eintragen (wixProductId).'
+    );
     return;
   }
   const orderNumber = createOrderNumber();
@@ -76,7 +86,7 @@ async function onCheckout() {
     showToast(
       cart.mode === 'demo'
         ? `Auftrag ${orderNumber} im Demo-Modus erfasst.`
-        : `Auftrag ${saved.orderNumber} – Artikel im Warenkorb.`
+        : `Auftrag ${saved.orderNumber} – weiter zur Kasse.`
     );
     patch({ order: { number: orderNumber, status: 'submitted' } });
   } catch (error) {
@@ -107,7 +117,7 @@ function bindNav() {
 function init() {
   bindRegister();
   renderStepper();
-  bindStepper(canEnterStep);
+  bindStepper(canEnterStep, (step) => enterStep(step));
   bindBuildingLive();
   bindConsumption();
   bindDocuments();
