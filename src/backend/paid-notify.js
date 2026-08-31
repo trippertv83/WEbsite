@@ -3,9 +3,7 @@
  */
 
 import { Buffer } from 'buffer';
-import { fetch } from 'wix-fetch';
 import {
-  downloadUrlFor,
   findCertificateOrderByEmail,
   getCertificateOrder,
   saveHsvFile,
@@ -13,9 +11,6 @@ import {
 } from 'backend/database';
 import { sendPaidOrderEmails } from 'backend/email';
 import { buildHsvContent, hsvFileName } from 'backend/hsv';
-
-const FUNCTIONS_BASE =
-  'https://energieberater4.wixsite.com/dieterspaderna/_functions';
 
 export function extractVaOrderNumber(source) {
   const text = typeof source === 'string' ? source : JSON.stringify(source || {});
@@ -131,24 +126,14 @@ export async function notifyPaidCertificate({
     wixOrderId,
   };
 
-  const hsvContent = buildHsvContent(body);
-  const fileName = hsvFileName(body);
-  const saved = await saveHsvFile(record.orderNumber, {
-    fileName,
-    content: hsvContent,
-  });
-
-  const token = saved.hsvDownloadToken;
-  const hsvDownloadUrl = `${FUNCTIONS_BASE}/downloadHsv?order=${encodeURIComponent(
-    record.orderNumber
-  )}&t=${encodeURIComponent(token)}`;
-
-  const fileUrls = [];
-  for (const file of saved.fileUrls || []) {
-    fileUrls.push({
-      ...file,
-      downloadUrl: await downloadUrlFor(file.fileUrl),
-    });
+  let hsvContent = '';
+  let fileName = hsvFileName(body);
+  try {
+    hsvContent = buildHsvContent(body);
+  } catch (error) {
+    console.error('HSV erzeugen:', error);
+    hsvContent = `[Version]\r\nProgrammversion=HS Verbrauchspass 5.2.11\r\n[Gebauede]\r\nZusatzAuftragsnummer=${record.orderNumber || ''}\r\n`;
+    fileName = `${record.orderNumber || 'auftrag'}.hsv`;
   }
 
   const mailAttachments = [
@@ -159,47 +144,31 @@ export async function notifyPaidCertificate({
     },
   ];
 
-  for (const file of fileUrls) {
-    const bytes = await fetchFileBase64(file.downloadUrl);
-    if (bytes) {
-      mailAttachments.push({
-        name: file.name || 'dokument.pdf',
-        mimeType: file.mimeType || 'application/pdf',
-        contentBase64: bytes,
-      });
-    }
-  }
-
   const mail = await sendPaidOrderEmails({
     ...body,
     hsvFileName: fileName,
-    hsvDownloadUrl,
-    fileUrls,
+    hsvDownloadUrl: '',
+    fileUrls: body.fileUrls,
     mailAttachments,
   });
 
+  try {
+    await saveHsvFile(record.orderNumber, {
+      fileName,
+      content: hsvContent,
+    });
+  } catch (error) {
+    console.error('HSV in der Mediathek:', error);
+  }
+
   await updateOrderStatus(record.orderNumber, 'paid_notified', {
     hsvFileName: fileName,
-    hsvFileUrl: saved.hsvFileUrl,
-    hsvDownloadToken: token,
     wixOrderNumber: shopNumber || record.wixOrderNumber,
     wixOrderId: wixOrderId || record.wixOrderId,
+    mailResult: mail,
   });
 
   return { ok: true, orderNumber: record.orderNumber, mail };
-}
-
-async function fetchFileBase64(url) {
-  if (!url) return '';
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return '';
-    const buf = await res.buffer();
-    return Buffer.from(buf).toString('base64');
-  } catch (error) {
-    console.error('Anhang laden:', error);
-    return '';
-  }
 }
 
 export async function hsvForDownload(orderNumber, token) {
