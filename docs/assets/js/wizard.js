@@ -35,7 +35,7 @@ export function renderStepper() {
 }
 
 export function showStep(step) {
-  qsa('.panel').forEach((panel) => {
+  qsa('.panel[data-step]').forEach((panel) => {
     const id = Number(panel.dataset.step);
     panel.hidden = id !== step;
   });
