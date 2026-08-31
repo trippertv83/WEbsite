@@ -32,7 +32,8 @@ export const AppConfig = {
   demoMode: true,
 
   /** Basis-URL der Wix-Site, sobald HTTP-Functions live sind */
-  wixHttpFunctionsBaseUrl: 'https://ihre-site.wixsite.com/ihre-site/_functions',
+  wixHttpFunctionsBaseUrl:
+    'https://energieberater4.wixsite.com/dieterspaderna/_functions',
 };
 
 export default AppConfig;
