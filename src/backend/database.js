@@ -4,12 +4,72 @@
  */
 
 import wixData from 'wix-data';
+import { collections } from 'wix-data.v2';
 import { mediaManager } from 'wix-media-backend';
 import { Buffer } from 'buffer';
 
 const COLLECTION = 'CertificateOrders';
+const OPTIONS = { suppressAuth: true };
+
+function field(key, displayName, type) {
+  return { key, displayName, type };
+}
+
+const COLLECTION_SCHEMA = {
+  _id: COLLECTION,
+  displayName: 'Verbrauchsausweis-Aufträge',
+  displayField: 'orderNumber',
+  permissions: {
+    read: 'ADMIN',
+    insert: 'ADMIN',
+    update: 'ADMIN',
+    remove: 'ADMIN',
+  },
+  fields: [
+    field('orderNumber', 'Bestellnummer', 'TEXT'),
+    field('status', 'Status', 'TEXT'),
+    field('customerName', 'Kundenname', 'TEXT'),
+    field('customerEmail', 'E-Mail', 'TEXT'),
+    field('building', 'Gebäude', 'OBJECT'),
+    field('consumption', 'Verbrauch', 'OBJECT'),
+    field('calculation', 'Berechnung', 'OBJECT'),
+    field('fileUrls', 'Dateien', 'OBJECT'),
+    field('createdAt', 'Erstellt', 'DATETIME'),
+    field('updatedAt', 'Aktualisiert', 'DATETIME'),
+  ],
+};
+
+let collectionReady = false;
+
+async function ensureCollection() {
+  if (collectionReady) return;
+  try {
+    await collections.getDataCollection(COLLECTION);
+    collectionReady = true;
+    return;
+  } catch {
+    /* anlegen */
+  }
+  try {
+    await collections.createDataCollection(COLLECTION_SCHEMA);
+    collectionReady = true;
+  } catch (error) {
+    const msg = String(error.message || error);
+    if (msg.includes('already exists') || msg.includes('WDE0026')) {
+      collectionReady = true;
+      return;
+    }
+    throw new Error(
+      'CMS-Sammlung CertificateOrders fehlt und konnte nicht automatisch angelegt werden. ' +
+        'Im Wix-Dashboard: CMS → Sammlung erstellen, ID genau CertificateOrders, dann Site veröffentlichen. ' +
+        'Original: ' +
+        msg
+    );
+  }
+}
 
 export async function createCertificateOrder(body) {
+  await ensureCollection();
   const now = new Date();
   const fileUrls = await storeAttachments(body.orderNumber, body.attachments || []);
 
@@ -30,33 +90,42 @@ export async function createCertificateOrder(body) {
     .query(COLLECTION)
     .eq('orderNumber', body.orderNumber)
     .limit(1)
-    .find();
+    .find(OPTIONS);
 
   if (existing.items.length) {
-    return wixData.update(COLLECTION, {
-      ...existing.items[0],
-      ...item,
-      _id: existing.items[0]._id,
-    });
+    return wixData.update(
+      COLLECTION,
+      {
+        ...existing.items[0],
+        ...item,
+        _id: existing.items[0]._id,
+      },
+      OPTIONS
+    );
   }
 
-  return wixData.insert(COLLECTION, item);
+  return wixData.insert(COLLECTION, item, OPTIONS);
 }
 
 export async function updateOrderStatus(orderNumber, status) {
+  await ensureCollection();
   const result = await wixData
     .query(COLLECTION)
     .eq('orderNumber', orderNumber)
     .limit(1)
-    .find();
+    .find(OPTIONS);
   if (!result.items.length) {
     throw new Error(`Auftrag ${orderNumber} nicht gefunden.`);
   }
-  return wixData.update(COLLECTION, {
-    ...result.items[0],
-    status,
-    updatedAt: new Date(),
-  });
+  return wixData.update(
+    COLLECTION,
+    {
+      ...result.items[0],
+      status,
+      updatedAt: new Date(),
+    },
+    OPTIONS
+  );
 }
 
 async function storeAttachments(orderNumber, attachments) {
