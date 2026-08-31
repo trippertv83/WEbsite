@@ -83,12 +83,58 @@ async function addLine(productId, orderNumber, efficiencyClass) {
   }
 }
 
-async function goToCheckout() {
+function checkoutPhone(raw) {
+  const compact = String(raw || '').replace(/[^\d+]/g, '');
+  if (!compact) return '';
+  if (compact.startsWith('+')) return compact;
+  if (compact.startsWith('00')) return `+${compact.slice(2)}`;
+  if (compact.startsWith('0')) return `+49${compact.slice(1)}`;
+  return `+49${compact}`;
+}
+
+function checkoutBuyer(customer = {}) {
+  const firstName =
+    customer.firstName ||
+    customer.contactFirstName ||
+    String(customer.name || 'Kunde').trim().split(/\s+/)[0] ||
+    'Kunde';
+  const lastName =
+    customer.lastName ||
+    customer.contactLastName ||
+    String(customer.name || '').trim().split(/\s+/).slice(1).join(' ') ||
+    firstName;
+  const phone = checkoutPhone(customer.phone);
+  const address = {
+    country: 'DE',
+    city: customer.ort || '',
+    postalCode: String(customer.plz || ''),
+    addressLine1: `${customer.strasse || ''} ${customer.hausnummer || ''}`.trim(),
+    streetAddress: {
+      name: customer.strasse || '',
+      number: String(customer.hausnummer || ''),
+    },
+    phone,
+  };
+  return {
+    channelType: 'WEB',
+    email: customer.email || '',
+    shippingAddress: address,
+    billingInfo: {
+      address,
+      contactDetails: {
+        firstName,
+        lastName,
+        phone,
+        company: customer.companyName || '',
+      },
+    },
+  };
+}
+
+async function goToCheckout(customer) {
   await wixEcomFrontend.refreshCart();
   try {
-    const created = await currentCart.createCheckoutFromCurrentCart({
-      channelType: 'WEB',
-    });
+    const created = await currentCart.createCheckoutFromCurrentCart(checkoutBuyer(customer));
     const id = checkoutIdOf(created);
     if (!id) throw new Error('Keine Checkout-ID');
     await wixEcomFrontend.navigateToCheckoutPage(id, {
@@ -112,7 +158,7 @@ async function handleAddToCart(data) {
   if (data.orderNumber && data.orderNumber === lastOrder) return;
   lastOrder = data.orderNumber || String(Date.now());
   await addLine(data.productId, data.orderNumber, data.efficiencyClass);
-  await goToCheckout();
+  await goToCheckout(data.customer);
 }
 
 export function bindWizardCart() {

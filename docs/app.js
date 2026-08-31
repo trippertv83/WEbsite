@@ -82,6 +82,7 @@ async function onCheckout() {
       productId: getProductId(),
       orderNumber,
       efficiencyClass: getState().calculation?.efficiencyClass || '',
+      customer: getState().customer,
     });
     showToast(
       cart.mode === 'demo'

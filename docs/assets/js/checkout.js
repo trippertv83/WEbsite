@@ -43,6 +43,7 @@ export async function addCertificateToCart(payload) {
       productId: payload.productId,
       orderNumber: payload.orderNumber,
       efficiencyClass: payload.efficiencyClass,
+      customer: payload.customer || null,
     };
     window.parent.postMessage(message, '*');
     try {

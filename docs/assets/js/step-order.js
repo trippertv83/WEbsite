@@ -58,6 +58,8 @@ export async function renderOrder() {
           <dd>${escapeHtml(customerDisplayName(customer))}</dd>
           <dt>Anschrift</dt>
           <dd>${addressHtml(customer)}</dd>
+          <dt>Telefon</dt>
+          <dd>${escapeHtml(customer.phone || '–')}</dd>
           <dt>Gebäude</dt>
           <dd>${addressHtml(building)}</dd>
           <dt>Wohnfläche</dt>

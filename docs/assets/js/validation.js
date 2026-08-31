@@ -5,6 +5,10 @@
 const PLZ = /^\d{5}$/;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+export function phoneDigitCount(value) {
+  return String(value || '').replace(/\D/g, '').length;
+}
+
 export function validateBuilding(building) {
   const errors = {};
   if (!PLZ.test(String(building.plz || ''))) {
@@ -72,6 +76,9 @@ export function validateLogin(customer) {
   if (!EMAIL.test(customer.email || '')) {
     errors.email = 'Bitte die E-Mail-Adresse angeben, die in SevDesk hinterlegt ist.';
   }
+  if (phoneDigitCount(customer.phone) < 6) {
+    errors.phone = 'Bitte eine Telefonnummer für die Kasse angeben.';
+  }
   if (!customer.acceptRegisterPrivacy) {
     errors.acceptRegisterPrivacy =
       'Bitte der Abfrage Ihres Kundendatensatzes in SevDesk zustimmen.';
@@ -101,6 +108,9 @@ export function validateRegistration(customer) {
   if (!EMAIL.test(customer.email || '')) {
     errors.email = 'Bitte eine gültige E-Mail-Adresse angeben.';
   }
+  if (phoneDigitCount(customer.phone) < 6) {
+    errors.phone = 'Bitte eine Telefonnummer angeben (für die sichere Zahlung).';
+  }
   if (!customer.strasse?.trim()) errors.strasse = 'Straße ist erforderlich.';
   if (!customer.hausnummer?.trim()) errors.hausnummer = 'Hausnummer ist erforderlich.';
   if (!PLZ.test(String(customer.plz || ''))) {
@@ -119,6 +129,9 @@ export function validateCustomer(customer) {
   if (!customer.name?.trim()) errors.name = 'Name ist erforderlich.';
   if (!EMAIL.test(customer.email || '')) {
     errors.email = 'Bitte eine gültige E-Mail-Adresse angeben.';
+  }
+  if (phoneDigitCount(customer.phone) < 6) {
+    errors.phone = 'Bitte eine Telefonnummer angeben.';
   }
   if (!customer.acceptAgb) errors.acceptAgb = 'Bitte die AGB akzeptieren.';
   if (!customer.acceptPrivacy) {

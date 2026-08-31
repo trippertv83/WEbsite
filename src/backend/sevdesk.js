@@ -189,6 +189,21 @@ export async function createCustomer(body) {
     });
   }
 
+  if (c.phone) {
+    await sevdeskFetch('/CommunicationWay', {
+      method: 'POST',
+      body: {
+        contact: { id, objectName: 'Contact' },
+        type: 'PHONE',
+        value: c.phone,
+        key: { id: 3, objectName: 'CommunicationWayKey' },
+        main: 1,
+      },
+    }).catch((error) => {
+      console.error('SevDesk-Telefon konnte nicht gespeichert werden:', error);
+    });
+  }
+
   const address = customerAddress(body);
   if (address.plz || address.ort || address.strasse) {
     await sevdeskFetch('/ContactAddress', {

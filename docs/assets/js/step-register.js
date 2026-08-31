@@ -45,6 +45,7 @@ export function readRegisterForm() {
     lastName,
     name,
     email: data.email || '',
+    phone: data.phone || '',
     strasse: data.strasse || '',
     hausnummer: data.hausnummer || '',
     plz: data.plz || '',
