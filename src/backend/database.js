@@ -7,6 +7,7 @@ import wixData from 'wix-data';
 import { collections } from 'wix-data.v2';
 import { mediaManager } from 'wix-media-backend';
 import { Buffer } from 'buffer';
+import { fetch } from 'wix-fetch';
 import { buildHsvContent, hsvFileName } from 'backend/hsv';
 
 const COLLECTION = 'CertificateOrders';
@@ -263,8 +264,6 @@ export async function appendOrderAttachment(orderNumber, file) {
   );
 }
 
-const CHUNKS = 'OrderFileChunks';
-
 export async function receiveFileChunk({
   orderNumber,
   fileName,
@@ -278,87 +277,90 @@ export async function receiveFileChunk({
   if (!orderNumber || chunk == null || index == null || !total) {
     throw new Error('Unvollständiger Datei-Upload.');
   }
-  try {
-    await wixData.insert(
-      CHUNKS,
-      {
-        orderNumber,
-        fileName: sanitize(fileName) || 'dokument.pdf',
-        category: category || 'other',
-        mimeType: mimeType || 'application/pdf',
-        index: Number(index),
-        total: Number(total),
-        chunk: String(chunk),
-        createdAt: new Date(),
+  const existing = await getCertificateOrder(orderNumber);
+  if (!existing) throw new Error(`Auftrag ${orderNumber} nicht gefunden.`);
+
+  const safeName = sanitize(fileName) || 'dokument.pdf';
+  const folder = `/energieausweis/${orderNumber}/chunks`;
+  const uploaded = await mediaManager.upload(
+    folder,
+    Buffer.from(String(chunk), 'utf8'),
+    `${safeName}.${Number(index)}.part`,
+    {
+      mediaOptions: {
+        mimeType: 'text/plain',
+        mediaType: 'document',
       },
-      OPTIONS
-    );
-  } catch (error) {
-    try {
-      await collections.createDataCollection({
-        _id: CHUNKS,
-        displayName: 'Auftragsdatei-Teile',
-        displayField: 'fileName',
-        permissions: {
-          read: 'ADMIN',
-          insert: 'ADMIN',
-          update: 'ADMIN',
-          remove: 'ADMIN',
-        },
-        fields: [
-          field('orderNumber', 'Bestellnummer', 'TEXT'),
-          field('fileName', 'Datei', 'TEXT'),
-          field('category', 'Kategorie', 'TEXT'),
-          field('mimeType', 'MIME', 'TEXT'),
-          field('index', 'Index', 'NUMBER'),
-          field('total', 'Gesamt', 'NUMBER'),
-          field('chunk', 'Teil', 'TEXT'),
-          field('createdAt', 'Erstellt', 'DATETIME'),
-        ],
-      });
-    } catch {
-      /* existiert */
+      metadataOptions: {
+        isPrivate: true,
+        isVisitorUpload: false,
+      },
     }
-    await wixData.insert(
-      CHUNKS,
-      {
-        orderNumber,
-        fileName: sanitize(fileName) || 'dokument.pdf',
-        category: category || 'other',
-        mimeType: mimeType || 'application/pdf',
-        index: Number(index),
-        total: Number(total),
-        chunk: String(chunk),
-        createdAt: new Date(),
+  );
+
+  const pending = { ...(existing.calculation?.pendingChunks || {}) };
+  const entry = pending[safeName] || {
+    total: Number(total),
+    parts: [],
+    category: category || 'other',
+    mimeType: mimeType || 'application/pdf',
+    originalName: fileName,
+  };
+  entry.total = Number(total);
+  entry.parts = [
+    ...entry.parts.filter((part) => Number(part.index) !== Number(index)),
+    { index: Number(index), fileUrl: uploaded.fileUrl },
+  ];
+  pending[safeName] = entry;
+
+  await wixData.update(
+    COLLECTION,
+    {
+      ...existing,
+      calculation: {
+        ...(existing.calculation || {}),
+        pendingChunks: pending,
       },
-      OPTIONS
-    );
+      updatedAt: new Date(),
+    },
+    OPTIONS
+  );
+
+  if (entry.parts.length < Number(total)) {
+    return { complete: false, received: entry.parts.length, total: Number(total) };
   }
 
-  if (Number(index) + 1 < Number(total)) {
-    return { complete: false, received: Number(index) + 1, total: Number(total) };
+  const sorted = [...entry.parts].sort((a, b) => Number(a.index) - Number(b.index));
+  let contentBase64 = '';
+  for (const part of sorted) {
+    const url = await mediaManager.getDownloadUrl(part.fileUrl, 10);
+    const res = await fetch(url);
+    contentBase64 += await res.text();
   }
 
-  const result = await wixData
-    .query(CHUNKS)
-    .eq('orderNumber', orderNumber)
-    .eq('fileName', sanitize(fileName) || 'dokument.pdf')
-    .limit(1000)
-    .find(OPTIONS);
-  const parts = [...result.items].sort((a, b) => Number(a.index) - Number(b.index));
-  if (parts.length < Number(total)) {
-    return { complete: false, received: parts.length, total: Number(total) };
-  }
-  const contentBase64 = parts.map((item) => item.chunk).join('');
   await appendOrderAttachment(orderNumber, {
-    name: fileName,
-    category,
-    mimeType,
+    name: entry.originalName || fileName,
+    category: entry.category,
+    mimeType: entry.mimeType,
     contentBase64,
   });
-  await Promise.all(
-    parts.map((item) => wixData.remove(CHUNKS, item._id, OPTIONS).catch(() => null))
+
+  const fresh = await getCertificateOrder(orderNumber);
+  const nextPending = { ...(fresh.calculation?.pendingChunks || {}) };
+  delete nextPending[safeName];
+  await wixData.update(
+    COLLECTION,
+    {
+      ...fresh,
+      calculation: {
+        ...(fresh.calculation || {}),
+        pendingChunks: nextPending,
+      },
+      updatedAt: new Date(),
+    },
+    OPTIONS
   );
+
   return { complete: true };
 }
 
