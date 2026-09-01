@@ -4,10 +4,10 @@
  * In Wix: Public & Backend → Public → references.js
  * Danach: Site veröffentlichen.
  *
- * Auf HOME eine HTML-Komponente einfügen, ID: #htmlReferenzen
- * Website-Adresse der Komponente:
+ * Auf HOME unter „Referenzen“: Einbettung (HTML-iframe), Höhe ca. 800 px.
+ * ID: htmlReferenzen (sonst setzt der Code die Adresse trotzdem).
+ * Website-Adresse:
  * https://trippertv83.github.io/WEbsite/referenzen.html
- * Höhe der Komponente: ca. 780 px
  *
  * Layout bleibt immer gleich. Hier nur Texte und Bild-Links ändern.
  *
