@@ -4,11 +4,16 @@
 
 import { response } from 'wix-http-functions';
 import { createCertificateOrder, appendOrderAttachment, receiveFileChunk, uploadInquiryFile } from 'backend/database';
-import { createCustomer, findCustomerByEmail } from 'backend/sevdesk';
 import { getCertificateProduct } from 'backend/payment';
 import { lookupClimateFactor } from 'backend/climate';
 import { hsvForDownload } from 'backend/paid-notify';
 import { sendResendConnectionTest, sendServiceInquiryEmail } from 'backend/email';
+import {
+  requestRegisterCode,
+  completeRegistration,
+  readSession,
+  clientIp,
+} from 'backend/auth';
 
 function corsHeaders() {
   return {
@@ -28,6 +33,10 @@ function json(status, body) {
 }
 
 export function options_registerCustomer() {
+  return json(200, { ok: true });
+}
+
+export function options_requestRegisterCode() {
   return json(200, { ok: true });
 }
 
@@ -136,59 +145,64 @@ export async function get_testResendMail() {
   }
 }
 
+export async function post_requestRegisterCode(request) {
+  try {
+    const body = await request.body.json();
+    const result = await requestRegisterCode({
+      email: body?.email || body?.customer?.email,
+      mode: body?.mode === 'login' ? 'login' : 'register',
+      ip: clientIp(request),
+    });
+    return json(200, result);
+  } catch (error) {
+    console.error(error);
+    return json(error.status || 400, {
+      error: error.message || 'Code konnte nicht gesendet werden.',
+    });
+  }
+}
+
 export async function post_registerCustomer(request) {
   try {
     const body = await request.body.json();
     const c = body?.customer || {};
     const mode = body?.mode === 'login' ? 'login' : 'register';
+    const ip = clientIp(request);
 
     if (!c.email) {
       return json(400, { error: 'E-Mail ist Pflicht.' });
     }
-
-    if (mode === 'login') {
-      const found = await findCustomerByEmail(c.email);
-      if (!found) {
-        return json(404, {
-          error:
-            'Kein SevDesk-Kunde mit dieser E-Mail. Bitte „Neuer Kunde“ wählen und registrieren.',
-        });
-      }
-      return json(200, {
-        ok: true,
-        existing: true,
-        sevdeskCustomerId: found.id,
-        customerName: found.name,
-        customerNumber: found.customerNumber || null,
-        email: c.email,
+    if (!body?.code) {
+      return json(400, {
+        error: 'Bitte zuerst den E-Mail-Code anfordern und den Code eingeben.',
       });
     }
 
-    if (!['firma', 'herr', 'frau'].includes(c.customerType)) {
-      return json(400, { error: 'Bitte Firma, Herr oder Frau wählen.' });
-    }
-    if (c.customerType === 'firma' && (!c.companyName || !c.contactFirstName || !c.contactLastName)) {
-      return json(400, { error: 'Firmenname und Ansprechpartner (Vor- und Nachname) sind Pflicht.' });
-    }
-    if (c.customerType !== 'firma' && (!c.firstName || !c.lastName)) {
-      return json(400, { error: 'Vor- und Nachname sind Pflicht.' });
-    }
-    if (!c.plz || !c.ort || !c.strasse) {
-      return json(400, { error: 'Anschrift und E-Mail sind Pflicht.' });
+    if (mode === 'register') {
+      if (!['firma', 'herr', 'frau'].includes(c.customerType)) {
+        return json(400, { error: 'Bitte Firma, Herr oder Frau wählen.' });
+      }
+      if (c.customerType === 'firma' && (!c.companyName || !c.contactFirstName || !c.contactLastName)) {
+        return json(400, { error: 'Firmenname und Ansprechpartner (Vor- und Nachname) sind Pflicht.' });
+      }
+      if (c.customerType !== 'firma' && (!c.firstName || !c.lastName)) {
+        return json(400, { error: 'Vor- und Nachname sind Pflicht.' });
+      }
+      if (!c.plz || !c.ort || !c.strasse) {
+        return json(400, { error: 'Anschrift und E-Mail sind Pflicht.' });
+      }
     }
 
-    const customer = await createCustomer({ customer: c });
-    return json(201, {
-      ok: true,
-      existing: Boolean(customer.existing),
-      sevdeskCustomerId: customer.id,
-      customerName: customer.name || `${c.firstName} ${c.lastName}`,
-      customerNumber: customer.customerNumber || null,
-      email: c.email,
+    const customer = await completeRegistration({
+      customer: c,
+      mode,
+      code: body.code,
+      ip,
     });
+    return json(mode === 'register' && !customer.existing ? 201 : 200, customer);
   } catch (error) {
     console.error(error);
-    return json(500, {
+    return json(error.status || 500, {
       error:
         error.message ||
         'SevDesk-Kunde konnte nicht angelegt werden. Secret SEVDESK_API_TOKEN und API-Rechte prüfen.',
@@ -247,6 +261,10 @@ export async function post_uploadOrderFile(request) {
 export async function post_inquiryFile(request) {
   try {
     const body = await request.body.json();
+    const session = await readSession(body?.sessionToken);
+    if (!session) {
+      return json(401, { error: 'Bitte zuerst als Kunde registrieren oder anmelden.' });
+    }
     if (!body?.contentBase64) {
       return json(400, { error: 'Datei fehlt.' });
     }
@@ -261,10 +279,22 @@ export async function post_inquiryFile(request) {
 export async function post_serviceInquiry(request) {
   try {
     const body = await request.body.json();
+    const session = await readSession(body?.sessionToken);
+    if (!session) {
+      return json(401, { error: 'Bitte zuerst als Kunde registrieren oder anmelden.' });
+    }
     if (!body?.contact?.email || !body?.contact?.name) {
       return json(400, { error: 'Name und E-Mail sind Pflicht.' });
     }
-    const mail = await sendServiceInquiryEmail(body);
+    const mail = await sendServiceInquiryEmail({
+      ...body,
+      contact: {
+        ...body.contact,
+        email: session.email || body.contact.email,
+      },
+      sevdeskCustomerId: session.sevdeskCustomerId,
+      customerNumber: session.customerNumber,
+    });
     if (!mail.ok) {
       return json(500, {
         error:
@@ -273,7 +303,7 @@ export async function post_serviceInquiry(request) {
           'E-Mail konnte nicht gesendet werden. RESEND_API_KEY prüfen und Site veröffentlichen.',
       });
     }
-    return json(200, { ok: true });
+    return json(200, { ok: true, sevdeskCustomerId: session.sevdeskCustomerId });
   } catch (error) {
     console.error(error);
     return json(500, { error: error.message || 'Anfrage fehlgeschlagen.' });

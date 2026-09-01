@@ -144,11 +144,17 @@
             </label>
             <span class="field__error" data-error-for="acceptRegisterPrivacy"></span>
           </div>
+          <div class="field" style="margin-top: 1rem">
+            <label class="field__label" for="reg-code">Bestätigungscode aus der E-Mail</label>
+            <input class="input" id="reg-code" name="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" />
+            <span class="field__hint">Wir legen in SevDesk erst nach diesem Code einen Kunden an. So verhindert ihr Massen-Anlagen.</span>
+            <span class="field__error" data-error-for="code"></span>
+          </div>
         </form>
         <div class="btn-row">
-          <span></span>
+          <button class="btn" type="button" id="btn-send-code">Code an E-Mail senden</button>
           <button class="btn btn--primary" type="button" id="btn-register">
-            Registrieren und zum Erfassungsbogen
+            Code bestätigen
           </button>
         </div>
       </section>

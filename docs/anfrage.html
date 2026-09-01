@@ -128,6 +128,13 @@
     </main>
     <script type="module">
       import { serviceById, API_BASE } from './assets/js/services.js';
+      import { loadSession, clearSession } from './assets/js/session.js';
+
+      const session = loadSession();
+      if (!session || !session.token) {
+        const next = encodeURIComponent(location.pathname + location.search);
+        location.replace('index.html?next=' + next);
+      } else {
 
       const id = new URLSearchParams(location.search).get('id');
       const service = serviceById(id);
@@ -144,6 +151,12 @@
         document.getElementById('lead').textContent =
           (service.bedarfTitel || 'Bitte Angaben und Unterlagen senden.') +
           (service.preis ? '  ·  ' + service.preis : '');
+        if (session) {
+          const nameEl = document.getElementById('name');
+          const emailEl = document.getElementById('email');
+          if (nameEl && session.name) nameEl.value = session.name;
+          if (emailEl && session.email) emailEl.value = session.email;
+        }
 
         const bogen = document.getElementById('bogen');
         if (service.bogen) {
@@ -206,7 +219,13 @@
         const text = await res.text();
         let data = {};
         try { data = text ? JSON.parse(text) : {}; } catch { data = { error: text }; }
-        if (!res.ok) throw new Error(data.error || 'Serverfehler ' + res.status);
+        if (!res.ok) {
+          if (res.status === 401) {
+            clearSession();
+            throw new Error('Bitte zuerst als Kunde anmelden.');
+          }
+          throw new Error(data.error || 'Serverfehler ' + res.status);
+        }
         return data;
       }
 
@@ -227,6 +246,7 @@
               throw new Error(file.name + ' ist größer als 4 MB.');
             }
             const uploaded = await postJson('inquiryFile', {
+              sessionToken: session.token,
               name: file.name,
               mimeType: file.type || 'application/octet-stream',
               category: input.dataset.key,
@@ -240,6 +260,7 @@
           }
 
           await postJson('serviceInquiry', {
+            sessionToken: session.token,
             serviceId: service.id,
             titel: service.titel,
             preis: service.preis || '',
@@ -272,6 +293,7 @@
           button.disabled = false;
         }
       });
+      }
     </script>
   </body>
 </html>

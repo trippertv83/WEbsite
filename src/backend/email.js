@@ -407,6 +407,20 @@ export async function sendAdminMail(opts) {
   return sendViaHttpMail(opts);
 }
 
+export async function sendRegisterCodeEmail({ email, code, minutes }) {
+  const html = `<p>Ihr Bestätigungscode für die Kundenanlage beim Ingenieurbüro Spaderna:</p>
+<p style="font-size:28px;letter-spacing:6px;font-weight:700">${escapeHtml(code)}</p>
+<p>Der Code ist ${Number(minutes) || 15} Minuten gültig. Wenn Sie das nicht waren, ignorieren Sie diese Mail.</p>`;
+  const text = `Ihr Bestätigungscode: ${code}\nGültig ${Number(minutes) || 15} Minuten.`;
+  return sendViaHttpMail({
+    to: email,
+    subject: 'Ihr Bestätigungscode',
+    html,
+    text,
+    attachments: [],
+  });
+}
+
 export async function sendServiceInquiryEmail(body = {}) {
   const adminEmail = await resolveAdminEmail();
   const contact = body.contact || {};
@@ -427,6 +441,8 @@ export async function sendServiceInquiryEmail(body = {}) {
   const subject = `Anfrage: ${body.titel || body.serviceId || 'Leistung'}`;
   const html = `<p>Neue Leistungsanfrage.</p>
 <p><b>${escapeHtml(body.titel || '')}</b>${body.preis ? ` · ${escapeHtml(body.preis)}` : ''}</p>
+<p>SevDesk-Kunde: ${escapeHtml(body.sevdeskCustomerId || '')}
+${body.customerNumber ? ` · Nr. ${escapeHtml(body.customerNumber)}` : ''}</p>
 <h3>Kontakt</h3>
 <ul>
 <li>Name: ${escapeHtml(contact.name || '')}</li>

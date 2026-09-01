@@ -93,7 +93,18 @@ export async function registerCustomer(customer, mode) {
   }
 
   const url = `${base.replace(/\/$/, '')}/registerCustomer`;
-  return postJson(url, { customer, mode });
+  return postJson(url, { customer, mode, code });
+}
+
+export async function requestRegisterCode(email, mode) {
+  const base = AppConfig.wixHttpFunctionsBaseUrl || '';
+  if (!base || base.includes('ihre-site')) {
+    throw new Error(
+      'Wix-Backend-URL fehlt. In config.example.js wixHttpFunctionsBaseUrl eintragen.'
+    );
+  }
+  const url = `${base.replace(/\/$/, '')}/requestRegisterCode`;
+  return postJson(url, { email, mode });
 }
 
 export async function submitOrder({ payload, documents }) {
