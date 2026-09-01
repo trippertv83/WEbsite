@@ -1,10 +1,11 @@
-// API Reference: https://www.wix.com/velo/reference/api-overview/introduction
-// “Hello, World!” Example: https://learn-code.wix.com/en/article/hello-world
+/**
+ * Referenz-Seite (Project 2).
+ * Texte selbst in public/references.js beim Eintrag id: 'project-2' ändern.
+ * Im Editor Elemente so benennen: #refTitel #refOrt #refJahr #refText
+ */
+
+import { bindReferences } from 'public/bindReferences';
 
 $w.onReady(function () {
-    // Write your JavaScript here
-
-    // To select an element by ID use: $w('#elementID')
-
-    // Click 'Preview' to run your code
+  bindReferences('project-2');
 });
