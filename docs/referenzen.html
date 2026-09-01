@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Referenzen</title>
+    <style>
+      :root {
+        --blue: #0b78d1;
+        --blue-dark: #085ea4;
+        --blue-soft: #e7f2fb;
+        --text: #2a3038;
+        --soft: #5b6573;
+        --heading: #1c222b;
+        --line: #d5dbe3;
+        --bg: #f3f4f6;
+        --card: #fff;
+        --radius: 16px;
+        --font: 'Segoe UI', system-ui, sans-serif;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        font-family: var(--font);
+        color: var(--text);
+        background: transparent;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: 0 8px 24px rgba(28, 34, 43, 0.08);
+      }
+      .photo {
+        width: 100%;
+        height: 280px;
+        object-fit: cover;
+        display: block;
+        background: var(--blue-soft);
+      }
+      .photo.is-empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--soft);
+        font-size: 0.95rem;
+      }
+      .body { padding: 1.25rem 1.4rem 1.4rem; }
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 0.85rem;
+        color: var(--soft);
+        font-size: 0.92rem;
+        margin: 0 0 0.35rem;
+      }
+      h2 {
+        margin: 0 0 0.65rem;
+        color: var(--heading);
+        font-size: 1.45rem;
+        line-height: 1.25;
+      }
+      .text {
+        margin: 0;
+        line-height: 1.55;
+        white-space: pre-wrap;
+      }
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-top: 1.15rem;
+      }
+      .btns { display: flex; gap: 0.5rem; }
+      button {
+        font: inherit;
+        min-height: 44px;
+        padding: 0 1rem;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--heading);
+        cursor: pointer;
+      }
+      button.primary {
+        background: var(--blue);
+        border-color: var(--blue);
+        color: #fff;
+      }
+      button:hover { filter: brightness(0.97); }
+      button:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(11, 120, 209, 0.35);
+      }
+      .count { color: var(--soft); font-weight: 600; }
+      .dots {
+        display: flex;
+        gap: 0.4rem;
+        justify-content: center;
+        margin-top: 0.9rem;
+      }
+      .dots button {
+        min-height: 0;
+        width: 9px;
+        height: 9px;
+        padding: 0;
+        border-radius: 50%;
+        background: #c9d3de;
+      }
+      .dots button.is-on { background: var(--blue); border-color: var(--blue); }
+    </style>
+  </head>
+  <body>
+    <article class="card" id="card">
+      <img class="photo" id="photo" alt="" />
+      <div class="photo is-empty" id="photoEmpty" hidden>Kein Bild hinterlegt</div>
+      <div class="body">
+        <p class="meta">
+          <span id="ort"></span>
+          <span id="jahr"></span>
+        </p>
+        <h2 id="titel"></h2>
+        <p class="text" id="text"></p>
+        <div class="nav">
+          <div class="btns">
+            <button type="button" id="prev">Zurück</button>
+            <button type="button" class="primary" id="next">Weiter</button>
+          </div>
+          <span class="count" id="count">1 / 1</span>
+        </div>
+        <div class="dots" id="dots"></div>
+      </div>
+    </article>
+    <script>
+      /* Fallback, falls Wix noch keine Daten schickt. Die echten Texte pflegst du in references.js */
+      let items = [
+        { titel: 'Referenz 1', ort: 'Ort', jahr: '2024', text: 'Beschreibung.', bild: '' },
+        { titel: 'Referenz 2', ort: 'Ort', jahr: '2025', text: 'Beschreibung.', bild: '' },
+        { titel: 'Referenz 3', ort: 'Ort', jahr: '2025', text: 'Beschreibung.', bild: '' },
+      ];
+      let index = 0;
+
+      const els = {
+        photo: document.getElementById('photo'),
+        empty: document.getElementById('photoEmpty'),
+        titel: document.getElementById('titel'),
+        ort: document.getElementById('ort'),
+        jahr: document.getElementById('jahr'),
+        text: document.getElementById('text'),
+        count: document.getElementById('count'),
+        dots: document.getElementById('dots'),
+      };
+
+      function show() {
+        if (!items.length) return;
+        const item = items[index];
+        const url = String(item.bild || '').trim();
+        if (url) {
+          els.photo.src = url;
+          els.photo.hidden = false;
+          els.empty.hidden = true;
+        } else {
+          els.photo.removeAttribute('src');
+          els.photo.hidden = true;
+          els.empty.hidden = false;
+        }
+        els.titel.textContent = item.titel || '';
+        els.ort.textContent = item.ort || '';
+        els.jahr.textContent = item.jahr || '';
+        els.text.textContent = item.text || '';
+        els.count.textContent = index + 1 + ' / ' + items.length;
+        els.dots.innerHTML = items
+          .map((_, i) => '<button type="button" data-i="' + i + '" class="' + (i === index ? 'is-on' : '') + '" aria-label="Referenz ' + (i + 1) + '"></button>')
+          .join('');
+      }
+
+      function go(step) {
+        if (!items.length) return;
+        index = (index + step + items.length) % items.length;
+        show();
+      }
+
+      document.getElementById('prev').onclick = () => go(-1);
+      document.getElementById('next').onclick = () => go(1);
+      els.dots.addEventListener('click', (event) => {
+        const btn = event.target.closest('button[data-i]');
+        if (!btn) return;
+        index = Number(btn.dataset.i);
+        show();
+      });
+
+      function takeMessage(raw) {
+        let data = raw;
+        if (typeof data === 'string') {
+          try { data = JSON.parse(data); } catch { return; }
+        }
+        if (data && data.data) data = data.data;
+        if (!data || data.type !== 'REFERENZEN' || !Array.isArray(data.items)) return;
+        items = data.items.filter((item) => item && item.aktiv !== false);
+        index = 0;
+        show();
+      }
+
+      window.addEventListener('message', (event) => takeMessage(event.data));
+      show();
+    </script>
+  </body>
+</html>

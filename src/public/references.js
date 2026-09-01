@@ -4,15 +4,11 @@
  * In Wix: Public & Backend → Public → references.js
  * Danach: Site veröffentlichen.
  *
- * Auf der HOME-Seite einmalig diese Elemente anlegen (IDs genau so):
- *   #refBild     Bild
- *   #refTitel    Text
- *   #refOrt      Text
- *   #refJahr     Text
- *   #refText     Text
- *   #refZaehler  Text  (zeigt z. B. 1 / 3)
- *   #btnRefPrev  Button  (zurück)
- *   #btnRefNext  Button  (weiter)
+ * Auf HOME eine HTML-Komponente einfügen, ID: #htmlReferenzen
+ * Website-Adresse der Komponente:
+ * https://trippertv83.github.io/WEbsite/referenzen.html
+ *
+ * Texte und Bild-URLs nur hier ändern, dann Site veröffentlichen.
  *
  * Layout bleibt immer gleich. Hier nur Bild-Link und Texte ändern.
  * Bild: in Wix hochladen, Bild anklicken → „Link kopieren“ / Media-URL hier einfügen.

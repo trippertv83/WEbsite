@@ -1,78 +1,41 @@
 /**
  * Eine Karte, durch die Besucher blättern.
  * Inhalte kommen nur aus public/references.js.
+ * HTML-Komponente auf HOME: #htmlReferenzen
+ * (URL: https://trippertv83.github.io/WEbsite/referenzen.html)
  */
 
 import { aktiveReferenzen } from 'public/references';
 
-let index = 0;
-
-function has(id) {
-  try {
-    const el = $w(id);
-    return Boolean(el && el.length !== 0);
-  } catch {
-    return false;
-  }
-}
-
-function setText(id, value) {
-  if (!has(id)) return;
-  try {
-    $w(id).text = String(value || '');
-  } catch {
+function htmlBox() {
+  const ids = ['#htmlReferenzen', '#htmlRefs', '#html2'];
+  for (const id of ids) {
     try {
-      $w(id).html = `<p>${String(value || '').replace(/\n/g, '<br />')}</p>`;
+      const el = $w(id);
+      if (el && el.length !== 0) return el;
     } catch {
-      /* kein Text-Element */
+      /* fehlt */
     }
   }
+  return null;
 }
 
-function setImage(id, url) {
-  if (!has(id)) return;
-  const src = String(url || '').trim();
-  try {
-    if (!src) {
-      $w(id).hide();
-      return;
-    }
-    $w(id).src = src;
-    $w(id).show();
-  } catch {
-    /* kein Bild-Element */
-  }
-}
-
-function showCurrent() {
-  const items = aktiveReferenzen();
-  if (!items.length) return;
-  const item = items[index];
-  setText('#refTitel', item.titel);
-  setText('#refOrt', item.ort);
-  setText('#refJahr', item.jahr);
-  setText('#refText', item.text);
-  setText('#refZaehler', `${index + 1} / ${items.length}`);
-  setImage('#refBild', item.bild);
-}
-
-function go(step) {
-  const items = aktiveReferenzen();
-  if (!items.length) return;
-  index = (index + step + items.length) % items.length;
-  showCurrent();
+function sendToHtml() {
+  const box = htmlBox();
+  if (!box || typeof box.postMessage !== 'function') return;
+  const payload = JSON.stringify({
+    type: 'REFERENZEN',
+    items: aktiveReferenzen(),
+  });
+  box.postMessage(payload);
 }
 
 export function bindReferences() {
-  const items = aktiveReferenzen();
-  if (!items.length) return;
-  index = 0;
-  showCurrent();
-
-  if (has('#btnRefPrev')) {
-    $w('#btnRefPrev').onClick(() => go(-1));
+  sendToHtml();
+  const box = htmlBox();
+  if (box && typeof box.onMessage === 'function') {
+    box.onMessage(() => sendToHtml());
   }
-  if (has('#btnRefNext')) {
-    $w('#btnRefNext').onClick(() => go(1));
-  }
+  setTimeout(sendToHtml, 400);
+  setTimeout(sendToHtml, 1200);
 }
