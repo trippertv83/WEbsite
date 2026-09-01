@@ -402,3 +402,54 @@ export function buildPaidHtml(body) {
 export async function sendOrderEmails(body) {
   return sendPaidOrderEmails(body);
 }
+
+export async function sendAdminMail(opts) {
+  return sendViaHttpMail(opts);
+}
+
+export async function sendServiceInquiryEmail(body = {}) {
+  const adminEmail = await resolveAdminEmail();
+  const contact = body.contact || {};
+  const answers = body.answers || {};
+  const files = Array.isArray(body.files) ? body.files : [];
+  const fileHtml = files
+    .map((file) => {
+      const label = file.label || file.name || 'Datei';
+      const url = file.url || file.downloadUrl || '';
+      return url
+        ? `<li>${escapeHtml(label)}: <a href="${escapeHtml(url)}">${escapeHtml(file.name || 'Download')}</a></li>`
+        : `<li>${escapeHtml(label)}</li>`;
+    })
+    .join('');
+  const fileText = files
+    .map((file) => `${file.label || file.name}: ${file.url || file.downloadUrl || ''}`)
+    .join('\n');
+  const subject = `Anfrage: ${body.titel || body.serviceId || 'Leistung'}`;
+  const html = `<p>Neue Leistungsanfrage.</p>
+<p><b>${escapeHtml(body.titel || '')}</b>${body.preis ? ` · ${escapeHtml(body.preis)}` : ''}</p>
+<h3>Kontakt</h3>
+<ul>
+<li>Name: ${escapeHtml(contact.name || '')}</li>
+<li>E-Mail: ${escapeHtml(contact.email || '')}</li>
+<li>Telefon: ${escapeHtml(contact.phone || '')}</li>
+<li>Ort: ${escapeHtml(contact.ort || '')}</li>
+<li>Adresse: ${escapeHtml(contact.adresse || '')}</li>
+</ul>
+<h3>Erfassung</h3>
+<ul>
+<li>Gebäudetyp: ${escapeHtml(answers.gebaeudetyp || '')}</li>
+<li>Baujahr: ${escapeHtml(answers.baujahr || '')}</li>
+<li>Fläche: ${escapeHtml(answers.wohnflaeche || '')}</li>
+<li>Heizung: ${escapeHtml(answers.heizung || '')}</li>
+</ul>
+<p>${escapeHtml(answers.nachricht || '')}</p>
+<h3>Dateien</h3>
+<ul>${fileHtml || '<li>keine</li>'}</ul>`;
+  const text = `${subject}
+${contact.name} ${contact.email} ${contact.phone}
+${contact.ort} ${contact.adresse}
+${answers.gebaeudetyp} ${answers.baujahr} ${answers.wohnflaeche} ${answers.heizung}
+${answers.nachricht || ''}
+${fileText}`;
+  return sendViaHttpMail({ to: adminEmail, subject, html, text, attachments: [] });
+}

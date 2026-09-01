@@ -3,12 +3,12 @@
  */
 
 import { response } from 'wix-http-functions';
-import { createCertificateOrder, appendOrderAttachment, receiveFileChunk } from 'backend/database';
+import { createCertificateOrder, appendOrderAttachment, receiveFileChunk, uploadInquiryFile } from 'backend/database';
 import { createCustomer, findCustomerByEmail } from 'backend/sevdesk';
 import { getCertificateProduct } from 'backend/payment';
 import { lookupClimateFactor } from 'backend/climate';
 import { hsvForDownload } from 'backend/paid-notify';
-import { sendResendConnectionTest } from 'backend/email';
+import { sendResendConnectionTest, sendServiceInquiryEmail } from 'backend/email';
 
 function corsHeaders() {
   return {
@@ -52,6 +52,14 @@ export function options_productPrice() {
 }
 
 export function options_testResendMail() {
+  return json(200, { ok: true });
+}
+
+export function options_inquiryFile() {
+  return json(200, { ok: true });
+}
+
+export function options_serviceInquiry() {
   return json(200, { ok: true });
 }
 
@@ -233,5 +241,41 @@ export async function post_uploadOrderFile(request) {
   } catch (error) {
     console.error(error);
     return json(500, { error: error.message || 'Upload fehlgeschlagen.' });
+  }
+}
+
+export async function post_inquiryFile(request) {
+  try {
+    const body = await request.body.json();
+    if (!body?.contentBase64) {
+      return json(400, { error: 'Datei fehlt.' });
+    }
+    const saved = await uploadInquiryFile(body);
+    return json(200, { ok: true, ...saved });
+  } catch (error) {
+    console.error(error);
+    return json(500, { error: error.message || 'Upload fehlgeschlagen.' });
+  }
+}
+
+export async function post_serviceInquiry(request) {
+  try {
+    const body = await request.body.json();
+    if (!body?.contact?.email || !body?.contact?.name) {
+      return json(400, { error: 'Name und E-Mail sind Pflicht.' });
+    }
+    const mail = await sendServiceInquiryEmail(body);
+    if (!mail.ok) {
+      return json(500, {
+        error:
+          mail.reason ||
+          mail.detail ||
+          'E-Mail konnte nicht gesendet werden. RESEND_API_KEY prüfen und Site veröffentlichen.',
+      });
+    }
+    return json(200, { ok: true });
+  } catch (error) {
+    console.error(error);
+    return json(500, { error: error.message || 'Anfrage fehlgeschlagen.' });
   }
 }

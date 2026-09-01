@@ -394,3 +394,33 @@ async function storeAttachments(orderNumber, attachments) {
 function sanitize(name) {
   return String(name).replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 120);
 }
+
+export async function uploadInquiryFile(file = {}) {
+  if (!file.contentBase64) throw new Error('Datei fehlt.');
+  const folder = `/anfragen/${Date.now().toString(36)}`;
+  const fileName = sanitize(file.name) || 'dokument.pdf';
+  const buffer = Buffer.from(file.contentBase64, 'base64');
+  const uploaded = await mediaManager.upload(folder, buffer, fileName, {
+    mediaOptions: {
+      mimeType: file.mimeType || 'application/pdf',
+      mediaType: 'document',
+    },
+    metadataOptions: {
+      isPrivate: true,
+      isVisitorUpload: false,
+    },
+  });
+  let downloadUrl = '';
+  try {
+    downloadUrl = await mediaManager.getDownloadUrl(uploaded.fileUrl, 60 * 24 * 21);
+  } catch (error) {
+    console.error('Anfrage-Download:', error);
+  }
+  return {
+    category: file.category || '',
+    name: file.name || fileName,
+    fileUrl: uploaded.fileUrl,
+    fileName: uploaded.fileName,
+    downloadUrl,
+  };
+}
