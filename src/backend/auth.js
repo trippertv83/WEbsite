@@ -264,11 +264,9 @@ async function issueSession({ email, ip, customer }) {
   return token;
 }
 
-export async function completeRegistration({ customer, mode, code, ip, skipCode }) {
+export async function completeRegistration({ customer, mode, code, ip }) {
   const clean = normEmail(customer?.email);
-  if (!skipCode) {
-    await consumeCode({ email: clean, code, ip });
-  }
+  await consumeCode({ email: clean, code, ip });
   const login = mode === 'login';
 
   if (login) {

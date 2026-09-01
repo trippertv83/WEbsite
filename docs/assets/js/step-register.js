@@ -1,12 +1,12 @@
 /**
- * Registrierung oder Anmeldung per E-Mail vor dem Erfassungsbogen.
+ * Überall gleiche Regel: erst E-Mail-Code, dann SevDesk-Kunde.
  */
 
 import { getState, patch, patchCustomer } from './state.js';
 import { validateLogin, validateRegistration, isEmpty } from './validation.js';
 import { clearFormErrors, qs, setFieldError, showToast } from './utils.js';
-import { registerCustomer } from './api-client.js';
-import { saveSession, loadSession, safeNextPath } from './session.js';
+import { registerCustomer, requestRegisterCode } from './api-client.js';
+import { saveSession, safeNextPath } from './session.js';
 
 function currentMode() {
   return qs('#auth-mode-login')?.checked ? 'login' : 'register';
@@ -94,19 +94,46 @@ function syncModeUi() {
   const login = currentMode() === 'login';
   qs('#register-new-fields').hidden = login;
   qs('#btn-register').textContent = login
-    ? 'Mit E-Mail anmelden'
-    : 'Neu registrieren und zum Erfassungsbogen';
+    ? 'Code bestätigen und anmelden'
+    : 'Code bestätigen und Kunde anlegen';
   qs('#register-lead').textContent = login
-    ? 'Bereits Kunde? Melden Sie sich mit der E-Mail-Adresse an, die in SevDesk hinterlegt ist. Es wird kein neues Konto angelegt.'
-    : 'Neu hier? Bitte Anrede oder Firma wählen. Die Kundennummer in SevDesk wird fortlaufend vergeben.';
+    ? 'Schon Kunde: Code an Ihre SevDesk-E-Mail. Es wird kein neuer Kunde angelegt.'
+    : 'Neuer Kunde: erst Code per E-Mail, danach Anlage in SevDesk.';
   setAlert('');
   if (!login) syncPartyUi();
+}
+
+async function sendCode() {
+  const mode = currentMode();
+  const customer = readRegisterForm();
+  const errors = mode === 'login' ? validateLogin(customer) : validateRegistration(customer);
+  applyRegisterErrors(errors);
+  if (!isEmpty(errors)) {
+    setAlert(Object.values(errors)[0]);
+    return;
+  }
+  const btn = qs('#btn-send-code');
+  btn.disabled = true;
+  setAlert('Code wird gesendet…', 'ok');
+  try {
+    await requestRegisterCode(customer.email, mode);
+    setAlert('Code ist unterwegs. Bitte E-Mail prüfen (auch Spam) und den 6-stelligen Code eingeben.', 'ok');
+    qs('#reg-code')?.focus();
+  } catch (error) {
+    setAlert(error.message || 'Code konnte nicht gesendet werden.');
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 export async function submitRegistration() {
   const mode = currentMode();
   const customer = readRegisterForm();
   const errors = mode === 'login' ? validateLogin(customer) : validateRegistration(customer);
+  const code = String(qs('#reg-code')?.value || '').trim();
+  if (!/^\d{6}$/.test(code)) {
+    errors.code = 'Bitte den 6-stelligen Code aus der E-Mail eingeben.';
+  }
   applyRegisterErrors(errors);
   if (!isEmpty(errors)) {
     setAlert(Object.values(errors)[0]);
@@ -115,9 +142,9 @@ export async function submitRegistration() {
 
   const btn = qs('#btn-register');
   btn.disabled = true;
-  setAlert('Verbindung zu SevDesk…', 'ok');
+  setAlert('Code wird geprüft…', 'ok');
   try {
-    const result = await registerCustomer(customer, mode);
+    const result = await registerCustomer(customer, mode, code);
     saveSession(result);
     patchCustomer({
       sevdeskCustomerId: result.sevdeskCustomerId || null,
@@ -127,7 +154,7 @@ export async function submitRegistration() {
     });
     showToast(
       result.existing
-        ? 'Bestehender SevDesk-Kunde gefunden.'
+        ? 'Anmeldung bestätigt.'
         : `Kunde in SevDesk angelegt${result.customerNumber ? ` (Nr. ${result.customerNumber})` : ''}.`
     );
     continueAfterAuth();
@@ -143,23 +170,13 @@ export async function submitRegistration() {
 }
 
 export function bindRegister() {
-  const existing = loadSession();
-  if (existing?.token && existing?.sevdeskCustomerId) {
-    patchCustomer({
-      email: existing.email,
-      name: existing.name,
-      sevdeskCustomerId: existing.sevdeskCustomerId,
-      customerNumber: existing.customerNumber,
-    });
-    continueAfterAuth();
-    return;
-  }
   qs('#form-register').addEventListener('input', () => readRegisterForm());
   qs('#auth-mode-register').addEventListener('change', syncModeUi);
   qs('#auth-mode-login').addEventListener('change', syncModeUi);
   qs('#form-register').addEventListener('change', (event) => {
     if (event.target.name === 'customerType') syncPartyUi();
   });
+  qs('#btn-send-code').addEventListener('click', () => sendCode());
   qs('#btn-register').addEventListener('click', () => submitRegistration());
   syncModeUi();
 }

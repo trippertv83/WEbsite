@@ -31,7 +31,7 @@
           <div>
             <h1 tabindex="-1">Registrierung</h1>
             <p id="register-lead">
-              Neu hier? Wir legen Sie mit Name, Anschrift und E-Mail als Kunden in SevDesk an.
+              Zuerst E-Mail-Code, danach legen wir Sie als Kunden in SevDesk an.
             </p>
           </div>
         </div>
@@ -144,11 +144,17 @@
             </label>
             <span class="field__error" data-error-for="acceptRegisterPrivacy"></span>
           </div>
+          <div class="field" style="margin-top: 1rem">
+            <label class="field__label" for="reg-code">Bestätigungscode aus der E-Mail</label>
+            <input class="input" id="reg-code" name="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" />
+            <span class="field__hint">Ohne diesen Code wird kein SevDesk-Kunde angelegt.</span>
+            <span class="field__error" data-error-for="code"></span>
+          </div>
         </form>
         <div class="btn-row">
-          <span></span>
+          <button class="btn" type="button" id="btn-send-code">Code an E-Mail senden</button>
           <button class="btn btn--primary" type="button" id="btn-register">
-            Registrieren und zum Erfassungsbogen
+            Code bestätigen
           </button>
         </div>
       </section>

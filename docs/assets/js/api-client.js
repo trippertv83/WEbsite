@@ -84,7 +84,7 @@ export async function fetchProductPrice(productId) {
   return getJson(url);
 }
 
-export async function registerCustomer(customer, mode) {
+export async function registerCustomer(customer, mode, code) {
   const base = AppConfig.wixHttpFunctionsBaseUrl || '';
   if (!base || base.includes('ihre-site')) {
     throw new Error(
@@ -93,7 +93,7 @@ export async function registerCustomer(customer, mode) {
   }
 
   const url = `${base.replace(/\/$/, '')}/registerCustomer`;
-  return postJson(url, { customer, mode });
+  return postJson(url, { customer, mode, code });
 }
 
 export async function requestRegisterCode(email, mode) {
