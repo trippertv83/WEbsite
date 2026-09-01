@@ -110,6 +110,13 @@ body.is-register-only .stepper {
   min-height: 640px;
 }
 
+.register-gate:has(#auth-mode-login:checked) #code-block,
+.register-gate:has(#auth-mode-login:checked) #register-new-fields,
+.register-gate:has(#auth-mode-login:checked) #register-phone-field,
+.register-gate:has(#auth-mode-login:checked) #register-consent {
+  display: none !important;
+}
+
 #company-name-fields[hidden],
 #person-name-fields[hidden],
 #contact-person-fields[hidden] {

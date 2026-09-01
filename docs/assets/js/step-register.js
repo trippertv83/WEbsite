@@ -98,7 +98,10 @@ function setHidden(el, hidden) {
 
 function syncModeUi() {
   const login = currentMode() === 'login';
+  document.body.classList.toggle('is-existing-customer', login);
   setHidden(qs('#register-new-fields'), login);
+  setHidden(qs('#register-phone-field'), login);
+  setHidden(qs('#register-consent'), login);
   setHidden(qs('#code-block'), login);
   setHidden(qs('#code-fields'), login);
   setHidden(qs('#btn-send-code'), login);
@@ -108,17 +111,23 @@ function syncModeUi() {
     codeInput.required = !login;
     if (login) codeInput.value = '';
   }
+  const phone = qs('#reg-phone');
+  if (phone) phone.required = !login;
   qs('#btn-register').textContent = login
     ? 'Mit E-Mail anmelden'
     : 'Code bestätigen und Kunde anlegen';
   qs('#register-lead').textContent = login
-    ? 'Bestandskunde: E-Mail reicht. Es wird kein neuer SevDesk-Kunde und kein Code gebraucht.'
+    ? 'Bestandskunde: nur die E-Mail aus SevDesk. Kein Code, keine Neuanlage.'
     : 'Neuer Kunde: erst Code per E-Mail, danach Anlage in SevDesk.';
   setAlert('');
   if (!login) syncPartyUi();
 }
 
 async function sendCode() {
+  if (currentMode() === 'login') {
+    setAlert('Als Bestandskunde brauchen Sie keinen Code. Bitte mit der E-Mail anmelden.');
+    return;
+  }
   const mode = currentMode();
   const customer = readRegisterForm();
   const errors = mode === 'login' ? validateLogin(customer) : validateRegistration(customer);

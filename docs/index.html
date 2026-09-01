@@ -8,7 +8,7 @@
       content="Verbrauchsausweis für Wohngebäude online erstellen und bestellen."
     />
     <title>Verbrauchsausweis bestellen | Energieausweis Pro</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css?v=20260901c" />
   </head>
   <body class="is-register-only">
     <a class="skip-link" href="#main">Zum Inhalt springen</a>
@@ -128,13 +128,13 @@
             <input class="input" id="reg-email" name="email" type="email" required autocomplete="email" />
             <span class="field__error" data-error-for="email"></span>
           </div>
-          <div class="field" style="margin-top: 1rem">
+          <div class="field" style="margin-top: 1rem" id="register-phone-field">
             <label class="field__label" for="reg-phone">Telefon</label>
             <input class="input" id="reg-phone" name="phone" type="tel" required autocomplete="tel" placeholder="z. B. 0171 1234567" />
             <span class="field__hint">Wird an die Wix-Kasse und nach SevDesk übernommen.</span>
             <span class="field__error" data-error-for="phone"></span>
           </div>
-          <div class="legal">
+          <div class="legal" id="register-consent">
             <label class="checkbox">
               <input type="checkbox" id="accept-register-privacy" name="acceptRegisterPrivacy" />
               <span>
@@ -151,10 +151,12 @@
               <span class="field__hint">Nur bei neuen Kunden. Ohne Code wird niemand in SevDesk angelegt.</span>
               <span class="field__error" data-error-for="code"></span>
             </div>
+            <div class="btn-row" style="margin-top: 1rem">
+              <button class="btn" type="button" id="btn-send-code">Code an E-Mail senden</button>
+            </div>
           </div>
         </form>
         <div class="btn-row">
-          <button class="btn" type="button" id="btn-send-code">Code an E-Mail senden</button>
           <button class="btn btn--primary" type="button" id="btn-register">
             Code bestätigen
           </button>
@@ -708,6 +710,6 @@
       </div>
     </dialog>
     <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
-    <script type="module" src="app.js"></script>
+    <script type="module" src="app.js?v=20260901c"></script>
   </body>
 </html>

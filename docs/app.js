@@ -6,7 +6,7 @@ import { AppConfig } from './config.example.js';
 import { getState, patch, serializeForBackend } from './assets/js/state.js';
 import { createOrderNumber, qs, showToast } from './assets/js/utils.js';
 import { bindStepper, renderStepper, showStep } from './assets/js/wizard.js';
-import { bindRegister } from './assets/js/step-register.js';
+import { bindRegister } from './assets/js/step-register.js?v=20260901c';
 import { bindBuildingLive, validateStepBuilding } from './assets/js/step-building.js';
 import {
   bindConsumption,

@@ -115,13 +115,6 @@ export function validateLogin(customer) {
   if (!EMAIL.test(customer.email || '')) {
     errors.email = 'Bitte die E-Mail-Adresse angeben, die in SevDesk hinterlegt ist.';
   }
-  if (phoneDigitCount(customer.phone) < 6) {
-    errors.phone = 'Bitte eine Telefonnummer für die Kasse angeben.';
-  }
-  if (!customer.acceptRegisterPrivacy) {
-    errors.acceptRegisterPrivacy =
-      'Bitte der Abfrage Ihres Kundendatensatzes in SevDesk zustimmen.';
-  }
   return errors;
 }
 

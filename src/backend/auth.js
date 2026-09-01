@@ -134,14 +134,21 @@ export async function requestRegisterCode({ email, mode, ip }) {
 
   const login = mode === 'login';
   const existing = await findCustomerByEmail(clean);
-  if (login && !existing) {
+  if (login) {
+    if (!existing) {
+      const err = new Error(
+        'Kein Kunde mit dieser E-Mail. Bitte „Neuer Kunde“ wählen.'
+      );
+      err.status = 404;
+      throw err;
+    }
     const err = new Error(
-      'Kein Kunde mit dieser E-Mail. Bitte „Neuer Kunde“ wählen.'
+      'Als Bestandskunde brauchen Sie keinen Code. Bitte „Mit E-Mail anmelden“ klicken.'
     );
-    err.status = 404;
+    err.status = 400;
     throw err;
   }
-  if (!login && existing) {
+  if (existing) {
     const err = new Error(
       'Diese E-Mail ist schon Kunde. Bitte „Ich bin schon Kunde“ wählen. Es wurde kein neuer SevDesk-Kunde angelegt.'
     );
