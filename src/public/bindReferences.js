@@ -1,13 +1,11 @@
 /**
- * Füllt Referenzen auf der aktuellen Seite, falls die Elemente existieren.
- * Daten stehen in public/references.js – dort bearbeiten.
+ * Eine Karte, durch die Besucher blättern.
+ * Inhalte kommen nur aus public/references.js.
  */
 
-import {
-  aktiveReferenzen,
-  referenzById,
-  referenzenAlsText,
-} from 'public/references';
+import { aktiveReferenzen } from 'public/references';
+
+let index = 0;
 
 function has(id) {
   try {
@@ -19,48 +17,62 @@ function has(id) {
 }
 
 function setText(id, value) {
-  if (!has(id) || value == null) return;
+  if (!has(id)) return;
   try {
-    $w(id).text = String(value);
+    $w(id).text = String(value || '');
   } catch {
     try {
-      $w(id).html = `<p>${String(value).replace(/\n/g, '<br />')}</p>`;
+      $w(id).html = `<p>${String(value || '').replace(/\n/g, '<br />')}</p>`;
     } catch {
-      /* Element nimmt keinen Text */
+      /* kein Text-Element */
     }
   }
 }
 
-function bindRepeater() {
-  if (!has('#repeaterReferenzen')) return;
-  const items = aktiveReferenzen().map((item, index) => ({
-    _id: item.id || `ref-${index}`,
-    ...item,
-  }));
-  $w('#repeaterReferenzen').data = items;
-  $w('#repeaterReferenzen').onItemReady(($item, itemData) => {
-    const set = (id, value) => {
-      try {
-        $item(id).text = String(value || '');
-      } catch {
-        /* Element fehlt im Repeater */
-      }
-    };
-    set('#refTitel', itemData.titel);
-    set('#refOrt', itemData.ort);
-    set('#refJahr', itemData.jahr);
-    set('#refText', itemData.text);
-  });
+function setImage(id, url) {
+  if (!has(id)) return;
+  const src = String(url || '').trim();
+  try {
+    if (!src) {
+      $w(id).hide();
+      return;
+    }
+    $w(id).src = src;
+    $w(id).show();
+  } catch {
+    /* kein Bild-Element */
+  }
 }
 
-export function bindReferences(pageId) {
-  bindRepeater();
-  setText('#textReferenzen', referenzenAlsText());
+function showCurrent() {
+  const items = aktiveReferenzen();
+  if (!items.length) return;
+  const item = items[index];
+  setText('#refTitel', item.titel);
+  setText('#refOrt', item.ort);
+  setText('#refJahr', item.jahr);
+  setText('#refText', item.text);
+  setText('#refZaehler', `${index + 1} / ${items.length}`);
+  setImage('#refBild', item.bild);
+}
 
-  const current = pageId ? referenzById(pageId) : null;
-  if (!current) return;
-  setText('#refTitel', current.titel);
-  setText('#refOrt', current.ort);
-  setText('#refJahr', current.jahr);
-  setText('#refText', current.text);
+function go(step) {
+  const items = aktiveReferenzen();
+  if (!items.length) return;
+  index = (index + step + items.length) % items.length;
+  showCurrent();
+}
+
+export function bindReferences() {
+  const items = aktiveReferenzen();
+  if (!items.length) return;
+  index = 0;
+  showCurrent();
+
+  if (has('#btnRefPrev')) {
+    $w('#btnRefPrev').onClick(() => go(-1));
+  }
+  if (has('#btnRefNext')) {
+    $w('#btnRefNext').onClick(() => go(1));
+  }
 }

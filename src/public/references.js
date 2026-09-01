@@ -1,58 +1,55 @@
 /**
- * Referenzen – hier kannst du selbst Texte, Orte und Jahre eintragen.
+ * Referenzen – nur diese Datei bearbeiten.
  *
- * Datei in Wix: Public & Backend → Public → references.js
- * Nach dem Speichern: Site veröffentlichen.
+ * In Wix: Public & Backend → Public → references.js
+ * Danach: Site veröffentlichen.
  *
- * Optional im Editor (IDs genau so benennen):
- * - Repeater: #repeaterReferenzen
- *   darin: #refTitel, #refOrt, #refJahr, #refText
- * - oder ein Textfeld: #textReferenzen (zeigt alle Einträge untereinander)
- * - Projektseiten: #refTitel, #refOrt, #refJahr, #refText
+ * Auf der HOME-Seite einmalig diese Elemente anlegen (IDs genau so):
+ *   #refBild     Bild
+ *   #refTitel    Text
+ *   #refOrt      Text
+ *   #refJahr     Text
+ *   #refText     Text
+ *   #refZaehler  Text  (zeigt z. B. 1 / 3)
+ *   #btnRefPrev  Button  (zurück)
+ *   #btnRefNext  Button  (weiter)
  *
- * Einträge mit aktiv: false werden nicht angezeigt.
+ * Layout bleibt immer gleich. Hier nur Bild-Link und Texte ändern.
+ * Bild: in Wix hochladen, Bild anklicken → „Link kopieren“ / Media-URL hier einfügen.
+ * Weitere Referenzen: Block unten kopieren und id ändern (ref-4, ref-5, …).
+ * aktiv: false blendet einen Eintrag aus.
  */
 
 export const REFERENZEN = [
   {
-    id: 'project-2',
+    id: 'ref-1',
     aktiv: true,
     titel: 'Referenz 1 – Titel hier eintragen',
     ort: 'Ort / Gebäudeart',
     jahr: '2024',
     text: 'Kurze Beschreibung: Was wurde gemacht (z. B. Verbrauchsausweis, Energieträger, Besonderheiten).',
+    bild: '',
   },
   {
-    id: 'project-3',
+    id: 'ref-2',
     aktiv: true,
     titel: 'Referenz 2 – Titel hier eintragen',
     ort: 'Ort / Gebäudeart',
     jahr: '2025',
     text: 'Kurze Beschreibung der zweiten Referenz.',
+    bild: '',
   },
   {
-    id: 'project-4',
+    id: 'ref-3',
     aktiv: true,
     titel: 'Referenz 3 – Titel hier eintragen',
     ort: 'Ort / Gebäudeart',
     jahr: '2025',
     text: 'Kurze Beschreibung der dritten Referenz.',
+    bild: '',
   },
 ];
 
 export function aktiveReferenzen() {
   return REFERENZEN.filter((item) => item.aktiv !== false);
-}
-
-export function referenzById(id) {
-  return aktiveReferenzen().find((item) => item.id === id) || null;
-}
-
-export function referenzenAlsText() {
-  return aktiveReferenzen()
-    .map((item) => {
-      const kopf = [item.titel, item.ort, item.jahr].filter(Boolean).join(' · ');
-      return `${kopf}\n${item.text || ''}`.trim();
-    })
-    .join('\n\n');
 }

@@ -1,11 +1,6 @@
 /**
- * Referenz-Seite (Project 3).
- * Texte selbst in public/references.js beim Eintrag id: 'project-3' ändern.
- * Im Editor Elemente so benennen: #refTitel #refOrt #refJahr #refText
+ * Projektseiten werden nicht mehr einzeln gepflegt.
+ * Referenzen: public/references.js + Slider auf HOME.
  */
 
-import { bindReferences } from 'public/bindReferences';
-
-$w.onReady(function () {
-  bindReferences('project-3');
-});
+$w.onReady(function () {});
