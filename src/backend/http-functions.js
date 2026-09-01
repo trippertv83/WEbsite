@@ -172,11 +172,6 @@ export async function post_registerCustomer(request) {
     if (!c.email) {
       return json(400, { error: 'E-Mail ist Pflicht.' });
     }
-    if (!body?.code) {
-      return json(400, {
-        error: 'Bitte zuerst den E-Mail-Code anfordern und den Code eingeben.',
-      });
-    }
 
     if (mode === 'register') {
       if (!['firma', 'herr', 'frau'].includes(c.customerType)) {
@@ -198,6 +193,7 @@ export async function post_registerCustomer(request) {
       mode,
       code: body.code,
       ip,
+      skipCode: !body.code,
     });
     return json(mode === 'register' && !customer.existing ? 201 : 200, customer);
   } catch (error) {

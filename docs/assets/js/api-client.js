@@ -93,7 +93,7 @@ export async function registerCustomer(customer, mode) {
   }
 
   const url = `${base.replace(/\/$/, '')}/registerCustomer`;
-  return postJson(url, { customer, mode, code });
+  return postJson(url, { customer, mode });
 }
 
 export async function requestRegisterCode(email, mode) {
