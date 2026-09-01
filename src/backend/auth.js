@@ -266,8 +266,10 @@ async function issueSession({ email, ip, customer }) {
 
 export async function completeRegistration({ customer, mode, code, ip }) {
   const clean = normEmail(customer?.email);
-  await consumeCode({ email: clean, code, ip });
   const login = mode === 'login';
+  if (!login) {
+    await consumeCode({ email: clean, code, ip });
+  }
 
   if (login) {
     const found = await findCustomerByEmail(clean);

@@ -93,11 +93,15 @@ function syncPartyUi() {
 function syncModeUi() {
   const login = currentMode() === 'login';
   qs('#register-new-fields').hidden = login;
+  const codeBox = qs('#code-fields');
+  const sendBtn = qs('#btn-send-code');
+  if (codeBox) codeBox.hidden = login;
+  if (sendBtn) sendBtn.hidden = login;
   qs('#btn-register').textContent = login
-    ? 'Code bestätigen und anmelden'
+    ? 'Mit E-Mail anmelden'
     : 'Code bestätigen und Kunde anlegen';
   qs('#register-lead').textContent = login
-    ? 'Schon Kunde: Code an Ihre SevDesk-E-Mail. Es wird kein neuer Kunde angelegt.'
+    ? 'Bestandskunde: E-Mail reicht. Es wird kein neuer SevDesk-Kunde und kein Code gebraucht.'
     : 'Neuer Kunde: erst Code per E-Mail, danach Anlage in SevDesk.';
   setAlert('');
   if (!login) syncPartyUi();
@@ -131,7 +135,7 @@ export async function submitRegistration() {
   const customer = readRegisterForm();
   const errors = mode === 'login' ? validateLogin(customer) : validateRegistration(customer);
   const code = String(qs('#reg-code')?.value || '').trim();
-  if (!/^\d{6}$/.test(code)) {
+  if (mode === 'register' && !/^\d{6}$/.test(code)) {
     errors.code = 'Bitte den 6-stelligen Code aus der E-Mail eingeben.';
   }
   applyRegisterErrors(errors);
@@ -142,7 +146,7 @@ export async function submitRegistration() {
 
   const btn = qs('#btn-register');
   btn.disabled = true;
-  setAlert('Code wird geprüft…', 'ok');
+  setAlert(mode === 'login' ? 'Kunde wird gesucht…' : 'Code wird geprüft…', 'ok');
   try {
     const result = await registerCustomer(customer, mode, code);
     saveSession(result);

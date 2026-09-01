@@ -172,7 +172,7 @@ export async function post_registerCustomer(request) {
     if (!c.email) {
       return json(400, { error: 'E-Mail ist Pflicht.' });
     }
-    if (!String(body?.code || '').trim()) {
+    if (mode === 'register' && !String(body?.code || '').trim()) {
       return json(400, {
         error: 'Bitte zuerst „Code an E-Mail senden“ und den 6-stelligen Code eingeben.',
       });
