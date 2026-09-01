@@ -131,13 +131,27 @@ async function sendSendgrid(apiKey, { to, subject, html, text, attachments }) {
   return { ok: res.ok, provider: 'sendgrid', status: res.status };
 }
 
+function resendUserMessage(detail, from) {
+  const text = String(detail || '');
+  if (/only send testing emails|verify a domain|onboarding@resend\.dev/i.test(text)) {
+    return (
+      'Resend ist noch im Testmodus: Mails gehen nur an lukas@spaderna.org. ' +
+      'Unter resend.com/domains die Domain spaderna.org verifizieren (DNS-Einträge). ' +
+      'Danach im Wix Secrets Manager RESEND_FROM_EMAIL setzen, z. B. Ingenieurbüro Spaderna <noreply@spaderna.org>. ' +
+      `Aktueller Absender: ${from || '–'}`
+    );
+  }
+  return text.slice(0, 500);
+}
+
 async function sendResend(apiKey, { to, subject, html, text, attachments }) {
   const from =
     (await secretOrEmpty('RESEND_FROM_EMAIL')) ||
-    'Verbrauchsausweis <onboarding@resend.dev>';
+    'Ingenieurbüro Spaderna <lukas@spaderna.org>';
   const payload = {
     from,
     to: [to],
+    reply_to: DEFAULT_ADMIN_EMAIL,
     subject,
     html,
     text,
@@ -166,11 +180,13 @@ async function sendResend(apiKey, { to, subject, html, text, attachments }) {
     });
     detail = await res.text();
   }
+  const explained = resendUserMessage(detail, from);
   return {
     ok: res.ok,
     provider: 'resend',
     status: res.status,
-    detail: String(detail || '').slice(0, 800),
+    detail: explained,
+    reason: res.ok ? undefined : explained,
     from,
     to,
   };
