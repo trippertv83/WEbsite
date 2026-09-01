@@ -1,14 +1,17 @@
 /**
- * E-Mail-Code vor SevDesk, damit niemand massenhaft Kunden anlegt.
+ * E-Mail-Code vor SevDesk.
+ * Speichert in der bestehenden CMS-Sammlung CertificateOrders
+ * (status: auth-code / auth-session / auth-newcustomer),
+ * weil neue Sammlungen per API oft FORBIDDEN sind.
  */
 
 import wixData from 'wix-data';
-import { collections } from 'wix-data.v2';
 import { createHash, randomBytes } from 'crypto';
 import { createCustomer, findCustomerByEmail } from 'backend/sevdesk';
 import { sendRegisterCodeEmail } from 'backend/email';
+import { ensureCertificateOrders } from 'backend/database';
 
-const COLLECTION = 'AuthChallenges';
+const COLLECTION = 'CertificateOrders';
 const OPTIONS = { suppressAuth: true };
 const CODE_MINUTES = 15;
 const SESSION_DAYS = 30;
@@ -16,62 +19,6 @@ const MAX_CODES_EMAIL = 3;
 const MAX_CODES_IP = 8;
 const MAX_VERIFY_FAILS = 8;
 const MAX_NEW_CUSTOMERS_IP_DAY = 8;
-
-function field(key, displayName, type) {
-  return { key, displayName, type };
-}
-
-const SCHEMA = {
-  _id: COLLECTION,
-  displayName: 'Anmelde-Codes',
-  displayField: 'email',
-  permissions: {
-    read: 'ADMIN',
-    insert: 'ADMIN',
-    update: 'ADMIN',
-    remove: 'ADMIN',
-  },
-  fields: [
-    field('kind', 'Art', 'TEXT'),
-    field('email', 'E-Mail', 'TEXT'),
-    field('ip', 'IP', 'TEXT'),
-    field('codeHash', 'Code-Hash', 'TEXT'),
-    field('tokenHash', 'Token-Hash', 'TEXT'),
-    field('sevdeskCustomerId', 'SevDesk-ID', 'TEXT'),
-    field('customerNumber', 'Kundennummer', 'TEXT'),
-    field('customerName', 'Name', 'TEXT'),
-    field('attempts', 'Versuche', 'NUMBER'),
-    field('expiresAt', 'Gültig bis', 'DATETIME'),
-    field('createdAt', 'Erstellt', 'DATETIME'),
-  ],
-};
-
-let ready = false;
-
-async function ensure() {
-  if (ready) return;
-  try {
-    await collections.getDataCollection(COLLECTION);
-    ready = true;
-    return;
-  } catch {
-    /* anlegen */
-  }
-  try {
-    await collections.createDataCollection(SCHEMA);
-    ready = true;
-  } catch (error) {
-    const msg = String(error.message || error);
-    if (msg.includes('already exists') || msg.includes('WDE0026')) {
-      ready = true;
-      return;
-    }
-    throw new Error(
-      'CMS-Sammlung AuthChallenges fehlt. Im Wix-Dashboard anlegen (ID genau AuthChallenges) und Site veröffentlichen. ' +
-        msg
-    );
-  }
-}
 
 function sha(value) {
   return createHash('sha256').update(String(value)).digest('hex');
@@ -100,11 +47,80 @@ function normEmail(email) {
   return String(email || '').trim().toLowerCase();
 }
 
+function authStatus(kind) {
+  return `auth-${kind}`;
+}
+
+function toIso(value) {
+  if (!value) return '';
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? '' : date.toISOString();
+}
+
+function authItem({
+  kind,
+  email,
+  ip,
+  codeHash,
+  tokenHash,
+  sevdeskCustomerId,
+  customerNumber,
+  customerName,
+  attempts,
+  expiresAt,
+}) {
+  const now = new Date();
+  return {
+    orderNumber: `AUTH-${kind}-${Date.now().toString(36)}-${randomBytes(3).toString('hex')}`,
+    status: authStatus(kind),
+    customerEmail: email || '',
+    customerName: customerName || kind,
+    hsvDownloadToken: ip || '',
+    hsvContent: tokenHash || codeHash || '',
+    calculation: {
+      auth: true,
+      kind,
+      ip: ip || '',
+      codeHash: codeHash || '',
+      tokenHash: tokenHash || '',
+      sevdeskCustomerId: sevdeskCustomerId || '',
+      customerNumber: customerNumber || '',
+      customerName: customerName || '',
+      attempts: Number(attempts || 0),
+      expiresAt: toIso(expiresAt),
+    },
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+function fromItem(item) {
+  if (!item) return null;
+  const calc = item.calculation || {};
+  return {
+    item,
+    kind: calc.kind,
+    email: item.customerEmail,
+    ip: calc.ip || item.hsvDownloadToken,
+    codeHash: calc.codeHash,
+    tokenHash: calc.tokenHash || item.hsvContent,
+    attempts: Number(calc.attempts || 0),
+    expiresAt: calc.expiresAt ? new Date(calc.expiresAt) : new Date(0),
+    sevdeskCustomerId: calc.sevdeskCustomerId,
+    customerNumber: calc.customerNumber,
+    customerName: calc.customerName || item.customerName,
+  };
+}
+
+async function ensure() {
+  await ensureCertificateOrders();
+}
+
 async function countSince({ kind, email, ip, since }) {
   await ensure();
-  let q = wixData.query(COLLECTION).eq('kind', kind).ge('createdAt', since);
-  if (email) q = q.eq('email', email);
-  if (ip) q = q.eq('ip', ip);
+  let q = wixData.query(COLLECTION).eq('status', authStatus(kind)).ge('createdAt', since);
+  if (email) q = q.eq('customerEmail', email);
+  if (ip) q = q.eq('hsvDownloadToken', ip);
   const res = await q.limit(50).find(OPTIONS);
   return res.items.length;
 }
@@ -156,15 +172,14 @@ export async function requestRegisterCode({ email, mode, ip }) {
   const expiresAt = new Date(now.getTime() + CODE_MINUTES * 60 * 1000);
   await wixData.insert(
     COLLECTION,
-    {
+    authItem({
       kind: 'code',
       email: clean,
       ip: ip || '',
       codeHash: sha(`${clean}:${code}`),
       attempts: 0,
       expiresAt,
-      createdAt: now,
-    },
+    }),
     OPTIONS
   );
 
@@ -183,13 +198,28 @@ async function latestCode(email) {
   const now = new Date();
   const res = await wixData
     .query(COLLECTION)
-    .eq('kind', 'code')
-    .eq('email', email)
-    .gt('expiresAt', now)
+    .eq('status', authStatus('code'))
+    .eq('customerEmail', email)
     .descending('createdAt')
-    .limit(1)
+    .limit(8)
     .find(OPTIONS);
-  return res.items[0] || null;
+  const open = res.items
+    .map(fromItem)
+    .filter((row) => row.expiresAt.getTime() > now.getTime());
+  return open[0] || null;
+}
+
+async function patchAuth(row, calcPatch) {
+  const item = row.item;
+  await wixData.update(
+    COLLECTION,
+    {
+      ...item,
+      calculation: { ...(item.calculation || {}), ...calcPatch },
+      updatedAt: new Date(),
+    },
+    OPTIONS
+  );
 }
 
 async function consumeCode({ email, code, ip }) {
@@ -204,18 +234,10 @@ async function consumeCode({ email, code, ip }) {
     throw new Error('Zu viele falsche Codes. Bitte 15 Minuten warten und neu anfordern.');
   }
   if (row.codeHash !== sha(`${clean}:${String(code || '').trim()}`)) {
-    await wixData.update(
-      COLLECTION,
-      { ...row, attempts: fails + 1 },
-      OPTIONS
-    );
+    await patchAuth(row, { attempts: fails + 1 });
     throw new Error('Code ist ungültig.');
   }
-  await wixData.update(
-    COLLECTION,
-    { ...row, expiresAt: new Date(), attempts: fails },
-    OPTIONS
-  );
+  await patchAuth(row, { expiresAt: new Date().toISOString(), attempts: fails });
   return { email: clean, ip };
 }
 
@@ -223,20 +245,20 @@ async function issueSession({ email, ip, customer }) {
   await ensure();
   const token = sessionToken();
   const now = new Date();
+  const tokenHash = sha(token);
   await wixData.insert(
     COLLECTION,
-    {
+    authItem({
       kind: 'session',
       email,
       ip: ip || '',
-      tokenHash: sha(token),
+      tokenHash,
       sevdeskCustomerId: String(customer.id || customer.sevdeskCustomerId || ''),
       customerNumber: customer.customerNumber ? String(customer.customerNumber) : '',
       customerName: customer.name || '',
       attempts: 0,
       expiresAt: new Date(now.getTime() + SESSION_DAYS * 24 * 60 * 60 * 1000),
-      createdAt: now,
-    },
+    }),
     OPTIONS
   );
   return token;
@@ -283,14 +305,13 @@ export async function completeRegistration({ customer, mode, code, ip }) {
   if (!created.existing) {
     await wixData.insert(
       COLLECTION,
-      {
+      authItem({
         kind: 'newcustomer',
         email: clean,
         ip: ip || '',
-        createdAt: new Date(),
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
         attempts: 0,
-      },
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      }),
       OPTIONS
     );
   }
@@ -311,12 +332,12 @@ export async function readSession(token) {
   await ensure();
   const res = await wixData
     .query(COLLECTION)
-    .eq('kind', 'session')
-    .eq('tokenHash', sha(token))
-    .gt('expiresAt', new Date())
-    .limit(1)
+    .eq('status', authStatus('session'))
+    .eq('hsvContent', sha(token))
+    .limit(5)
     .find(OPTIONS);
-  const row = res.items[0];
+  const now = Date.now();
+  const row = res.items.map(fromItem).find((item) => item.expiresAt.getTime() > now);
   if (!row) return null;
   return {
     email: row.email,

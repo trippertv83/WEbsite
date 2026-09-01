@@ -48,6 +48,10 @@ const COLLECTION_SCHEMA = {
 
 let collectionReady = false;
 
+export async function ensureCertificateOrders() {
+  return ensureCollection();
+}
+
 async function ensureCollection() {
   if (collectionReady) return;
   try {
