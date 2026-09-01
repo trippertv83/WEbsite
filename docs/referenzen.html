@@ -9,13 +9,10 @@
         --blue: #0b78d1;
         --blue-dark: #085ea4;
         --blue-soft: #e7f2fb;
-        --text: #2a3038;
-        --soft: #5b6573;
-        --heading: #1c222b;
-        --line: #d5dbe3;
-        --bg: #f3f4f6;
-        --card: #fff;
-        --radius: 16px;
+        --panel: #1c222b;
+        --text: #ffffff;
+        --muted: rgba(255, 255, 255, 0.78);
+        --line: rgba(255, 255, 255, 0.28);
         --font: 'Segoe UI', system-ui, sans-serif;
       }
       * { box-sizing: border-box; }
@@ -23,134 +20,200 @@
         margin: 0;
         font-family: var(--font);
         color: var(--text);
-        background: transparent;
+        background: var(--panel);
       }
-      .card {
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
+      .page {
+        max-width: 720px;
+        margin: 0 auto;
+        padding-bottom: 1.4rem;
+      }
+      .hero {
+        position: relative;
         overflow: hidden;
-        box-shadow: 0 8px 24px rgba(28, 34, 43, 0.08);
+        margin-bottom: 0.35rem;
       }
-      .photo {
+      .hero img {
         width: 100%;
-        height: 280px;
+        height: 230px;
         object-fit: cover;
         display: block;
-        background: var(--blue-soft);
+        background: #2a3038;
       }
-      .photo.is-empty {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--soft);
-        font-size: 0.95rem;
+      .hero.is-empty img { display: none; }
+      .hero.is-empty {
+        height: 160px;
+        background: linear-gradient(180deg, var(--blue-dark), var(--panel));
       }
-      .body { padding: 1.25rem 1.4rem 1.4rem; }
-      .meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem 0.85rem;
-        color: var(--soft);
-        font-size: 0.92rem;
-        margin: 0 0 0.35rem;
+      .hero::after {
+        content: '';
+        position: absolute;
+        left: -18%;
+        right: -18%;
+        bottom: -42px;
+        height: 84px;
+        background: var(--panel);
+        border-radius: 50%;
+      }
+      .body {
+        padding: 0.4rem 1.35rem 0;
+        text-align: center;
       }
       h2 {
-        margin: 0 0 0.65rem;
-        color: var(--heading);
-        font-size: 1.45rem;
+        margin: 0 0 0.45rem;
+        font-size: clamp(1.35rem, 4.2vw, 1.85rem);
         line-height: 1.25;
+        font-weight: 800;
+        letter-spacing: -0.02em;
       }
-      .text {
+      h2 .year {
+        color: var(--blue);
+      }
+      .lead {
+        margin: 0 auto 1.15rem;
+        max-width: 38rem;
+        color: var(--muted);
+        font-size: 0.98rem;
+        line-height: 1.45;
+      }
+      .specs {
+        margin: 0 auto 1.15rem;
+        max-width: 28rem;
+      }
+      .specs div {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.7rem;
+        padding: 0.62rem 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .specs dt,
+      .specs dd {
         margin: 0;
-        line-height: 1.55;
-        white-space: pre-wrap;
+        font-size: 0.95rem;
+        line-height: 1.35;
       }
+      .specs dt {
+        font-weight: 700;
+        text-align: right;
+      }
+      .specs dd { text-align: left; }
+      .text {
+        margin: 0 auto 1.2rem;
+        max-width: 38rem;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        text-align: center;
+      }
+      .text:empty { display: none; }
       .nav {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.75rem;
-        margin-top: 1.15rem;
+        justify-content: center;
+        gap: 0.7rem;
       }
-      .btns { display: flex; gap: 0.5rem; }
       button {
         font: inherit;
+        font-weight: 700;
         min-height: 44px;
-        padding: 0 1rem;
+        min-width: 7.5rem;
+        padding: 0 1.2rem;
+        border: 0;
         border-radius: 999px;
-        border: 1px solid var(--line);
-        background: #fff;
-        color: var(--heading);
+        background: var(--blue);
+        color: #fff;
         cursor: pointer;
       }
-      button.primary {
-        background: var(--blue);
-        border-color: var(--blue);
-        color: #fff;
-      }
-      button:hover { filter: brightness(0.97); }
+      button:hover { background: var(--blue-dark); }
       button:focus-visible {
         outline: none;
-        box-shadow: 0 0 0 3px rgba(11, 120, 209, 0.35);
+        box-shadow: 0 0 0 3px rgba(11, 120, 209, 0.45);
       }
-      .count { color: var(--soft); font-weight: 600; }
-      .dots {
-        display: flex;
-        gap: 0.4rem;
-        justify-content: center;
-        margin-top: 0.9rem;
-      }
-      .dots button {
-        min-height: 0;
-        width: 9px;
-        height: 9px;
-        padding: 0;
-        border-radius: 50%;
-        background: #c9d3de;
-      }
-      .dots button.is-on { background: var(--blue); border-color: var(--blue); }
     </style>
   </head>
   <body>
-    <article class="card" id="card">
-      <img class="photo" id="photo" alt="" />
-      <div class="photo is-empty" id="photoEmpty" hidden>Kein Bild hinterlegt</div>
+    <article class="page">
+      <div class="hero" id="hero">
+        <img id="photo" alt="" />
+      </div>
       <div class="body">
-        <p class="meta">
-          <span id="ort"></span>
-          <span id="jahr"></span>
-        </p>
         <h2 id="titel"></h2>
+        <p class="lead" id="untertitel"></p>
+        <dl class="specs" id="specs"></dl>
         <p class="text" id="text"></p>
         <div class="nav">
-          <div class="btns">
-            <button type="button" id="prev">Zurück</button>
-            <button type="button" class="primary" id="next">Weiter</button>
-          </div>
-          <span class="count" id="count">1 / 1</span>
+          <button type="button" id="prev">← Zurück</button>
+          <button type="button" id="next">Weiter →</button>
         </div>
-        <div class="dots" id="dots"></div>
       </div>
     </article>
     <script>
-      /* Fallback, falls Wix noch keine Daten schickt. Die echten Texte pflegst du in references.js */
+      const BASE = 'referenzen/';
       let items = [
-        { titel: 'Referenz 1', ort: 'Ort', jahr: '2024', text: 'Beschreibung.', bild: '' },
-        { titel: 'Referenz 2', ort: 'Ort', jahr: '2025', text: 'Beschreibung.', bild: '' },
-        { titel: 'Referenz 3', ort: 'Ort', jahr: '2025', text: 'Beschreibung.', bild: '' },
+        {
+          jahr: '2018',
+          kategorie: 'Forschung',
+          titel: 'Bau von 4 Energiespeicherhäusern',
+          untertitel: 'Auszeichnung mit dem Bayerischen Energiepreis 2022',
+          baujahr: '2018',
+          wohneinheiten: '4',
+          kfw: 'KfW 40',
+          heizung: 'Sole-Wasser-Wärmepumpe',
+          warmwasser: 'Sole-Wasser-Wärmepumpe',
+          lueftung: 'Dezentral mit Wärmepumpe',
+          pv: 'Ja, mit Speicher',
+          text: '',
+          bild: BASE + 'herzo.jpg',
+        },
+        {
+          jahr: '2023',
+          kategorie: 'Forschung',
+          titel: 'FlexiPlus Wohnen Coburg',
+          untertitel: 'Ausgezeichnet nachhaltig – mit dem QNG-Siegel',
+          baujahr: '2023',
+          wohneinheiten: '15',
+          kfw: 'KfW 40 mit QNG',
+          heizung: 'Fernwärme',
+          warmwasser: 'Fernwärme',
+          lueftung: 'Dezentral mit Wärmepumpe',
+          pv: 'Ja',
+          text: 'FlexiPlus ist Teil eines Pilotprojekts für das Qualitätssiegel Nachhaltiges Gebäude (QNG). Das Gebäude wurde nach der Effizienzhaus-Stufe NH 40 umgesetzt.',
+          bild: BASE + 'coburg.jpg',
+        },
+        {
+          jahr: '2026',
+          kategorie: 'Forschung',
+          titel: 'Kleiner Wohnen@Land',
+          untertitel: 'Unterstützt durch die Bundesstiftung Bauakademie',
+          baujahr: '2026',
+          wohneinheiten: '26',
+          kfw: 'KfW 55 NiN',
+          heizung: 'Luft-Wasser-Wärmepumpe',
+          warmwasser: 'Booster-Wärmepumpe',
+          lueftung: 'Dezentral mit Wärmepumpe',
+          pv: 'Ja',
+          text: 'Pilotprojekt „Innovationen im Gebäudebereich“ in Redwitz. Begleitforschung durch das BBSR zur wissenschaftlichen Auswertung der planerischen und baulichen Ansätze.',
+          bild: BASE + 'redwitz.jpg',
+        },
       ];
       let index = 0;
+      const ROWS = [
+        ['baujahr', 'Baujahr'],
+        ['wohneinheiten', 'Anzahl der Wohnungen'],
+        ['kfw', 'KfW-Effizienzhaus'],
+        ['heizung', 'Heizung'],
+        ['warmwasser', 'Warmwasserversorgung'],
+        ['lueftung', 'Lüftung'],
+        ['pv', 'PV-Anlage'],
+      ];
 
       const els = {
+        hero: document.getElementById('hero'),
         photo: document.getElementById('photo'),
-        empty: document.getElementById('photoEmpty'),
         titel: document.getElementById('titel'),
-        ort: document.getElementById('ort'),
-        jahr: document.getElementById('jahr'),
+        untertitel: document.getElementById('untertitel'),
+        specs: document.getElementById('specs'),
         text: document.getElementById('text'),
-        count: document.getElementById('count'),
-        dots: document.getElementById('dots'),
       };
 
       function show() {
@@ -159,21 +222,34 @@
         const url = String(item.bild || '').trim();
         if (url) {
           els.photo.src = url;
-          els.photo.hidden = false;
-          els.empty.hidden = true;
+          els.photo.alt = item.titel || '';
+          els.hero.classList.remove('is-empty');
         } else {
           els.photo.removeAttribute('src');
-          els.photo.hidden = true;
-          els.empty.hidden = false;
+          els.hero.classList.add('is-empty');
         }
-        els.titel.textContent = item.titel || '';
-        els.ort.textContent = item.ort || '';
-        els.jahr.textContent = item.jahr || '';
+        const year = item.jahr || item.baujahr || '';
+        const kat = item.kategorie || '';
+        const name = item.titel || '';
+        els.titel.innerHTML =
+          (year ? '<span class="year">' + escapeHtml(year) + '</span> ' : '') +
+          escapeHtml([kat, name].filter(Boolean).join(' '));
+        els.untertitel.textContent = item.untertitel || '';
+        els.untertitel.hidden = !item.untertitel;
+        els.specs.innerHTML = ROWS.map(([key, label]) => {
+          const value = item[key];
+          if (value == null || String(value).trim() === '') return '';
+          return '<div><dt>' + escapeHtml(label) + '</dt><dd>' + escapeHtml(String(value)) + '</dd></div>';
+        }).join('');
         els.text.textContent = item.text || '';
-        els.count.textContent = index + 1 + ' / ' + items.length;
-        els.dots.innerHTML = items
-          .map((_, i) => '<button type="button" data-i="' + i + '" class="' + (i === index ? 'is-on' : '') + '" aria-label="Referenz ' + (i + 1) + '"></button>')
-          .join('');
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
       }
 
       function go(step) {
@@ -184,12 +260,6 @@
 
       document.getElementById('prev').onclick = () => go(-1);
       document.getElementById('next').onclick = () => go(1);
-      els.dots.addEventListener('click', (event) => {
-        const btn = event.target.closest('button[data-i]');
-        if (!btn) return;
-        index = Number(btn.dataset.i);
-        show();
-      });
 
       function takeMessage(raw) {
         let data = raw;

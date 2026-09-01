@@ -2,7 +2,8 @@
  * Eine Karte, durch die Besucher blättern.
  * Inhalte kommen nur aus public/references.js.
  * HTML-Komponente auf HOME: #htmlReferenzen
- * (URL: https://trippertv83.github.io/WEbsite/referenzen.html)
+ * URL: https://trippertv83.github.io/WEbsite/referenzen.html
+ * Höhe ca. 780 px
  */
 
 import { aktiveReferenzen } from 'public/references';
