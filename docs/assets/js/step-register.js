@@ -90,13 +90,24 @@ function syncPartyUi() {
   qs('#person-name-fields').hidden = type !== 'herr' && type !== 'frau';
 }
 
+function setHidden(el, hidden) {
+  if (!el) return;
+  el.hidden = hidden;
+  el.style.display = hidden ? 'none' : '';
+}
+
 function syncModeUi() {
   const login = currentMode() === 'login';
-  qs('#register-new-fields').hidden = login;
-  const codeBox = qs('#code-fields');
-  const sendBtn = qs('#btn-send-code');
-  if (codeBox) codeBox.hidden = login;
-  if (sendBtn) sendBtn.hidden = login;
+  setHidden(qs('#register-new-fields'), login);
+  setHidden(qs('#code-block'), login);
+  setHidden(qs('#code-fields'), login);
+  setHidden(qs('#btn-send-code'), login);
+  const codeInput = qs('#reg-code');
+  if (codeInput) {
+    codeInput.disabled = login;
+    codeInput.required = !login;
+    if (login) codeInput.value = '';
+  }
   qs('#btn-register').textContent = login
     ? 'Mit E-Mail anmelden'
     : 'Code bestätigen und Kunde anlegen';

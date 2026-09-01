@@ -62,8 +62,7 @@
   align-items: start;
 }
 
-#wizard-app[hidden],
-#register-gate[hidden] {
+[hidden] {
   display: none !important;
 }
 
