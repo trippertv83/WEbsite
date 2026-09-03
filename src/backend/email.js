@@ -371,7 +371,7 @@ export function buildPaidHtml(body) {
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
     <tr><td style="padding:24px;">
       <table role="presentation" width="640" align="center" cellspacing="0" cellpadding="0" style="background:#ffffff;border-radius:12px;">
-        <tr><td style="background:#1C618C;color:#ffffff;padding:20px 24px;font-size:20px;font-weight:700;">Zahlung eingegangen</td></tr>
+        <tr><td style="background:#1E5D8B;color:#ffffff;padding:20px 24px;font-size:20px;font-weight:700;">Zahlung eingegangen</td></tr>
         <tr><td style="padding:24px;">
           <p>Der Bezahlvorgang ist abgeschlossen. HSV-Datei und Kundendaten sind angefügt bzw. verlinkt.</p>
           ${hsvLink}

@@ -11,7 +11,7 @@
 
 import { aktiveReferenzen } from 'public/references';
 
-const REF_URL = 'https://trippertv83.github.io/WEbsite/referenzen.html?v=20260903h';
+const REF_URL = 'https://trippertv83.github.io/WEbsite/referenzen.html?v=20260903i';
 const SKIP_WIZARD = new Set(['wizardHtml', 'htmlComp1']);
 
 function exists(id) {
@@ -87,7 +87,7 @@ function sendToHtml(box) {
 function setSrc(box) {
   if (!box) return;
   const current = srcOf(box);
-  if (/referenzen\.html\?v=20260903h/i.test(current)) return;
+  if (/referenzen\.html\?v=20260903i/i.test(current)) return;
   try {
     box.src = REF_URL;
   } catch {
@@ -142,7 +142,7 @@ function paintNative(item) {
   }
   setText(
     '#refTitel',
-    '<span style="color:#1C618C">' + year + '</span> ' + title
+    '<span style="color:#1E5D8B">' + year + '</span> ' + title
   );
   setText('#refUntertitel', item.untertitel || '');
   setText('#refText', item.text || '');
