@@ -38,16 +38,21 @@ export function simulateLoan(opts) {
   const bindM = Math.min(Math.round(bindYears * 12), totalM);
   const horizon = opts.horizonMonths ? Math.min(opts.horizonMonths, totalM) : bindM;
 
-  let P = Math.max(0, amount - (opts.grantTiming === 'after_grace' ? 0 : grant));
+  const grantMonth = Math.max(0, Math.round(n(opts.grantAfterMonths || 0)));
+  let P = amount;
+  let grantApplied = 0;
   let annuity = 0;
   let interestSum = 0;
   let tilgSum = 0;
   let cash = extraCost;
   const yearMark = {};
+  let firstRepay = null;
 
   for (let m = 1; m <= totalM && P > 0.005; m += 1) {
-    if (opts.grantTiming === 'after_grace' && m === graceM + 1 && grant) {
-      P = Math.max(0, P - grant);
+    if (grant && grantMonth && m === grantMonth && !grantApplied) {
+      const cut = Math.min(grant, P);
+      P = euro(P - cut);
+      grantApplied = cut;
     }
     const interest = euro(P * i);
     let pay = 0;
@@ -66,6 +71,7 @@ export function simulateLoan(opts) {
         prin = P;
         pay = euro(interest + prin);
       }
+      if (!firstRepay) firstRepay = { payment: pay, interest, tilgung: prin };
     }
     P = euro(P - prin);
     interestSum += interest;
@@ -96,12 +102,16 @@ export function simulateLoan(opts) {
     bindYears,
     tilgPct: n(opts.tilgPct),
     monthlyAfterGrace: annuity,
-    monthlyGrace: euro(Math.max(0, amount - (opts.grantTiming === 'after_grace' ? 0 : grant)) * i),
+    monthlyGrace: euro(amount * i),
+    splitGrace: { payment: euro(amount * i), interest: euro(amount * i), tilgung: 0 },
+    splitRepay: firstRepay || { payment: annuity, interest: euro(amount * i), tilgung: euro(Math.max(0, annuity - amount * i)) },
     interest: h.interest,
     tilgung: h.tilgung,
     rest: h.rest,
     cash: h.cash,
     extraCost,
+    grantApplied,
+    grantAfterMonths: grantMonth,
     horizonMonths: Math.min(horizon, totalM),
     bindMonths: bindM,
     totalMonths: totalM,
@@ -151,10 +161,24 @@ export function compareScenarios(input) {
   const grant = euro(input.kfw.grant || 0);
   const netto = euro(obligationA - obligationB);
 
-  const monthlyA = bankA.monthlyAfterGrace || bankA.monthlyGrace;
-  const monthlyB = euro((kfwAmt ? kfw.monthlyAfterGrace || kfw.monthlyGrace : 0) + (bankAmtB ? bankB.monthlyAfterGrace || bankB.monthlyGrace : 0));
-  const monthlyAGrace = bankA.monthlyGrace;
-  const monthlyBGrace = euro((kfwAmt ? kfw.monthlyGrace : 0) + (bankAmtB ? bankB.monthlyGrace : 0));
+  function splitOf(loan, amt) {
+    if (!amt) return { payment: 0, interest: 0, tilgung: 0 };
+    return loan.splitRepay || loan.splitGrace;
+  }
+  const splitA = splitOf(bankA, total);
+  const splitKfw = splitOf(kfw, kfwAmt);
+  const splitBankB = splitOf(bankB, bankAmtB);
+  const splitB = {
+    payment: euro(splitKfw.payment + splitBankB.payment),
+    interest: euro(splitKfw.interest + splitBankB.interest),
+    tilgung: euro(splitKfw.tilgung + splitBankB.tilgung),
+  };
+  const splitAGrace = bankA.splitGrace;
+  const splitBGrace = {
+    payment: euro((kfwAmt ? kfw.splitGrace.payment : 0) + (bankAmtB ? bankB.splitGrace.payment : 0)),
+    interest: euro((kfwAmt ? kfw.splitGrace.interest : 0) + (bankAmtB ? bankB.splitGrace.interest : 0)),
+    tilgung: 0,
+  };
 
   return {
     total,
@@ -166,10 +190,16 @@ export function compareScenarios(input) {
     bankB,
     posA,
     posB,
-    monthlyA,
-    monthlyB,
-    monthlyAGrace,
-    monthlyBGrace,
+    monthlyA: splitA.payment,
+    monthlyB: splitB.payment,
+    monthlyAGrace: splitAGrace.payment,
+    monthlyBGrace: splitBGrace.payment,
+    splitA,
+    splitB,
+    splitKfw,
+    splitBankB,
+    splitAGrace,
+    splitBGrace,
     zinsersparnis,
     grant,
     extraDelta,

@@ -118,6 +118,94 @@ export function variantsFor(program, rows) {
   return (rows || SNAPSHOT).filter((r) => r.program === program);
 }
 
+/** Offizielle KfW-Produktseite 261 – Tabelle Tilgungszuschuss in % des Kreditbetrags. */
+export const GRANT_PAGE =
+  'https://www.kfw.de/inlandsfoerderung/Privatpersonen/Bestehende-Immobilie/F%C3%B6rderprodukte/Bundesf%C3%B6rderung-f%C3%BCr-effiziente-Geb%C3%A4ude-Wohngeb%C3%A4ude-Kredit-(261-262)/';
+export const GRANT_SOURCE = GRANT_PAGE;
+
+/** Stand laut kfw.de, Tabelle „Kredithöhe und Tilgungszuschuss“. */
+export const GRANT_SNAPSHOT = {
+  stand: '2026-09-03',
+  eh: {
+    '40': { ee: 10, nh: 15 },
+    '55': { ee: 5, nh: 10 },
+    '70': { ee: 0, nh: 5 },
+    '85': { ee: 0, nh: 5 },
+    denkmal: { ee: 5, nh: 10 },
+  },
+  wpbPp: 10,
+  sersanPp: 15,
+};
+
+let grantTable = GRANT_SNAPSHOT;
+
+export function parseGrantPage(html) {
+  const t = String(html || '')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ');
+  const grab = (label) => {
+    const m = t.match(new RegExp(label + '[^0-9\\-]{0,40}(\\d+)\\s*%', 'i'));
+    if (m) return Number(m[1]);
+    if (new RegExp(label + '[^0-9%]{0,40}-', 'i').test(t)) return 0;
+    return null;
+  };
+  const eh = {
+    '40': {
+      ee: grab('Effizienzhaus 40 Erneuerbare-Energien'),
+      nh: grab('Effizienzhaus 40 Nachhaltigkeits-Klasse'),
+    },
+    '55': {
+      ee: grab('Effizienzhaus 55 Erneuerbare-Energien'),
+      nh: grab('Effizienzhaus 55 Nachhaltigkeits-Klasse'),
+    },
+    '70': {
+      ee: grab('Effizienzhaus 70 Erneuerbare-Energien'),
+      nh: grab('Effizienzhaus 70 Nachhaltigkeits-Klasse'),
+    },
+    '85': {
+      ee: grab('Effizienzhaus 85 Erneuerbare-Energien'),
+      nh: grab('Effizienzhaus 85 Nachhaltigkeits-Klasse'),
+    },
+    denkmal: {
+      ee: grab('Effizienzhaus Denkmal Erneuerbare-Energien'),
+      nh: grab('Effizienzhaus Denkmal Nachhaltigkeits-Klasse'),
+    },
+  };
+  if (eh['40'].ee == null || eh['55'].ee == null) return null;
+  Object.keys(eh).forEach((k) => {
+    eh[k].ee = eh[k].ee == null ? GRANT_SNAPSHOT.eh[k].ee : eh[k].ee;
+    eh[k].nh = eh[k].nh == null ? GRANT_SNAPSHOT.eh[k].nh : eh[k].nh;
+  });
+  return { stand: '', eh, wpbPp: GRANT_SNAPSHOT.wpbPp, sersanPp: GRANT_SNAPSHOT.sersanPp };
+}
+
+export function begWgGrantPct({ eh, nh, wpb, sersan }, table = grantTable) {
+  const row = (table.eh && table.eh[eh]) || GRANT_SNAPSHOT.eh[eh] || GRANT_SNAPSHOT.eh['40'];
+  let pct = nh ? row.nh : row.ee;
+  if (wpb && (eh === '70' || eh === '55' || eh === '40')) pct += table.wpbPp;
+  if (sersan && (eh === '55' || eh === '40')) pct += table.sersanPp;
+  return pct;
+}
+
+export async function loadGrantTable() {
+  try {
+    const res = await fetch(GRANT_PAGE, { mode: 'cors' });
+    if (res.ok) {
+      const parsed = parseGrantPage(await res.text());
+      if (parsed && parsed.eh['40'].ee === 10) {
+        parsed.stand = new Date().toISOString().slice(0, 10);
+        grantTable = parsed;
+        return { ok: true, auto: true, table: grantTable, source: GRANT_PAGE };
+      }
+    }
+  } catch {
+    /* CORS */
+  }
+  grantTable = GRANT_SNAPSHOT;
+  return { ok: false, auto: false, table: grantTable, source: GRANT_PAGE };
+}
+
 function parseDe(s) {
   const n = Number(String(s || '').replace(/\s/g, '').replace(',', '.'));
   return Number.isFinite(n) ? n : null;

@@ -10,8 +10,8 @@
         --blue-dark: #085ea4;
         --blue-soft: #e7f2fb;
         --bafa: #085ea4;
-        --kfw: #1072a1;
-        --kfw-dark: #005a8c;
+        --kfw: #0b78d1;
+        --kfw-dark: #085ea4;
         --fa: #2d5c48;
         --text: #2a3038;
         --soft: #5b6573;
@@ -57,19 +57,52 @@
       input[type=text], input[type=number], input[type=date], select, input[type=file] {
         width: 100%; min-height: 40px; border: 1px solid var(--line); border-radius: 8px; padding: 0.4rem 0.6rem; font: inherit;
       }
+      input[type=checkbox] {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 1.05rem;
+        min-width: 1.05rem;
+        height: 1.05rem;
+        min-height: 1.05rem;
+        margin: 0;
+        padding: 0;
+        border: 2px solid var(--blue);
+        border-radius: 3px;
+        background: #fff;
+        cursor: pointer;
+        accent-color: var(--blue);
+      }
+      input[type=checkbox]:checked {
+        background: var(--blue);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23fff' stroke-width='2' d='M2 6.2 4.8 9 10 3'/%3E%3C/svg%3E");
+        background-size: 0.85rem;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
       .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
       .hint { color: var(--soft); font-size: 0.78rem; margin: 0.15rem 0 0.4rem; }
       .measure { padding: 0.55rem 0; border-bottom: 1px dashed var(--line); }
       .measure:last-child { border-bottom: 0; }
       .mrow { display: grid; grid-template-columns: 1fr 150px; gap: 0.6rem; align-items: center; }
-      .mname { display: flex; gap: 0.45rem; align-items: flex-start; font-size: 0.9rem; }
-      .mname input { width: 1.1rem; height: 1.1rem; margin-top: 0.15rem; flex: 0 0 auto; accent-color: var(--blue); }
+      .mname { display: flex; gap: 0.45rem; align-items: center; font-size: 0.9rem; }
+      .mname input { width: 1.15rem; height: 1.15rem; margin: 0; flex: 0 0 auto; accent-color: var(--blue); }
       .measure.on { background: #f3f8fd; margin: 0 -0.45rem; padding-left: 0.45rem; padding-right: 0.45rem; border-radius: 8px; }
       .euro { display: flex; align-items: center; gap: 0.3rem; }
       .euro input { min-height: 38px; }
       .euro span { color: var(--soft); }
-      .checks label { display: flex; gap: 0.45rem; align-items: flex-start; font-size: 0.84rem; margin: 0.25rem 0; }
-      .checks input { accent-color: var(--blue); }
+      .checks { display: flex; flex-direction: column; gap: 0.4rem; margin: 0.4rem 0; }
+      .checks label {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.55rem;
+        min-height: 1.5rem;
+        font-size: 0.84rem;
+        line-height: 1.2;
+        margin: 0;
+        cursor: pointer;
+      }
+      .checks input { flex: 0 0 1rem; }
       .warn { background: #fdecec; border: 1px solid #e7b0b0; color: #8a1f1f; border-radius: 10px; padding: 0.65rem 0.75rem; margin: 0.7rem 0; font-size: 0.86rem; }
       .detail { background: #fff; color: var(--text); border-radius: 10px; padding: 0.75rem 0.8rem; margin-top: 0.55rem; border: 1px solid var(--line); border-left: 5px solid var(--kfw); }
       .detail.BAFA { border-left-color: var(--bafa); }
@@ -175,8 +208,8 @@
             </div>
           </div>
           <div class="checks">
-            <label><input id="family" type="checkbox" /> Haushalt mit min. 1 Kind unter 18</label>
-            <label><input id="isfp" type="checkbox" /> iSFP vorhanden</label>
+            <label><input id="family" type="checkbox" /><span>mind. 1 Kind unter 18 Jahren</span></label>
+            <label><input id="isfp" type="checkbox" /><span>iSFP vorhanden</span></label>
           </div>
           <label class="lbl">Gespeicherte Berechnung laden</label>
           <input id="jsonfile" type="file" accept="application/json,.json" />
@@ -280,15 +313,15 @@
               <option value="solar">Solarthermie</option>
             </select>
             <div class="checks">
-              <label><input type="checkbox" data-old /> Austausch einer alten fossilen Heizung (Geschwindigkeitsbonus)</label>
-              <label><input type="checkbox" data-eevor /> Austausch einer EE-Heizung, Inbetriebnahme vor 01.01.2008 (ab Q1/2027)</label>
+              <label><input type="checkbox" data-old /><span>Austausch einer alten fossilen Heizung (Geschwindigkeitsbonus)</span></label>
+              <label><input type="checkbox" data-eevor /><span>Austausch einer EE-Heizung, Inbetriebnahme vor 01.01.2008 (ab Q1/2027)</span></label>
             </div>`;
         }
         if (item.id === 'gebaeudenetz') {
-          extra = `<div class="checks"><label><input type="checkbox" data-old /> Austausch einer alten fossilen Heizung</label></div>`;
+          extra = `<div class="checks"><label><input type="checkbox" data-old /><span>Austausch einer alten fossilen Heizung</span></label></div>`;
         }
         if (item.id === 'daemmung') {
-          extra = `<div class="checks"><label><input type="checkbox" data-wpb /> Worst Performing Building (Dämmung, Bonus ab Q1/2027)</label></div>`;
+          extra = `<div class="checks"><label><input type="checkbox" data-wpb /><span>Worst Performing Building (Dämmung, Bonus ab Q1/2027)</span></label></div>`;
         }
         if (item.id === 'komplett') {
           extra = `
@@ -301,9 +334,9 @@
               <option value="40" selected>EH 40 EE</option>
             </select>
             <div class="checks">
-              <label><input type="checkbox" data-nh /> Nachhaltigkeits-Klasse (NH/QNG) +5 %</label>
-              <label><input type="checkbox" data-wpb /> Worst Performing Building +10 %</label>
-              <label><input type="checkbox" data-ser /> Serielle Sanierung +15 %</label>
+              <label><input type="checkbox" data-nh /><span>Nachhaltigkeits-Klasse (NH/QNG) +5 %</span></label>
+              <label><input type="checkbox" data-wpb /><span>Worst Performing Building +10 %</span></label>
+              <label><input type="checkbox" data-ser /><span>Serielle Sanierung +15 %</span></label>
             </div>`;
         }
         const kredit = item.id === 'ergkredit';

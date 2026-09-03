@@ -8,7 +8,7 @@
       :root {
         --blue: #0b78d1;
         --blue-dark: #085ea4;
-        --kfw: #1072a1;
+        --kfw: #0b78d1;
         --text: #2a3038;
         --soft: #5b6573;
         --heading: #1c222b;
@@ -39,11 +39,48 @@
       .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 0.9rem 1rem; margin-bottom: 0.85rem; }
       h2 { margin: 0 0 0.55rem; font-size: 1.05rem; }
       label.lbl { display: block; font-size: 0.84rem; font-weight: 600; margin: 0.4rem 0 0.15rem; }
-      input, select { width: 100%; min-height: 40px; border: 1px solid var(--line); border-radius: 8px; padding: 0.35rem 0.55rem; font: inherit; }
+      input:not([type=checkbox]), select { width: 100%; min-height: 40px; border: 1px solid var(--line); border-radius: 8px; padding: 0.35rem 0.55rem; font: inherit; }
       .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; }
       .hint { color: var(--soft); font-size: 0.78rem; margin: 0.2rem 0 0.35rem; }
-      .checks label { display: flex; gap: 0.4rem; align-items: flex-start; font-size: 0.86rem; margin: 0.3rem 0; }
-      .checks input { width: 1.1rem; height: 1.1rem; accent-color: var(--blue); }
+      .checks { display: flex; flex-direction: column; gap: 0.4rem; margin: 0.45rem 0; }
+      .checks label {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.55rem;
+        min-height: 1.5rem;
+        font-size: 0.86rem;
+        line-height: 1.2;
+        margin: 0;
+        cursor: pointer;
+      }
+      .checks label span {
+        display: block;
+        padding: 0;
+        margin: 0;
+      }
+      .checks input[type=checkbox] {
+        appearance: none;
+        -webkit-appearance: none;
+        flex: 0 0 1.05rem;
+        width: 1.05rem;
+        height: 1.05rem;
+        margin: 0;
+        padding: 0;
+        border: 2px solid var(--blue);
+        border-radius: 3px;
+        background: #fff;
+        position: static;
+        top: auto;
+        cursor: pointer;
+      }
+      .checks input[type=checkbox]:checked {
+        background: var(--blue);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23fff' stroke-width='2' d='M2 6.2 4.8 9 10 3'/%3E%3C/svg%3E");
+        background-size: 0.85rem;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
       table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
       th, td { border-bottom: 1px solid var(--line); padding: 0.4rem 0.35rem; text-align: right; }
       th:first-child, td:first-child { text-align: left; }
@@ -54,10 +91,14 @@
       button.ghost { background: #fff; color: var(--heading); border: 1px solid var(--line); }
       .note { font-size: 0.8rem; color: var(--soft); }
       #print-root { display: none !important; }
+      #print-root .card { background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 0.7rem 0.85rem; margin: 0.7rem 0; }
+      #print-root h1 { font-size: 1.25rem; margin: 0 0 0.35rem; }
+      #print-root h2 { font-size: 1rem; margin: 0 0 0.4rem; }
       @media print {
         .screen-ui { display: none !important; }
         #print-root { display: block !important; }
         table { break-inside: avoid; }
+        #print-root .card { break-inside: avoid; }
       }
     </style>
   </head>
@@ -97,7 +138,7 @@
             </div>
           </div>
           <div class="checks">
-            <label><input id="family" type="checkbox" /> mind. 1 Kind unter 18 im Haushalt</label>
+            <label><input id="family" type="checkbox" /><span>mind. 1 Kind unter 18 Jahren</span></label>
           </div>
         </section>
         <section class="card">
@@ -142,20 +183,43 @@
           <div><label class="lbl">Anfängliche Tilgung % p.a.</label><input id="k-tilg" type="number" min="0" step="0.1" value="2" /></div>
           <div><label class="lbl">Tilgungsfreie Anlaufjahre</label><input id="k-grace" type="number" min="0" /></div>
         </div>
-        <div class="row2">
-          <div><label class="lbl">Tilgungszuschuss / Teilschulderlass €</label><input id="k-grant" type="number" min="0" step="100" value="0" /></div>
-          <div>
-            <label class="lbl">Zuschuss wirkt</label>
-            <select id="k-grant-when">
-              <option value="start">sofort auf die Darlehensschuld</option>
-              <option value="after_grace">nach tilgungsfreien Jahren</option>
+        <div id="grant-box">
+          <h2 style="margin-top:0.85rem;font-size:1rem">Teilschulderlass (Tilgungszuschuss)</h2>
+          <p class="hint">Prozent des KfW-Kreditbetrags laut <a href="https://www.kfw.de/inlandsfoerderung/Privatpersonen/Bestehende-Immobilie/F%C3%B6rderprodukte/Bundesf%C3%B6rderung-f%C3%BCr-effiziente-Geb%C3%A4ude-Wohngeb%C3%A4ude-Kredit-(261-262)/" target="_blank" rel="noopener">KfW Wohngebäude-Kredit 261</a>. Gutschrift erst nach Abschluss der Maßnahme – nicht bei Auszahlung. Andere Programme: 0&nbsp;%, bei Bedarf manuell in %.</p>
+          <div id="grant-261">
+            <label class="lbl">Angestrebte Effizienzhaus-Stufe</label>
+            <select id="eh">
+              <option value="denkmal">EH Denkmal EE (Basis 5 %)</option>
+              <option value="85">EH 85 EE (Basis 0 %)</option>
+              <option value="70">EH 70 EE (Basis 0 %)</option>
+              <option value="55">EH 55 EE (Basis 5 %)</option>
+              <option value="40" selected>EH 40 EE (Basis 10 %)</option>
             </select>
+            <div class="checks">
+              <label><input id="nh" type="checkbox" /><span>Nachhaltigkeits-Klasse NH (+5 Prozentpunkte)</span></label>
+              <label><input id="wpb" type="checkbox" /><span>Worst Performing Building (+10 Prozentpunkte)</span></label>
+              <label><input id="sersan" type="checkbox" /><span>Serielle Sanierung (+15 Prozentpunkte, EH 55/40)</span></label>
+            </div>
+          </div>
+          <div class="row2">
+            <div>
+              <label class="lbl">Teilschulderlass % der KfW-Fördersumme</label>
+              <input id="k-grant-pct" type="number" min="0" max="40" step="0.5" value="10" />
+            </div>
+            <div>
+              <label class="lbl">Maßnahmenende nach Monaten</label>
+              <input id="k-grant-months" type="number" min="1" value="24" />
+            </div>
+          </div>
+          <p class="hint">Entspricht <strong id="grant-euro">0 €</strong> auf den KfW-Betrag. Andere Programme: 0 % vorbelegen, Prozentsatz bei Bedarf manuell.</p>
+          <div class="checks">
+            <label><input id="manual-grant" type="checkbox" /><span>Prozentsatz manuell vorgeben</span></label>
           </div>
         </div>
         <label class="lbl">KfW-Nebenkosten einmalig €</label>
         <input id="k-extra" type="number" min="0" step="50" value="0" />
         <div class="checks">
-          <label><input id="manual-rate" type="checkbox" /> KfW-Zinssatz manuell vorgeben (Anzeiger nicht verwenden)</label>
+          <label><input id="manual-rate" type="checkbox" /><span>KfW-Zinssatz manuell vorgeben (Anzeiger nicht verwenden)</span></label>
         </div>
       </section>
       <section class="card screen-ui">
@@ -178,10 +242,11 @@
       <div id="print-root"></div>
     </div>
     <script type="module">
-      import { PROGRAMS, SNAPSHOT, suggestProgram, variantsFor, loadKonditionen, KFW_ANZEIGER } from './assets/js/kfw-konditionen.js?v=20260903d';
-      import { compareScenarios, breakEvenKfwRate, sensitivity, verdict, money, pct, n, euro } from './assets/js/kfw-loan-calc.js?v=20260903d';
+      import { PROGRAMS, SNAPSHOT, suggestProgram, variantsFor, loadKonditionen, KFW_ANZEIGER, begWgGrantPct, GRANT_SOURCE, loadGrantTable } from './assets/js/kfw-konditionen.js?v=20260903g';
+      import { compareScenarios, breakEvenKfwRate, sensitivity, verdict, money, pct, n, euro } from './assets/js/kfw-loan-calc.js?v=20260903g';
 
       let kond = { rows: SNAPSHOT, auto: false, stand: '', fetched: '', source: KFW_ANZEIGER };
+      let grantInfo = { auto: false, source: GRANT_SOURCE };
       const $ = (id) => document.getElementById(id);
 
       function fillPrograms() {
@@ -197,6 +262,8 @@
         applyVariant();
         const meta = PROGRAMS.find((p) => p.id === pid);
         $('prog-hint').textContent = meta ? meta.maxHint : '';
+        $('grant-261').hidden = pid !== '261';
+        syncGrant();
       }
 
       function currentVariant() {
@@ -211,6 +278,29 @@
         $('k-grace').value = v.grace;
         $('k-bind').value = v.bind;
         $('k-valid').textContent = v.validFrom || kond.stand || 'Nicht angegeben';
+      }
+
+      function syncGrant() {
+        const pid = $('program').value;
+        if (pid === '261' && !$('manual-grant').checked) {
+          $('k-grant-pct').value = String(
+            begWgGrantPct({
+              eh: $('eh').value,
+              nh: $('nh').checked,
+              wpb: $('wpb').checked,
+              sersan: $('sersan').checked,
+            })
+          );
+        } else if (pid !== '261' && !$('manual-grant').checked) {
+          $('k-grant-pct').value = '0';
+        }
+        $('k-grant-pct').readOnly = !$('manual-grant').checked;
+        const euroAmt = euro(n($('k-amt').value) * n($('k-grant-pct').value) / 100);
+        $('grant-euro').textContent = money(euroAmt);
+      }
+
+      function grantEuro() {
+        return euro(n($('k-amt').value) * n($('k-grant-pct').value) / 100);
       }
 
       function need() {
@@ -251,8 +341,8 @@
             tilgPct: n($('k-tilg').value),
             extraCost: n($('k-extra').value),
             annualExtra: n($('k-sonder').value),
-            grant: n($('k-grant').value),
-            grantTiming: $('k-grant-when').value,
+            grant: grantEuro(),
+            grantAfterMonths: n($('k-grant-months').value) || 24,
           },
         };
       }
@@ -284,7 +374,7 @@
             <div><em>Hausbankanteil</em><strong>${money(r.bankAmtB)}</strong></div>
             <div><em>Netto-Vorteil</em><strong class="${sign}">${money(r.netto)}</strong></div>
           </div>
-          <p class="hint">Monatsrate nach tilgungsfreien Jahren: nur Hausbank ${money(r.monthlyA)} · KfW+Hausbank ${money(r.monthlyB)}</p>
+          <p class="hint">Monatsrate nach tilgungsfreien Jahren: nur Hausbank ${money(r.splitA.payment)} (Zins ${money(r.splitA.interest)} + Tilgung ${money(r.splitA.tilgung)}) · KfW+Hausbank ${money(r.splitB.payment)} (Zins ${money(r.splitB.interest)} + Tilgung ${money(r.splitB.tilgung)})</p>
         `;
 
         const y = (pack, key) => {
@@ -308,12 +398,28 @@
               <tbody>
                 <tr><td>Finanzierung</td><td>${cell(r.total)}</td><td>${cell(r.kfwAmt)} + ${cell(r.bankAmtB)}</td><td></td></tr>
                 <tr><td>Sollzins</td><td>${pct(r.bankA.ratePct)}</td><td>KfW ${pct(r.kfw.ratePct)} / Bank ${pct(r.bankB.ratePct)}</td><td></td></tr>
-                <tr><td>Monatsrate (nach tilgungsfreien J.)</td><td>${cell(r.monthlyA)}</td><td>${cell(r.monthlyB)}</td><td class="${r.monthlyA - r.monthlyB >= 0 ? 'plus' : 'minus'}">${cell(r.monthlyA - r.monthlyB)}</td></tr>
+                <tr><td>Monatliche Belastung (Zins + Tilgung)</td><td>${cell(r.splitA.payment)}</td><td>${cell(r.splitB.payment)}</td><td class="${r.splitA.payment - r.splitB.payment >= 0 ? 'plus' : 'minus'}">${cell(r.splitA.payment - r.splitB.payment)}</td></tr>
+                <tr><td>davon Zins / Monat</td><td>${cell(r.splitA.interest)}</td><td>${cell(r.splitB.interest)}</td><td>${cell(r.splitA.interest - r.splitB.interest)}</td></tr>
+                <tr><td>davon Tilgung / Monat</td><td>${cell(r.splitA.tilgung)}</td><td>${cell(r.splitB.tilgung)}</td><td>${cell(r.splitB.tilgung - r.splitA.tilgung)}</td></tr>
+                <tr><td>In tilgungsfreien Jahren (nur Zins)</td><td>${cell(r.splitAGrace.payment)}</td><td>${cell(r.splitBGrace.payment)}</td><td>${cell(r.splitAGrace.payment - r.splitBGrace.payment)}</td></tr>
                 <tr><td>Gezahlte Zinsen</td><td>${cell(r.posA.interest)}</td><td>${cell(r.posB.interest)}</td><td class="${r.zinsersparnis >= 0 ? 'plus' : 'minus'}">${cell(r.zinsersparnis)}</td></tr>
                 <tr><td>Geleistete Tilgung</td><td>${cell(r.posA.tilgung)}</td><td>${cell(r.posB.tilgung)}</td><td></td></tr>
                 <tr><td>Restschuld</td><td>${cell(r.posA.rest)}</td><td>${cell(r.posB.rest)}</td><td class="${r.posA.rest - r.posB.rest >= 0 ? 'plus' : 'minus'}">${cell(r.posA.rest - r.posB.rest)}</td></tr>
-                <tr><td>Teilschulderlass (eingetragen)</td><td>${cell(0)}</td><td>${cell(r.grant)}</td><td class="plus">${cell(r.grant)}</td></tr>
+                <tr><td>Teilschulderlass (nach Maßnahmenende)</td><td>${cell(0)}</td><td>${cell(r.grant)}</td><td class="plus">${cell(r.grant)}</td></tr>
                 <tr><td>Zahlungen + Restschuld</td><td>${cell(r.obligationA)}</td><td>${cell(r.obligationB)}</td><td class="${sign}">${cell(r.netto)}</td></tr>
+              </tbody>
+            </table>
+          </section>
+          <section class="card">
+            <h2>Monatliche Belastung nach Darlehen (erste Rate mit Tilgung)</h2>
+            <p class="hint">Zinsanteil der ersten Tilgungsrate; der Zins sinkt danach mit der Restschuld. In tilgungsfreien Anlaufjahren ist die Rate nur der Sollzins.</p>
+            <table>
+              <thead><tr><th>Darlehen</th><th>Rate gesamt</th><th>davon Zins</th><th>davon Tilgung</th></tr></thead>
+              <tbody>
+                <tr><td>Nur Hausbank</td><td>${cell(r.splitA.payment)}</td><td>${cell(r.splitA.interest)}</td><td>${cell(r.splitA.tilgung)}</td></tr>
+                <tr><td>KfW-Darlehen</td><td>${cell(r.splitKfw.payment)}</td><td>${cell(r.splitKfw.interest)}</td><td>${cell(r.splitKfw.tilgung)}</td></tr>
+                <tr><td>Hausbank-Rest</td><td>${cell(r.splitBankB.payment)}</td><td>${cell(r.splitBankB.interest)}</td><td>${cell(r.splitBankB.tilgung)}</td></tr>
+                <tr><td><strong>KfW + Hausbank gesamt</strong></td><td><strong>${cell(r.splitB.payment)}</strong></td><td><strong>${cell(r.splitB.interest)}</strong></td><td><strong>${cell(r.splitB.tilgung)}</strong></td></tr>
               </tbody>
             </table>
           </section>
@@ -341,7 +447,8 @@
             <h2>Annahmen und Quellen</h2>
             <p>KfW-Programm ${$('program').value}${v ? ` · ${v.label}` : ''} · Sollzins ${pct(r.kfw.ratePct)} · gültig ab ${$('k-valid').textContent} · Anzeiger-Stand ${kond.stand} · Quelle: <a href="${KFW_ANZEIGER}">KfW-Konditionenanzeiger</a>${kond.auto ? ' (live)' : ' (Referenz, nicht live)'}.</p>
             <p>Hausbank ${pct(r.bankA.ratePct)} Soll · Bindung ${$('b-bind').value} Jahre · Tilgung ${$('b-tilg').value} % · Sondertilgung Bank ${money(n($('b-sonder').value))} / KfW ${money(n($('k-sonder').value))} p.a.</p>
-            <p>Annuität nach tilgungsfreien Jahren aus Restkapital × (Soll + Anfangstilgung) / 12. Teilschulderlass mindert die Schuld, keine Barauszahlung.</p>
+            <p>Teilschulderlass ${pct(n($('k-grant-pct').value))} von ${money(n($('k-amt').value))} = ${money(grantEuro())}, Gutschrift nach ${$('k-grant-months').value} Monaten (Maßnahmenende). Quelle: <a href="${GRANT_SOURCE}">KfW 261 Tilgungszuschuss</a>${grantInfo.auto ? ' (live)' : ' (Tabelle von kfw.de)'}.</p>
+            <p>Annuität nach tilgungsfreien Jahren aus Restkapital × (Soll + Anfangstilgung) / 12. Der Tilgungszuschuss mindert die Restschuld, keine Barauszahlung.</p>
           </section>
         `;
       }
@@ -378,6 +485,13 @@
       $('manual-rate').addEventListener('change', () => {
         if (!$('manual-rate').checked) applyVariant();
       });
+      $('manual-grant').addEventListener('change', syncGrant);
+      ['eh', 'nh', 'wpb', 'sersan'].forEach((id) => $(id).addEventListener('change', syncGrant));
+      $('k-grant-pct').addEventListener('input', () => {
+        $('manual-grant').checked = true;
+        syncGrant();
+      });
+      $('k-amt').addEventListener('input', syncGrant);
       ['kosten', 'ek', 'k-amt'].forEach((id) => {
         $(id).addEventListener('input', () => {
           $('need').textContent = money(need());
@@ -387,26 +501,37 @@
       $('btn-go').addEventListener('click', go);
       $('btn-pdf').addEventListener('click', () => {
         go();
-        $('print-root').innerHTML = $('summary').innerHTML + $('out').innerHTML;
+        const kunde = $('kosten').value;
+        $('print-root').innerHTML = `
+          <h1>KfW-Kredit vs. Hausbank – Ingenieurbüro Spaderna</h1>
+          <p>Orientierungsrechnung, keine Finanzberatung. Vergleichshorizont siehe Tabelle.</p>
+          ${$('summary').innerHTML}
+          ${$('out').innerHTML}
+        `;
         window.print();
       });
       $('btn-rates').addEventListener('click', async () => {
         kond = await loadKonditionen();
+        grantInfo = await loadGrantTable();
         banner();
         fillVariants();
+        syncGrant();
       });
 
       fillPrograms();
       $('program').value = suggestProgram($('vorhaben').value, false);
       fillVariants();
-      loadKonditionen().then((k) => {
+      Promise.all([loadKonditionen(), loadGrantTable()]).then(([k, g]) => {
         kond = k;
+        grantInfo = g;
         banner();
         fillVariants();
+        syncGrant();
       });
       banner();
       $('need').textContent = money(need());
       $('bank-rest').textContent = money(Math.max(0, need() - n($('k-amt').value)));
+      syncGrant();
     </script>
   </body>
 </html>
