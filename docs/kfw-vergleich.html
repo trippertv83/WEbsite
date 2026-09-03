@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>KfW-Vergleich | Ingenieurbüro Spaderna</title>
+    <style>
+      :root {
+        --blue: #0b78d1;
+        --blue-dark: #085ea4;
+        --kfw: #1072a1;
+        --text: #2a3038;
+        --soft: #5b6573;
+        --heading: #1c222b;
+        --line: #d5dbe3;
+        --card: #fff;
+        --bg: #f4f7fa;
+        --font: 'Segoe UI', system-ui, sans-serif;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; font-family: var(--font); color: var(--text); background: var(--bg); }
+      .page { max-width: 1100px; margin: 0 auto; padding: 1.1rem 1rem 2.5rem; }
+      header.app { padding: 0 0 1rem; border-bottom: 3px solid var(--blue); margin-bottom: 1rem; }
+      header.app h1 { margin: 0; font-size: 1.5rem; color: var(--heading); }
+      header.app p { margin: 0.35rem 0 0; color: var(--soft); max-width: 46rem; }
+      header.app a { color: var(--blue); }
+      .banner { border-radius: 10px; padding: 0.7rem 0.85rem; margin-bottom: 0.9rem; font-size: 0.86rem; }
+      .banner.warn { background: #fff6e5; border: 1px solid #e8c98a; color: #6a4b00; }
+      .banner.ok { background: #e8f5ee; border: 1px solid #b7dcc8; color: #1d5c38; }
+      .result { background: linear-gradient(180deg, #fff, #e7f2fb); border: 1px solid #cfe3f4; border-radius: 12px; padding: 1rem 1.1rem; margin-bottom: 1rem; }
+      .result .big { font-size: 1.55rem; font-weight: 800; margin: 0.2rem 0 0.5rem; }
+      .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.45rem; }
+      .kpis div { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 0.45rem 0.55rem; }
+      .kpis strong { display: block; }
+      .kpis em { font-style: normal; font-size: 0.72rem; color: var(--soft); }
+      @media (max-width: 800px) { .kpis { grid-template-columns: 1fr 1fr; } }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
+      @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 0.9rem 1rem; margin-bottom: 0.85rem; }
+      h2 { margin: 0 0 0.55rem; font-size: 1.05rem; }
+      label.lbl { display: block; font-size: 0.84rem; font-weight: 600; margin: 0.4rem 0 0.15rem; }
+      input, select { width: 100%; min-height: 40px; border: 1px solid var(--line); border-radius: 8px; padding: 0.35rem 0.55rem; font: inherit; }
+      .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; }
+      .hint { color: var(--soft); font-size: 0.78rem; margin: 0.2rem 0 0.35rem; }
+      .checks label { display: flex; gap: 0.4rem; align-items: flex-start; font-size: 0.86rem; margin: 0.3rem 0; }
+      .checks input { width: 1.1rem; height: 1.1rem; accent-color: var(--blue); }
+      table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+      th, td { border-bottom: 1px solid var(--line); padding: 0.4rem 0.35rem; text-align: right; }
+      th:first-child, td:first-child { text-align: left; }
+      .plus { color: #1d5c38; font-weight: 700; }
+      .minus { color: #b42318; font-weight: 700; }
+      .btns { display: flex; gap: 0.45rem; flex-wrap: wrap; margin-top: 0.7rem; }
+      button { min-height: 42px; border: 0; border-radius: 8px; padding: 0 0.85rem; font: inherit; font-weight: 700; cursor: pointer; background: var(--blue); color: #fff; }
+      button.ghost { background: #fff; color: var(--heading); border: 1px solid var(--line); }
+      .note { font-size: 0.8rem; color: var(--soft); }
+      #print-root { display: none !important; }
+      @media print {
+        .screen-ui { display: none !important; }
+        #print-root { display: block !important; }
+        table { break-inside: avoid; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="app screen-ui">
+        <h1>KfW-Kredit vs. Hausbank</h1>
+        <p>Ingenieurbüro Spaderna – Vergleich der Zahlungsströme, nicht nur des Nominalzinses. <a href="foerderrechner.html">Zum Zuschuss-Förderrechner</a></p>
+      </header>
+      <div id="rate-banner" class="banner warn screen-ui">KfW-Konditionen werden geladen …</div>
+      <section class="result screen-ui" id="summary">
+        <p class="hint" style="margin:0">Ergebnis erscheint nach der Berechnung.</p>
+      </section>
+      <div class="grid screen-ui">
+        <section class="card">
+          <h2>Vorhaben</h2>
+          <label class="lbl">Art</label>
+          <select id="vorhaben">
+            <option value="sanierung">Sanierung / Effizienzhaus</option>
+            <option value="einzelmassnahme">Einzelmaßnahmen / Heizung (BEG EM)</option>
+            <option value="kauf">Kauf selbstgenutztes Wohneigentum</option>
+            <option value="altbau">Kauf sanierungsbedürftiger Altbau</option>
+            <option value="neubau">Neubau</option>
+            <option value="barriere">Barrierereduzierung / Einbruchschutz</option>
+            <option value="pv">Photovoltaik / EE-Strom</option>
+          </select>
+          <div class="row2">
+            <div><label class="lbl">Gesamtkosten €</label><input id="kosten" type="number" min="0" step="1000" value="400000" /></div>
+            <div><label class="lbl">Eigenkapital €</label><input id="ek" type="number" min="0" step="1000" value="80000" /></div>
+          </div>
+          <p class="hint">Finanzierungsbedarf: <strong id="need">320.000 €</strong></p>
+          <div class="row2">
+            <div><label class="lbl">Wohneinheiten</label><input id="we" type="number" min="1" value="1" /></div>
+            <div>
+              <label class="lbl">Nutzung</label>
+              <select id="use"><option value="self">selbstgenutzt</option><option value="rent">vermietet</option></select>
+            </div>
+          </div>
+          <div class="checks">
+            <label><input id="family" type="checkbox" /> mind. 1 Kind unter 18 im Haushalt</label>
+          </div>
+        </section>
+        <section class="card">
+          <h2>Hausbank</h2>
+          <label class="lbl">Sollzins % p.a.</label>
+          <input id="b-rate" type="number" min="0" step="0.01" value="3.80" />
+          <div class="row2">
+            <div><label class="lbl">Zinsbindung Jahre</label><input id="b-bind" type="number" min="1" value="10" /></div>
+            <div><label class="lbl">Gesamtlaufzeit Jahre</label><input id="b-years" type="number" min="1" value="25" /></div>
+          </div>
+          <div class="row2">
+            <div><label class="lbl">Anfängliche Tilgung % p.a.</label><input id="b-tilg" type="number" min="0" step="0.1" value="2" /></div>
+            <div><label class="lbl">Tilgungsfreie Jahre</label><input id="b-grace" type="number" min="0" value="0" /></div>
+          </div>
+          <label class="lbl">Nebenkosten / Bereitstellung (einmalig, €)</label>
+          <input id="b-extra" type="number" min="0" step="100" value="0" />
+        </section>
+      </div>
+      <section class="card screen-ui">
+        <h2>KfW-Darlehen</h2>
+        <p class="hint" id="prog-hint"></p>
+        <div class="row2">
+          <div>
+            <label class="lbl">Programm</label>
+            <select id="program"></select>
+          </div>
+          <div>
+            <label class="lbl">Variante (Laufzeit / tilgungsfrei / Bindung)</label>
+            <select id="variant"></select>
+          </div>
+        </div>
+        <div class="row2">
+          <div><label class="lbl">KfW-Betrag €</label><input id="k-amt" type="number" min="0" step="1000" value="100000" /></div>
+          <div><label class="lbl">Sollzins % p.a.</label><input id="k-rate" type="number" min="0" step="0.01" /></div>
+        </div>
+        <p class="hint">Hausbankanteil (Rest): <strong id="bank-rest">–</strong> · Kondition gültig ab <strong id="k-valid">Nicht angegeben</strong></p>
+        <div class="row2">
+          <div><label class="lbl">Zinsbindung Jahre</label><input id="k-bind" type="number" min="1" /></div>
+          <div><label class="lbl">Gesamtlaufzeit Jahre</label><input id="k-years" type="number" min="1" /></div>
+        </div>
+        <div class="row2">
+          <div><label class="lbl">Anfängliche Tilgung % p.a.</label><input id="k-tilg" type="number" min="0" step="0.1" value="2" /></div>
+          <div><label class="lbl">Tilgungsfreie Anlaufjahre</label><input id="k-grace" type="number" min="0" /></div>
+        </div>
+        <div class="row2">
+          <div><label class="lbl">Tilgungszuschuss / Teilschulderlass €</label><input id="k-grant" type="number" min="0" step="100" value="0" /></div>
+          <div>
+            <label class="lbl">Zuschuss wirkt</label>
+            <select id="k-grant-when">
+              <option value="start">sofort auf die Darlehensschuld</option>
+              <option value="after_grace">nach tilgungsfreien Jahren</option>
+            </select>
+          </div>
+        </div>
+        <label class="lbl">KfW-Nebenkosten einmalig €</label>
+        <input id="k-extra" type="number" min="0" step="50" value="0" />
+        <div class="checks">
+          <label><input id="manual-rate" type="checkbox" /> KfW-Zinssatz manuell vorgeben (Anzeiger nicht verwenden)</label>
+        </div>
+      </section>
+      <section class="card screen-ui">
+        <h2>Sondertilgung (optional)</h2>
+        <p class="hint">Jährlich am Jahresende, in beiden Szenarien auf alle Darlehen anteilig? Hier je Darlehen getrennt – leer = keine.</p>
+        <div class="row2">
+          <div><label class="lbl">Sondertilgung Hausbank € / Jahr</label><input id="b-sonder" type="number" min="0" step="100" value="0" /></div>
+          <div><label class="lbl">Sondertilgung KfW € / Jahr</label><input id="k-sonder" type="number" min="0" step="100" value="0" /></div>
+        </div>
+        <div class="btns">
+          <button type="button" id="btn-go">Vergleich berechnen</button>
+          <button class="ghost" type="button" id="btn-pdf">PDF</button>
+          <button class="ghost" type="button" id="btn-rates">Konditionen aktualisieren</button>
+        </div>
+      </section>
+      <div id="out" class="screen-ui"></div>
+      <section class="card screen-ui note">
+        <p>Orientierungsrechnung, keine Finanz-, Rechts- oder Förderberatung. Zinssätze der KfW setzt die Hausbank bei Zusage fest; der Anzeiger nennt Höchstsätze. Förderfähigkeit, Höchstbeträge, Einkommensgrenzen und Kombinationsverbote sind am konkreten Vorhaben und Antragstag zu prüfen. Quelle: KfW-Konditionenanzeiger / kfw.de.</p>
+      </section>
+      <div id="print-root"></div>
+    </div>
+    <script type="module">
+      import { PROGRAMS, SNAPSHOT, suggestProgram, variantsFor, loadKonditionen, KFW_ANZEIGER } from './assets/js/kfw-konditionen.js?v=20260903d';
+      import { compareScenarios, breakEvenKfwRate, sensitivity, verdict, money, pct, n, euro } from './assets/js/kfw-loan-calc.js?v=20260903d';
+
+      let kond = { rows: SNAPSHOT, auto: false, stand: '', fetched: '', source: KFW_ANZEIGER };
+      const $ = (id) => document.getElementById(id);
+
+      function fillPrograms() {
+        $('program').innerHTML = PROGRAMS.map((p) => `<option value="${p.id}">${p.name}</option>`).join('');
+      }
+
+      function fillVariants() {
+        const pid = $('program').value;
+        const list = variantsFor(pid, kond.rows);
+        $('variant').innerHTML = list.length
+          ? list.map((v) => `<option value="${v.id}">${v.label} · ${v.soll.toLocaleString('de-DE')} %</option>`).join('')
+          : '<option value="">Keine Variante in der Tabelle</option>';
+        applyVariant();
+        const meta = PROGRAMS.find((p) => p.id === pid);
+        $('prog-hint').textContent = meta ? meta.maxHint : '';
+      }
+
+      function currentVariant() {
+        return variantsFor($('program').value, kond.rows).find((v) => v.id === $('variant').value);
+      }
+
+      function applyVariant() {
+        const v = currentVariant();
+        if (!v) return;
+        if (!$('manual-rate').checked) $('k-rate').value = String(v.soll);
+        $('k-years').value = v.years;
+        $('k-grace').value = v.grace;
+        $('k-bind').value = v.bind;
+        $('k-valid').textContent = v.validFrom || kond.stand || 'Nicht angegeben';
+      }
+
+      function need() {
+        return Math.max(0, n($('kosten').value) - n($('ek').value));
+      }
+
+      function banner() {
+        const el = $('rate-banner');
+        if (kond.auto) {
+          el.className = 'banner ok screen-ui';
+          el.innerHTML = `KfW-Sätze live vom Konditionen-Anzeiger (Stand ${kond.stand}, Abruf ${kond.fetched}). <a href="${KFW_ANZEIGER}" target="_blank" rel="noopener">Quelle öffnen</a>`;
+        } else {
+          el.className = 'banner warn screen-ui';
+          el.innerHTML = `KfW-Konditionen konnten nicht automatisch aktualisiert werden – bitte Zinssatz prüfen oder manuell eingeben. Hinterlegte Referenz: Anzeiger-Stand ${kond.stand}, übernommen am ${kond.fetched}. <a href="${KFW_ANZEIGER}" target="_blank" rel="noopener">Offiziellen Konditionen-Anzeiger öffnen</a>`;
+        }
+      }
+
+      function collect() {
+        const total = need();
+        const kfwAmount = Math.min(total, n($('k-amt').value));
+        return {
+          totalFinance: total,
+          kfwAmount,
+          bank: {
+            ratePct: n($('b-rate').value),
+            years: n($('b-years').value),
+            bindYears: n($('b-bind').value),
+            graceYears: n($('b-grace').value),
+            tilgPct: n($('b-tilg').value),
+            extraCost: n($('b-extra').value),
+            annualExtra: n($('b-sonder').value),
+          },
+          kfw: {
+            ratePct: n($('k-rate').value),
+            years: n($('k-years').value),
+            bindYears: n($('k-bind').value),
+            graceYears: n($('k-grace').value),
+            tilgPct: n($('k-tilg').value),
+            extraCost: n($('k-extra').value),
+            annualExtra: n($('k-sonder').value),
+            grant: n($('k-grant').value),
+            grantTiming: $('k-grant-when').value,
+          },
+        };
+      }
+
+      function cell(v) {
+        return money(v);
+      }
+
+      function renderCmp(r) {
+        const be = breakEvenKfwRate(collect());
+        const sens = sensitivity(collect());
+        const v = currentVariant();
+        const sign = r.netto >= 0 ? 'plus' : 'minus';
+        const why =
+          r.netto >= 0
+            ? `Davon entfallen ${money(r.zinsersparnis)} auf Zinsersparnis und ${money(r.grant)} auf Tilgungszuschuss/Teilschulderlass. Zusätzliche Kosten (Saldo): ${money(r.extraDelta)}.`
+            : `Die Zinsersparnis beträgt ${money(r.zinsersparnis)}; der Tilgungszuschuss ist ${money(r.grant)}. Trotzdem ist die Gesamtverpflichtung (Zahlungen + Restschuld im Vergleichshorizont) höher.`;
+        const bindNote = r.bindMismatch
+          ? `<p class="hint">Die Zinsbindungen unterscheiden sich (Hausbank ${$('b-bind').value} J. / KfW ${$('k-bind').value} J.). Der Vergleich nutzt den kürzeren Horizont (${r.horizonMonths} Monate). Restschuld danach unterliegt dem Anschlusszins – das ist kein vollständiger Laufzeitvergleich.</p>`
+          : `<p class="hint">Vergleichshorizont: ${r.horizonMonths} Monate (gemeinsame Zinsbindung).</p>`;
+
+        $('summary').innerHTML = `
+          <p class="hint" style="margin:0">Ergebnis</p>
+          <div class="big ${sign}">${verdict(r.netto)}</div>
+          <p>${why}</p>
+          <div class="kpis">
+            <div><em>KfW-Darlehen</em><strong>${money(r.kfwAmt)}</strong></div>
+            <div><em>KfW-Zins</em><strong>${pct(r.kfw.ratePct)}</strong></div>
+            <div><em>Hausbankanteil</em><strong>${money(r.bankAmtB)}</strong></div>
+            <div><em>Netto-Vorteil</em><strong class="${sign}">${money(r.netto)}</strong></div>
+          </div>
+          <p class="hint">Monatsrate nach tilgungsfreien Jahren: nur Hausbank ${money(r.monthlyA)} · KfW+Hausbank ${money(r.monthlyB)}</p>
+        `;
+
+        const y = (pack, key) => {
+          const a = pack.bankA.atYear[key];
+          const b = addYear(pack.kfw.atYear[key], pack.bankB.atYear[key]);
+          return { a, b, d: euro((a.cash + a.rest) - (b.cash + b.rest)) };
+        };
+        function addYear(x, y2) {
+          return { rest: euro(x.rest + y2.rest), interest: euro(x.interest + y2.interest), cash: euro(x.cash + y2.cash), tilgung: euro(x.tilgung + y2.tilgung) };
+        }
+        const y1 = y(r, 1);
+        const y5 = y(r, 5);
+        const y10 = y(r, 10);
+
+        $('out').innerHTML = `
+          ${bindNote}
+          <section class="card">
+            <h2>Kennzahlen im Vergleichshorizont</h2>
+            <table>
+              <thead><tr><th>Kennzahl</th><th>Nur Hausbank</th><th>KfW + Hausbank</th><th>Vorteil KfW</th></tr></thead>
+              <tbody>
+                <tr><td>Finanzierung</td><td>${cell(r.total)}</td><td>${cell(r.kfwAmt)} + ${cell(r.bankAmtB)}</td><td></td></tr>
+                <tr><td>Sollzins</td><td>${pct(r.bankA.ratePct)}</td><td>KfW ${pct(r.kfw.ratePct)} / Bank ${pct(r.bankB.ratePct)}</td><td></td></tr>
+                <tr><td>Monatsrate (nach tilgungsfreien J.)</td><td>${cell(r.monthlyA)}</td><td>${cell(r.monthlyB)}</td><td class="${r.monthlyA - r.monthlyB >= 0 ? 'plus' : 'minus'}">${cell(r.monthlyA - r.monthlyB)}</td></tr>
+                <tr><td>Gezahlte Zinsen</td><td>${cell(r.posA.interest)}</td><td>${cell(r.posB.interest)}</td><td class="${r.zinsersparnis >= 0 ? 'plus' : 'minus'}">${cell(r.zinsersparnis)}</td></tr>
+                <tr><td>Geleistete Tilgung</td><td>${cell(r.posA.tilgung)}</td><td>${cell(r.posB.tilgung)}</td><td></td></tr>
+                <tr><td>Restschuld</td><td>${cell(r.posA.rest)}</td><td>${cell(r.posB.rest)}</td><td class="${r.posA.rest - r.posB.rest >= 0 ? 'plus' : 'minus'}">${cell(r.posA.rest - r.posB.rest)}</td></tr>
+                <tr><td>Teilschulderlass (eingetragen)</td><td>${cell(0)}</td><td>${cell(r.grant)}</td><td class="plus">${cell(r.grant)}</td></tr>
+                <tr><td>Zahlungen + Restschuld</td><td>${cell(r.obligationA)}</td><td>${cell(r.obligationB)}</td><td class="${sign}">${cell(r.netto)}</td></tr>
+              </tbody>
+            </table>
+          </section>
+          <section class="card">
+            <h2>Zeitliche Gegenüberstellung (Verpflichtung = Zahlungen + Restschuld)</h2>
+            <table>
+              <thead><tr><th>Zeitpunkt</th><th>Nur Hausbank</th><th>KfW + Hausbank</th><th>Vorteil</th></tr></thead>
+              <tbody>
+                <tr><td>Jahr 1</td><td>${cell(y1.a.cash + y1.a.rest)}</td><td>${cell(y1.b.cash + y1.b.rest)}</td><td>${cell(y1.d)}</td></tr>
+                <tr><td>Jahr 5</td><td>${cell(y5.a.cash + y5.a.rest)}</td><td>${cell(y5.b.cash + y5.b.rest)}</td><td>${cell(y5.d)}</td></tr>
+                <tr><td>Jahr 10</td><td>${cell(y10.a.cash + y10.a.rest)}</td><td>${cell(y10.b.cash + y10.b.rest)}</td><td>${cell(y10.d)}</td></tr>
+                <tr><td>Ende Zinsbindung Hausbank</td><td>${cell(r.bankA.atBind.cash + r.bankA.atBind.rest)}</td><td>${cell(r.kfw.atBind.cash + r.bankB.atBind.cash + r.kfw.atBind.rest + r.bankB.atBind.rest)}</td><td></td></tr>
+              </tbody>
+            </table>
+          </section>
+          <section class="card">
+            <h2>Sensitivität</h2>
+            <table>
+              <thead><tr><th>Annahme</th><th>Netto-Vorteil KfW</th><th>Zinsersparnis</th></tr></thead>
+              <tbody>${sens.map((s) => `<tr><td>${s.label}</td><td>${cell(s.netto)}</td><td>${cell(s.zins)}</td></tr>`).join('')}</tbody>
+            </table>
+            <p>Bis zu einem KfW-Sollzins von <strong>${pct(be.rate)}</strong> ist die KfW-Variante unter den getroffenen Annahmen wirtschaftlich vorteilhaft (Break-even, übrige Größen unverändert).</p>
+          </section>
+          <section class="card">
+            <h2>Annahmen und Quellen</h2>
+            <p>KfW-Programm ${$('program').value}${v ? ` · ${v.label}` : ''} · Sollzins ${pct(r.kfw.ratePct)} · gültig ab ${$('k-valid').textContent} · Anzeiger-Stand ${kond.stand} · Quelle: <a href="${KFW_ANZEIGER}">KfW-Konditionenanzeiger</a>${kond.auto ? ' (live)' : ' (Referenz, nicht live)'}.</p>
+            <p>Hausbank ${pct(r.bankA.ratePct)} Soll · Bindung ${$('b-bind').value} Jahre · Tilgung ${$('b-tilg').value} % · Sondertilgung Bank ${money(n($('b-sonder').value))} / KfW ${money(n($('k-sonder').value))} p.a.</p>
+            <p>Annuität nach tilgungsfreien Jahren aus Restkapital × (Soll + Anfangstilgung) / 12. Teilschulderlass mindert die Schuld, keine Barauszahlung.</p>
+          </section>
+        `;
+      }
+
+      function go() {
+        $('need').textContent = money(need());
+        $('bank-rest').textContent = money(Math.max(0, need() - n($('k-amt').value)));
+        const missing = [];
+        if (!need()) missing.push('Finanzierungsbedarf');
+        if (!$('b-rate').value) missing.push('Hausbankzins');
+        if (!$('k-rate').value) missing.push('KfW-Zins');
+        if (missing.length) {
+          $('summary').innerHTML = `<p>Nicht angegeben: ${missing.join(', ')}. Bitte ergänzen.</p>`;
+          $('out').innerHTML = '';
+          return;
+        }
+        renderCmp(compareScenarios(collect()));
+        const h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+        if (window.parent !== window) window.parent.postMessage({ type: 'KFW_HEIGHT', height: h }, '*');
+      }
+
+      $('vorhaben').addEventListener('change', () => {
+        $('program').value = suggestProgram($('vorhaben').value, $('family').checked);
+        fillVariants();
+      });
+      $('family').addEventListener('change', () => {
+        if ($('vorhaben').value === 'kauf' || $('vorhaben').value === 'altbau') {
+          $('program').value = suggestProgram($('vorhaben').value, $('family').checked);
+          fillVariants();
+        }
+      });
+      $('program').addEventListener('change', fillVariants);
+      $('variant').addEventListener('change', applyVariant);
+      $('manual-rate').addEventListener('change', () => {
+        if (!$('manual-rate').checked) applyVariant();
+      });
+      ['kosten', 'ek', 'k-amt'].forEach((id) => {
+        $(id).addEventListener('input', () => {
+          $('need').textContent = money(need());
+          $('bank-rest').textContent = money(Math.max(0, need() - n($('k-amt').value)));
+        });
+      });
+      $('btn-go').addEventListener('click', go);
+      $('btn-pdf').addEventListener('click', () => {
+        go();
+        $('print-root').innerHTML = $('summary').innerHTML + $('out').innerHTML;
+        window.print();
+      });
+      $('btn-rates').addEventListener('click', async () => {
+        kond = await loadKonditionen();
+        banner();
+        fillVariants();
+      });
+
+      fillPrograms();
+      $('program').value = suggestProgram($('vorhaben').value, false);
+      fillVariants();
+      loadKonditionen().then((k) => {
+        kond = k;
+        banner();
+        fillVariants();
+      });
+      banner();
+      $('need').textContent = money(need());
+      $('bank-rest').textContent = money(Math.max(0, need() - n($('k-amt').value)));
+    </script>
+  </body>
+</html>
