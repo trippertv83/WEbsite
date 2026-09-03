@@ -6,7 +6,7 @@
 
 import { SERVICES } from 'public/services';
 
-const URL = 'https://trippertv83.github.io/WEbsite/leistungen.html?v=20260903i';
+const URL = 'https://trippertv83.github.io/WEbsite/leistungen.html?v=20260903k';
 
 function exists(id) {
   try {
@@ -27,8 +27,7 @@ export function bindLeistungen() {
   const box = htmlBox();
   if (!box) return;
   try {
-    const src = String(box.src || '');
-    if (!/leistungen\.html\?v=20260903i/i.test(src)) box.src = URL;
+    box.src = URL;
   } catch {
     /* */
   }

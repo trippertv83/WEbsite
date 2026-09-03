@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1E5D8B" />
     <title>Leistungen</title>
     <style>
       :root {
@@ -52,7 +53,7 @@
         width: 42px;
         height: 42px;
         border-radius: 50%;
-        background: var(--blue);
+        background: #1E5D8B;
         color: #fff;
         display: grid;
         place-items: center;
@@ -97,14 +98,14 @@
         top: 0.45rem;
         width: 0.7rem;
         height: 0.7rem;
-        background: var(--blue);
+        background: #1E5D8B;
         border-radius: 2px;
         clip-path: polygon(14% 44%, 0 58%, 38% 100%, 100% 18%, 84% 4%, 38% 68%);
       }
       .price {
         margin: 0.85rem 0 0.7rem;
         text-align: center;
-        color: var(--blue);
+        color: #1E5D8B;
         font-size: 1.55rem;
         font-weight: 800;
       }
@@ -117,10 +118,10 @@
         min-height: 44px;
         line-height: 44px;
         border-radius: 8px;
-        background: var(--blue);
+        background: #1E5D8B;
         color: #fff;
       }
-      .btn:hover { background: var(--blue-dark); }
+      .btn:hover { background: #1E5D8B; }
     </style>
   </head>
   <body>
@@ -171,7 +172,6 @@
           '<rect x="400" y="230" width="140" height="90" fill="' + b + '"/>' +
           '<rect x="430" y="255" width="36" height="65" fill="#fff"/>' +
           '<rect x="488" y="248" width="28" height="28" fill="#fff"/>' +
-          '<rect x="528" y="248" width="28" height="28" fill="#fff"/>' +
           '</svg>';
         return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
       }
