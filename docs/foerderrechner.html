@@ -9,183 +9,192 @@
         --blue: #0b78d1;
         --blue-dark: #085ea4;
         --blue-soft: #e7f2fb;
-        --bafa: #2f7d4a;
-        --kfw: #0b78d1;
-        --fa: #c45c12;
+        --bafa: #085ea4;
+        --kfw: #1072a1;
+        --kfw-dark: #005a8c;
+        --fa: #2d5c48;
         --text: #2a3038;
         --soft: #5b6573;
         --heading: #1c222b;
         --line: #d5dbe3;
         --card: #fff;
-        --bg: #eef1f4;
+        --bg: #f4f7fa;
         --font: 'Segoe UI', system-ui, sans-serif;
       }
       * { box-sizing: border-box; }
       html, body { margin: 0; font-family: var(--font); color: var(--text); background: var(--bg); }
-      .page { max-width: 1180px; margin: 0 auto; padding: 1rem 1rem 2.5rem; }
-      header.app { margin-bottom: 0.9rem; }
-      header.app h1 { margin: 0; font-size: 1.45rem; color: var(--heading); }
-      header.app p { margin: 0.25rem 0 0; color: var(--soft); }
-      .tabs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.4rem; margin: 0.8rem 0; }
-      .tabs span { text-align: center; padding: 0.55rem; border-radius: 8px; color: #fff; font-weight: 800; font-size: 0.9rem; }
-      .tabs .bafa { background: var(--bafa); }
-      .tabs .kfw { background: var(--kfw); }
-      .tabs .fa { background: var(--fa); }
-      .layout { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 1rem; align-items: start; }
-      @media (max-width: 960px) { .layout { grid-template-columns: 1fr; } .tabs { grid-template-columns: 1fr; } }
-      .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 0.9rem 1rem; margin-bottom: 0.75rem; box-shadow: 0 6px 18px rgba(28,34,43,.06); }
-      .step { display: inline-block; background: var(--blue); color: #fff; font-size: 0.72rem; font-weight: 800; letter-spacing: .04em; padding: 0.2rem 0.5rem; border-radius: 999px; margin-bottom: 0.45rem; }
-      h2 { margin: 0 0 0.6rem; font-size: 1.02rem; }
-      .ghead { margin: 0.85rem 0 0.35rem; font-size: 0.72rem; font-weight: 800; letter-spacing: .05em; color: var(--blue-dark); }
+      .page { max-width: 1120px; margin: 0 auto; padding: 1.1rem 1rem 2.5rem; }
+      header.app { padding: 0.2rem 0 1rem; border-bottom: 3px solid var(--blue); margin-bottom: 1rem; }
+      header.app h1 { margin: 0; font-size: 1.55rem; font-weight: 700; color: var(--heading); }
+      header.app p { margin: 0.3rem 0 0; color: var(--soft); max-width: 46rem; }
+      .legend { display: flex; flex-wrap: wrap; gap: 0.7rem 1.1rem; margin-top: 0.7rem; font-size: 0.8rem; color: var(--soft); }
+      .legend i { display: inline-block; width: 0.7rem; height: 0.7rem; border-radius: 2px; margin-right: 0.35rem; vertical-align: -1px; }
+      .legend .bafa { background: var(--bafa); }
+      .legend .kfw { background: var(--kfw); }
+      .legend .fa { background: var(--fa); }
+      .result { background: linear-gradient(180deg, #fff, var(--blue-soft)); border: 1px solid #cfe3f4; border-radius: 12px; padding: 1rem 1.1rem; margin-bottom: 1rem; }
+      .result h2 { margin: 0 0 0.15rem; font-size: 0.82rem; font-weight: 700; color: var(--blue-dark); letter-spacing: .02em; }
+      .result .big { font-size: 1.85rem; font-weight: 800; color: var(--heading); margin: 0.1rem 0 0.35rem; }
+      .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin: 0.65rem 0 0.75rem; }
+      .kpis div { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 0.45rem 0.55rem; }
+      .kpis strong { display: block; font-size: 1.02rem; }
+      .kpis em { font-style: normal; color: var(--soft); font-size: 0.72rem; }
+      .tiles { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.4rem; }
+      @media (max-width: 800px) { .kpis, .tiles { grid-template-columns: 1fr 1fr; } }
+      .tile { border-radius: 8px; padding: 0.5rem 0.55rem; color: #fff; min-height: 78px; }
+      .tile.BAFA { background: var(--bafa); }
+      .tile.KfW { background: var(--kfw); }
+      .tile.Finanzamt { background: var(--fa); }
+      .tile small { display: block; opacity: .9; font-size: 0.68rem; }
+      .tile b { display: block; font-size: 1.08rem; margin: 0.12rem 0; }
+      .btns { display: flex; gap: 0.45rem; flex-wrap: wrap; margin-top: 0.75rem; }
+      .layout { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 1rem; align-items: start; }
+      @media (max-width: 960px) { .layout { grid-template-columns: 1fr; } }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 0.95rem 1rem; margin-bottom: 0.85rem; }
+      h2 { margin: 0 0 0.55rem; font-size: 1.05rem; color: var(--heading); }
+      .ghead { margin: 0.9rem 0 0.35rem; font-size: 0.78rem; font-weight: 700; color: var(--blue-dark); border-bottom: 1px solid var(--line); padding-bottom: 0.2rem; }
       label.lbl { display: block; font-size: 0.86rem; font-weight: 600; margin: 0.35rem 0 0.2rem; }
       input[type=text], input[type=number], input[type=date], select, input[type=file] {
         width: 100%; min-height: 40px; border: 1px solid var(--line); border-radius: 8px; padding: 0.4rem 0.6rem; font: inherit;
       }
       .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
       .hint { color: var(--soft); font-size: 0.78rem; margin: 0.15rem 0 0.4rem; }
-      .tog { display: flex; justify-content: space-between; gap: 0.7rem; align-items: flex-start; }
-      .tog input { width: 1.15rem; height: 1.15rem; margin-top: 0.15rem; accent-color: var(--blue); }
-      .euro { display: flex; align-items: center; gap: 0.35rem; }
+      .measure { padding: 0.55rem 0; border-bottom: 1px dashed var(--line); }
+      .measure:last-child { border-bottom: 0; }
+      .mrow { display: grid; grid-template-columns: 1fr 150px; gap: 0.6rem; align-items: center; }
+      .mname { display: flex; gap: 0.45rem; align-items: flex-start; font-size: 0.9rem; }
+      .mname input { width: 1.1rem; height: 1.1rem; margin-top: 0.15rem; flex: 0 0 auto; accent-color: var(--blue); }
+      .measure.on { background: #f3f8fd; margin: 0 -0.45rem; padding-left: 0.45rem; padding-right: 0.45rem; border-radius: 8px; }
+      .euro { display: flex; align-items: center; gap: 0.3rem; }
+      .euro input { min-height: 38px; }
       .euro span { color: var(--soft); }
-      .checks label { display: flex; gap: 0.45rem; align-items: flex-start; font-size: 0.86rem; margin: 0.25rem 0; }
-      .dash { background: #2a3038; color: #fff; border-radius: 14px; padding: 0.85rem; }
-      .dash h2 { color: #fff; }
-      .kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; margin-bottom: 0.7rem; }
-      .kpis div { background: #3a424c; border-radius: 10px; padding: 0.55rem 0.65rem; }
-      .kpis strong { display: block; font-size: 1.15rem; }
-      .kpis em { font-style: normal; color: #c5ccd4; font-size: 0.75rem; }
-      .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; }
-      .tile { border-radius: 10px; padding: 0.55rem 0.6rem; color: #fff; min-height: 88px; }
-      .tile.BAFA { background: var(--bafa); }
-      .tile.KfW { background: var(--kfw); }
-      .tile.Finanzamt { background: var(--fa); }
-      .tile small { display: block; opacity: .85; font-size: 0.7rem; }
-      .tile b { display: block; font-size: 1.15rem; margin: 0.15rem 0; }
+      .checks label { display: flex; gap: 0.45rem; align-items: flex-start; font-size: 0.84rem; margin: 0.25rem 0; }
+      .checks input { accent-color: var(--blue); }
       .warn { background: #fdecec; border: 1px solid #e7b0b0; color: #8a1f1f; border-radius: 10px; padding: 0.65rem 0.75rem; margin: 0.7rem 0; font-size: 0.86rem; }
-      .detail { background: #fff; color: var(--text); border-radius: 12px; padding: 0.75rem 0.8rem; margin-top: 0.55rem; border-left: 6px solid var(--kfw); }
+      .detail { background: #fff; color: var(--text); border-radius: 10px; padding: 0.75rem 0.8rem; margin-top: 0.55rem; border: 1px solid var(--line); border-left: 5px solid var(--kfw); }
       .detail.BAFA { border-left-color: var(--bafa); }
+      .detail.KfW { border-left-color: var(--kfw); }
       .detail.Finanzamt { border-left-color: var(--fa); }
       .detail .top { display: flex; justify-content: space-between; gap: 0.5rem; }
-      .pill { display: inline-block; font-size: 0.68rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 999px; color: #fff; }
-      .pill.Zuschuss, .pill.Tilgungszuschuss { background: var(--bafa); }
-      .pill.Steuerbonus { background: var(--fa); }
+      .pill { display: inline-block; font-size: 0.68rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 999px; color: #fff; background: var(--kfw); }
+      .detail.BAFA .pill { background: var(--bafa); }
+      .detail.Finanzamt .pill { background: var(--fa); }
       .lines { font-size: 0.84rem; }
       .lines div { display: flex; justify-content: space-between; gap: 0.5rem; padding: 0.2rem 0; border-bottom: 1px solid var(--line); }
       .red { color: #b42318; font-weight: 800; }
-      .btns { display: flex; gap: 0.45rem; flex-wrap: wrap; margin-top: 0.7rem; }
       button, .filebtn { min-height: 42px; border: 0; border-radius: 8px; padding: 0 0.85rem; font: inherit; font-weight: 700; cursor: pointer; background: var(--blue); color: #fff; }
       button.ghost { background: #fff; color: var(--heading); border: 1px solid var(--line); }
       .path-row { margin-top: 0.45rem; font-size: 0.8rem; color: var(--soft); }
       .path-row button { min-height: 32px; padding: 0 0.55rem; font-size: 0.78rem; margin: 0.15rem 0.2rem 0 0; }
       .path-row button.on { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--blue); }
       .note { white-space: pre-wrap; }
-      .explain h2 { font-size: 1.15rem; margin: 1.2rem 0 0.5rem; }
-      .explain h3 { font-size: 0.95rem; margin: 0.9rem 0 0.35rem; color: var(--heading); }
+      .explain { margin-top: 0.4rem; }
+      .explain summary { cursor: pointer; font-weight: 700; font-size: 1.02rem; color: var(--heading); }
+      .explain h2 { font-size: 1.05rem; margin: 1rem 0 0.45rem; }
+      .explain h3 { font-size: 0.92rem; margin: 0.85rem 0 0.3rem; color: var(--heading); }
       .explain p, .explain li { font-size: 0.86rem; line-height: 1.45; color: var(--text); }
-      .explain ul { margin: 0.2rem 0 0.6rem 1.1rem; padding: 0; }
       .print-best-head { display: none; }
-      #print-root .tiles { margin: 0.6rem 0 1rem; }
-      #print-root .print-cover { margin-bottom: 1rem; }
+      #print-root { display: none !important; }
       @media print {
         body { background: #fff; }
-        .page > *:not(#print-root) { display: none !important; }
+        .screen-ui { display: none !important; }
         #print-root { display: block !important; }
+        #explain { display: block !important; }
+        #explain summary { display: none; }
         .detail { break-inside: avoid; }
         .print-cover, .print-best { page-break-after: always; }
         .print-best-head { display: block; }
         .print-best h1 { font-size: 1.35rem; margin-bottom: 0.2rem; }
         .print-best .sum { font-size: 1.8rem; margin: 0.35rem 0; }
         .path-row { display: none !important; }
+        .tiles { grid-template-columns: 1fr 1fr; }
       }
     </style>
   </head>
   <body>
     <div class="page">
-      <header class="app">
+      <header class="app screen-ui">
         <h1>Förderrechner Sanierung und Heizung</h1>
-        <p>Ingenieurbüro Spaderna · Angaben zu Haus und Maßnahmen – Förderung über BAFA, KfW und Finanzamt. Unverbindlich. Version/letzte Anpassungen: 02.09.2026.</p>
-      </header>
-      <div class="tabs">
-        <span class="bafa">BAFA</span>
-        <span class="kfw">KfW</span>
-        <span class="fa">Finanzamt</span>
-      </div>
-      <div class="layout">
-        <div>
-          <section class="card">
-            <div class="step">SCHRITT 1</div>
-            <h2>Gebäude &amp; Haushalte</h2>
-            <label class="lbl">Objekt / Kunde</label>
-            <input id="kunde" type="text" placeholder="Name oder Adresse" />
-            <div class="row2">
-              <div>
-                <label class="lbl">Bauantrag / Bauanzeige</label>
-                <input id="built" type="date" />
-              </div>
-              <div>
-                <label class="lbl">Geplantes Antragsdatum</label>
-                <input id="date" type="date" />
-              </div>
-            </div>
-            <p class="hint">Gebäude in der Regel mindestens 5 Jahre alt (BEG). Antragsdatum steuert den Klimageschwindigkeitsbonus.</p>
-            <label class="lbl">Anzahl Wohneinheiten (max. 200)</label>
-            <input id="we" type="number" min="1" max="200" value="1" />
-            <div class="row2">
-              <div>
-                <label class="lbl">WE 1 Nutzung</label>
-                <select id="use">
-                  <option value="self">selbstgenutzt</option>
-                  <option value="rent">vermietet</option>
-                </select>
-              </div>
-              <div>
-                <label class="lbl">Haushaltseinkommen (zvE)</label>
-                <select id="income">
-                  <option value="30000">bis 30.000 €</option>
-                  <option value="40000">bis 40.000 €</option>
-                  <option value="50000">bis 50.000 €</option>
-                  <option value="90000">über 50.000 €</option>
-                </select>
-              </div>
-            </div>
-            <div class="checks">
-              <label><input id="family" type="checkbox" /> Haushalt mit min. 1 Kind unter 18</label>
-              <label><input id="isfp" type="checkbox" /> iSFP vorhanden</label>
-            </div>
-            <label class="lbl">JSON aus dem anderen Rechner laden</label>
-            <input id="jsonfile" type="file" accept="application/json,.json" />
-          </section>
-          <section class="card">
-            <div class="step">SCHRITT 2</div>
-            <h2>Förderprogramme &amp; Maßnahmen</h2>
-            <p class="hint">Maßnahme aktivieren und Gesamtinvestition eintragen. Rechts erscheint der beste Weg (Zuschuss oder Steuerbonus).</p>
-            <div id="measures"></div>
-          </section>
+        <p>Ingenieurbüro Spaderna – Fördermittel nach BAFA, KfW und Steuerbonus, bezogen auf das Antragsdatum. Unverbindlich, Stand 02.09.2026.</p>
+        <div class="legend">
+          <span><i class="bafa"></i>BAFA</span>
+          <span><i class="kfw"></i>KfW</span>
+          <span><i class="fa"></i>Finanzamt</span>
         </div>
-        <aside>
-          <div class="dash">
-            <h2>Berechnung möglicher Fördermittel</h2>
-            <div class="kpis">
-              <div><em>Gesamtzuschuss (empfohlener Weg)</em><strong id="kpi-g">0 €</strong></div>
-              <div><em>Investitionen</em><strong id="kpi-i">0 €</strong></div>
-              <div><em>BAFA</em><strong id="kpi-bafa">0 €</strong></div>
-              <div><em>KfW</em><strong id="kpi-kfw">0 €</strong></div>
-              <div><em>Finanzamt</em><strong id="kpi-fa">0 €</strong></div>
-              <div><em>Quote</em><strong id="kpi-q">0 %</strong></div>
+      </header>
+      <section class="result screen-ui">
+        <h2>Mögliche Förderung (gewählter Weg je Maßnahme)</h2>
+        <div class="big" id="kpi-g">0 €</div>
+        <div class="kpis">
+          <div><em>Investitionen</em><strong id="kpi-i">0 €</strong></div>
+          <div><em>BAFA</em><strong id="kpi-bafa">0 €</strong></div>
+          <div><em>KfW</em><strong id="kpi-kfw">0 €</strong></div>
+          <div><em>Finanzamt</em><strong id="kpi-fa">0 €</strong></div>
+        </div>
+        <p class="hint" style="margin:0 0 0.5rem">Quote <strong id="kpi-q">0 %</strong> · Kredite und regionale Programme sind nicht in der Zuschusssumme.</p>
+        <div class="tiles" id="tiles"></div>
+        <div class="btns">
+          <button type="button" id="btn-pdf">PDF exportieren</button>
+          <button class="ghost" type="button" id="btn-reset">Zurücksetzen</button>
+        </div>
+      </section>
+      <div class="layout screen-ui">
+        <section class="card">
+          <h2>Objekt und Haushalt</h2>
+          <label class="lbl">Objekt / Kunde</label>
+          <input id="kunde" type="text" placeholder="Name oder Adresse" />
+          <div class="row2">
+            <div>
+              <label class="lbl">Bauantrag / Bauanzeige</label>
+              <input id="built" type="date" />
             </div>
-            <div class="tiles" id="tiles"></div>
-            <p class="hint">Zusätzlich sind zinsgünstige KfW-Kredite und/oder regionale Förderungen möglich (in Summe nicht enthalten, werden nach Berechnung angezeigt).</p>
-            <div class="btns">
-              <button type="button" id="btn-pdf">PDF exportieren</button>
-              <button class="ghost" type="button" id="btn-reset">Zurücksetzen</button>
+            <div>
+              <label class="lbl">Geplantes Antragsdatum</label>
+              <input id="date" type="date" />
             </div>
           </div>
-          <div id="warn"></div>
-          <div id="details"></div>
-          <div id="loans"></div>
-        </aside>
+          <p class="hint">Gebäude in der Regel mindestens 5 Jahre alt (BEG). Das Antragsdatum steuert den Klimageschwindigkeitsbonus.</p>
+          <label class="lbl">Anzahl Wohneinheiten (max. 200)</label>
+          <input id="we" type="number" min="1" max="200" value="1" />
+          <div class="row2">
+            <div>
+              <label class="lbl">WE 1 Nutzung</label>
+              <select id="use">
+                <option value="self">selbstgenutzt</option>
+                <option value="rent">vermietet</option>
+              </select>
+            </div>
+            <div>
+              <label class="lbl">Haushaltseinkommen (zvE)</label>
+              <select id="income">
+                <option value="30000">bis 30.000 €</option>
+                <option value="40000">bis 40.000 €</option>
+                <option value="50000">bis 50.000 €</option>
+                <option value="90000">über 50.000 €</option>
+              </select>
+            </div>
+          </div>
+          <div class="checks">
+            <label><input id="family" type="checkbox" /> Haushalt mit min. 1 Kind unter 18</label>
+            <label><input id="isfp" type="checkbox" /> iSFP vorhanden</label>
+          </div>
+          <label class="lbl">Gespeicherte Berechnung laden</label>
+          <input id="jsonfile" type="file" accept="application/json,.json" />
+        </section>
+        <section class="card">
+          <h2>Maßnahmen und Kosten</h2>
+          <p class="hint">Betrag eintragen – die Maßnahme wird automatisch aktiv (Haken in Spaderna-Blau). Ohne Betrag zählt sie nicht.</p>
+          <div id="measures"></div>
+        </section>
+      </div>
+      <div class="screen-ui">
+        <div id="warn"></div>
+        <div id="details"></div>
+        <div id="loans"></div>
       </div>
       <section class="card explain" id="explain">
+        <details>
+        <summary>Hinweise, Rechenlogik und Förderprogramme</summary>
         <h2>So rechnet der Rechner</h2>
         <p>Der Förderrechner nennt je Maßnahme den besten Weg zu max. Zuschuss bzw. Steuererleichterung. Wo es eine Alternative gibt (Zuschuss ↔ Steuerbonus), lässt sich der Weg direkt auf der Karte umschalten – die Summe rechnet mit. Zusätzlich müssen individuell bei Kreditprogrammen die tagesaktuellen Zinsersparnisse einkalkuliert werden.</p>
         <p>Betrachtet werden aktuell bei der Berechnung immer die Wohneinheiten eines Hauses mit den Gesamtkosten für das ganze Haus; für mehrere Häuser (wie z. B. beim Gebäudenetz) müssen mehrere Berechnungen parallel gestartet werden. Sollen nicht alle WE eines MFH bei der Berechnung berücksichtigt werden, muss bei der jeweiligen WE „wird saniert“ weggeklickt werden.</p>
@@ -244,14 +253,16 @@
         <p>Trotz sorgfältiger Erstellung wird keine Gewähr für Richtigkeit, Vollständigkeit und Aktualität übernommen. Förderprogramme, Konditionen und Höchstbeträge können sich jederzeit – auch kurzfristig – ändern oder auslaufen. Die Berechnung begründet keinen Anspruch auf Förderung; verbindlich sind allein die Zusagen bzw. Bescheide der Fördergeber sowie die steuerliche Anerkennung durch das zuständige Finanzamt. Technische Voraussetzungen, Fristen und Kombinationsmöglichkeiten sind im Einzelfall zu prüfen.</p>
         <p>Der Förderrechner richtet sich an fachkundige Anwender; die eigenverantwortliche Prüfung und die Beratungspflicht gegenüber Endkunden bleiben unberührt.</p>
         <p>Version/letzte Anpassungen: 02.09.2026.</p>
+        </details>
       </section>
       <div id="print-root"></div>
     </div>
     <script type="module">
-      import { CATALOG, calculate, emptyMeasures, importEfbJson } from './assets/js/foerder-calc.js?v=20260903';
+      import { CATALOG, calculate, emptyMeasures, importEfbJson } from './assets/js/foerder-calc.js?v=20260903b';
 
       const euro = (v) => Number(v || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
       const pathKey = (opt) => (opt.agency === 'BAFA' ? 'bafa' : opt.agency === 'KfW' ? 'kfw' : 'fa');
+      let lastPrint = null;
       let userPath = {};
       const box = document.getElementById('measures');
       let last = '';
@@ -297,17 +308,34 @@
         }
         const kredit = item.id === 'ergkredit';
         return `${head}
-          <div class="measure card" data-id="${item.id}">
-            <div class="tog">
-              <label><input type="checkbox" data-on /> <strong>${item.label}</strong><div class="hint">${item.hint}</div></label>
+          <div class="measure" data-id="${item.id}">
+            <div class="mrow">
+              <label class="mname"><input type="checkbox" data-on /> <span><strong>${item.label}</strong><div class="hint">${item.hint}</div></span></label>
+              <div class="euro"><input type="number" min="0" step="100" value="" placeholder="${kredit ? 'Kredit' : 'Betrag'}" data-invest /><span>€</span></div>
             </div>
             ${extra}
-            <label class="lbl">${kredit ? 'Kreditbetrag' : 'Gesamtinvestition dieser Maßnahme'}</label>
-            <div class="euro"><input type="number" min="0" step="100" value="0" data-invest /><span>€</span></div>
           </div>`;
       }).join('');
 
-      document.getElementById('date').value = new Date().toISOString().slice(0, 10);
+      function paintOn(el) {
+        const on = el.querySelector('[data-on]');
+        const v = Number(el.querySelector('[data-invest]').value || 0);
+        el.classList.toggle('on', Boolean(on.checked && v > 0));
+      }
+
+      box.addEventListener('input', (ev) => {
+        const m = ev.target.closest('.measure');
+        if (!m) return;
+        if (ev.target.matches('[data-invest]')) {
+          const v = Number(ev.target.value || 0);
+          m.querySelector('[data-on]').checked = v > 0;
+        }
+        paintOn(m);
+      });
+      box.addEventListener('change', (ev) => {
+        const m = ev.target.closest('.measure');
+        if (m) paintOn(m);
+      });
 
       function readMeasures() {
         const measures = emptyMeasures();
@@ -333,8 +361,10 @@
         box.querySelectorAll('.measure').forEach((el) => {
           const row = measures[el.dataset.id];
           if (!row) return;
-          el.querySelector('[data-on]').checked = Boolean(row.active);
-          el.querySelector('[data-invest]').value = row.kredit || row.invest || 0;
+          const inv = row.kredit || row.invest || 0;
+          el.querySelector('[data-invest]').value = inv || '';
+          el.querySelector('[data-on]').checked = Boolean(row.active) || Number(inv) > 0;
+          paintOn(el);
           if (el.querySelector('[data-old]')) el.querySelector('[data-old]').checked = Boolean(row.old);
           if (el.querySelector('[data-eevor]')) el.querySelector('[data-eevor]').checked = Boolean(row.eeVor);
           if (el.querySelector('[data-wpb]')) el.querySelector('[data-wpb]').checked = Boolean(row.wpb);
@@ -420,29 +450,33 @@
               `<article class="detail KfW"><span class="pill Zuschuss">KREDIT</span><h3>${l.title}</h3><div class="hint">${l.program}</div><div style="display:flex;justify-content:space-between"><span>Kreditbetrag</span><strong>${euro(l.amount)}</strong></div><p class="hint note">${l.text}</p></article>`
           )
           .join('');
-        const explain = document.getElementById('explain').innerHTML;
+        lastPrint = { s, r, tilesHtml };
+        document.getElementById('print-root').innerHTML = '';
+        const h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+        if (window.parent !== window) window.parent.postMessage({ type: 'FOERDER_HEIGHT', height: h }, '*');
+      }
+
+      function fillPrint() {
+        if (!lastPrint) return;
+        const { s, r, tilesHtml } = lastPrint;
         document.getElementById('print-root').innerHTML = `
           <div class="print-cover">
             <h1>Förderübersicht – Ingenieurbüro Spaderna</h1>
             <p>${s.kunde || 'Kundenprojekt'} · Antrag ${r.g.date} · ${r.g.we} WE · iSFP ${s.isfp ? 'ja' : 'nein'}</p>
             <p><strong>${euro(r.grantTotal)} Zuschuss</strong> · Investitionen ${euro(r.investTotal)} · Förderquote ca. ${r.quote || 0} %</p>
             ${document.getElementById('warn').innerHTML}
-            <p class="hint">Seite 1: Deckblatt · Seite 2: gewählter bester Weg je Maßnahme · danach Einzelkarten, Kredite und Erläuterungen.</p>
           </div>
           <div class="print-best">
-            <p class="print-best-head hint">GESAMTFÖRDERUNG · GEWÄHLTE OPTION JE MASSNAHME · KONDITIONEN AB Q1/2027</p>
-            <h1>Berechnung möglicher Fördermittel</h1>
+            <p class="print-best-head hint">GESAMTFÖRDERUNG · GEWÄHLTE OPTION JE MASSNAHME</p>
+            <h1>Ihre mögliche Förderung</h1>
             <p class="sum"><strong>${euro(r.grantTotal)} Zuschuss</strong></p>
             <p>Investitionen gesamt <strong>${euro(r.investTotal)}</strong> · Förderquote ca. <strong>${r.quote || 0} %</strong></p>
             <div class="tiles">${tilesHtml}</div>
-            <p class="hint">Zusätzlich sind zinsgünstige KfW-Kredite und/oder regionale Förderungen möglich (in Summe nicht enthalten, werden nach Berechnung angezeigt).</p>
+            <p class="hint">Zusätzlich sind zinsgünstige KfW-Kredite und/oder regionale Förderungen möglich (nicht in der Summe).</p>
           </div>
           ${document.getElementById('details').innerHTML}
           ${document.getElementById('loans').innerHTML}
-          <section class="explain">${explain}</section>
-          <p class="hint">Unverbindliche Schätzung. Keine Rechtsberatung. Ziegelanger 5, 96250 Ebensfeld · 09573 2225410. Quellen: BMWK, BMWSB, BMF, BAFA, KfW. Version 02.09.2026.</p>`;
-        const h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
-        if (window.parent !== window) window.parent.postMessage({ type: 'FOERDER_HEIGHT', height: h }, '*');
+          <p class="hint">Unverbindliche Schätzung. Keine Rechtsberatung. Ziegelanger 5, 96250 Ebensfeld · 09573 2225410. Version 02.09.2026.</p>`;
       }
 
       document.getElementById('details').addEventListener('click', (ev) => {
@@ -452,9 +486,21 @@
         render();
       });
 
+      document.getElementById('date').value = new Date().toISOString().slice(0, 10);
       document.querySelector('.page').addEventListener('input', render);
       document.querySelector('.page').addEventListener('change', render);
-      document.getElementById('btn-pdf').addEventListener('click', () => window.print());
+      document.getElementById('btn-pdf').addEventListener('click', () => {
+        document.querySelector('#explain details')?.setAttribute('open', '');
+        fillPrint();
+        window.print();
+      });
+      window.addEventListener('beforeprint', () => {
+        document.querySelector('#explain details')?.setAttribute('open', '');
+        fillPrint();
+      });
+      window.addEventListener('afterprint', () => {
+        document.getElementById('print-root').innerHTML = '';
+      });
       document.getElementById('btn-reset').addEventListener('click', () => location.reload());
       document.getElementById('jsonfile').addEventListener('change', async (ev) => {
         const file = ev.target.files?.[0];
