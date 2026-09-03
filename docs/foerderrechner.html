@@ -129,7 +129,9 @@
       .print-best-head { display: none; }
       #print-root { display: none !important; }
       @media print {
-        body { background: #fff; }
+        @page { margin: 0; }
+        html, body { background: #fff; margin: 0; padding: 12mm 14mm; }
+        a[href]::after { content: none !important; }
         .screen-ui { display: none !important; }
         #print-root { display: block !important; }
         #explain { display: block !important; }
@@ -525,14 +527,25 @@
       document.getElementById('btn-pdf').addEventListener('click', () => {
         document.querySelector('#explain details')?.setAttribute('open', '');
         fillPrint();
+        const prev = document.title;
+        document.title = 'Ingenieurbüro Spaderna';
+        window.addEventListener('afterprint', () => { document.title = prev; }, { once: true });
         window.print();
       });
       window.addEventListener('beforeprint', () => {
         document.querySelector('#explain details')?.setAttribute('open', '');
         fillPrint();
+        if (!document.title.startsWith('Ingenieurbüro')) {
+          document.documentElement.dataset.prevTitle = document.title;
+          document.title = 'Ingenieurbüro Spaderna';
+        }
       });
       window.addEventListener('afterprint', () => {
         document.getElementById('print-root').innerHTML = '';
+        if (document.documentElement.dataset.prevTitle) {
+          document.title = document.documentElement.dataset.prevTitle;
+          delete document.documentElement.dataset.prevTitle;
+        }
       });
       document.getElementById('btn-reset').addEventListener('click', () => location.reload());
       document.getElementById('jsonfile').addEventListener('change', async (ev) => {

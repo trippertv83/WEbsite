@@ -95,10 +95,13 @@
       #print-root h1 { font-size: 1.25rem; margin: 0 0 0.35rem; }
       #print-root h2 { font-size: 1rem; margin: 0 0 0.4rem; }
       @media print {
+        @page { margin: 0; }
+        html, body { background: #fff; margin: 0; padding: 12mm 14mm; }
         .screen-ui { display: none !important; }
         #print-root { display: block !important; }
         table { break-inside: avoid; }
         #print-root .card { break-inside: avoid; }
+        a[href]::after { content: none !important; }
       }
     </style>
   </head>
@@ -501,13 +504,16 @@
       $('btn-go').addEventListener('click', go);
       $('btn-pdf').addEventListener('click', () => {
         go();
-        const kunde = $('kosten').value;
         $('print-root').innerHTML = `
           <h1>KfW-Kredit vs. Hausbank – Ingenieurbüro Spaderna</h1>
           <p>Orientierungsrechnung, keine Finanzberatung. Vergleichshorizont siehe Tabelle.</p>
           ${$('summary').innerHTML}
           ${$('out').innerHTML}
         `;
+        const prev = document.title;
+        document.title = 'Ingenieurbüro Spaderna';
+        const restore = () => { document.title = prev; };
+        window.addEventListener('afterprint', restore, { once: true });
         window.print();
       });
       $('btn-rates').addEventListener('click', async () => {
