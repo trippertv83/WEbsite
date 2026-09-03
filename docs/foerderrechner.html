@@ -9,366 +9,353 @@
         --blue: #0b78d1;
         --blue-dark: #085ea4;
         --blue-soft: #e7f2fb;
+        --bafa: #2f7d4a;
+        --kfw: #0b78d1;
+        --fa: #c45c12;
         --text: #2a3038;
         --soft: #5b6573;
         --heading: #1c222b;
         --line: #d5dbe3;
         --card: #fff;
-        --bg: #f3f4f6;
-        --ok: #1f7a4d;
-        --warn: #b45309;
+        --bg: #eef1f4;
         --font: 'Segoe UI', system-ui, sans-serif;
       }
       * { box-sizing: border-box; }
-      html, body {
-        margin: 0;
-        font-family: var(--font);
-        color: var(--text);
-        background: var(--bg);
+      html, body { margin: 0; font-family: var(--font); color: var(--text); background: var(--bg); }
+      .page { max-width: 1180px; margin: 0 auto; padding: 1rem 1rem 2.5rem; }
+      header.app { margin-bottom: 0.9rem; }
+      header.app h1 { margin: 0; font-size: 1.45rem; color: var(--heading); }
+      header.app p { margin: 0.25rem 0 0; color: var(--soft); }
+      .tabs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.4rem; margin: 0.8rem 0; }
+      .tabs span { text-align: center; padding: 0.55rem; border-radius: 8px; color: #fff; font-weight: 800; font-size: 0.9rem; }
+      .tabs .bafa { background: var(--bafa); }
+      .tabs .kfw { background: var(--kfw); }
+      .tabs .fa { background: var(--fa); }
+      .layout { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 1rem; align-items: start; }
+      @media (max-width: 960px) { .layout { grid-template-columns: 1fr; } .tabs { grid-template-columns: 1fr; } }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 0.9rem 1rem; margin-bottom: 0.75rem; box-shadow: 0 6px 18px rgba(28,34,43,.06); }
+      .step { display: inline-block; background: var(--blue); color: #fff; font-size: 0.72rem; font-weight: 800; letter-spacing: .04em; padding: 0.2rem 0.5rem; border-radius: 999px; margin-bottom: 0.45rem; }
+      h2 { margin: 0 0 0.6rem; font-size: 1.02rem; }
+      .ghead { margin: 0.85rem 0 0.35rem; font-size: 0.72rem; font-weight: 800; letter-spacing: .05em; color: var(--blue-dark); }
+      label.lbl { display: block; font-size: 0.86rem; font-weight: 600; margin: 0.35rem 0 0.2rem; }
+      input[type=text], input[type=number], input[type=date], select, input[type=file] {
+        width: 100%; min-height: 40px; border: 1px solid var(--line); border-radius: 8px; padding: 0.4rem 0.6rem; font: inherit;
       }
-      .wrap {
-        max-width: 1120px;
-        margin: 0 auto;
-        padding: 1rem 1rem 2.5rem;
-      }
-      header.app {
-        display: flex;
-        justify-content: space-between;
-        gap: 1rem;
-        align-items: flex-start;
-        margin-bottom: 1rem;
-      }
-      .brand { font-weight: 800; color: var(--heading); font-size: 1.15rem; }
-      .brand span { display: block; font-weight: 500; color: var(--soft); font-size: 0.85rem; }
-      .badge {
-        background: var(--blue-soft);
-        color: var(--blue-dark);
-        border-radius: 999px;
-        padding: 0.35rem 0.75rem;
-        font-size: 0.8rem;
-        font-weight: 700;
-        white-space: nowrap;
-      }
-      .grid {
-        display: grid;
-        grid-template-columns: 1.15fr 0.85fr;
-        gap: 1rem;
-        align-items: start;
-      }
-      @media (max-width: 900px) {
-        .grid { grid-template-columns: 1fr; }
-      }
-      .card {
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: 16px;
-        padding: 1rem 1.1rem 1.15rem;
-        box-shadow: 0 8px 24px rgba(28, 34, 43, 0.08);
-      }
-      h2 {
-        margin: 0 0 0.75rem;
-        font-size: 1.02rem;
-        color: var(--heading);
-      }
-      label.row {
-        display: flex;
-        justify-content: space-between;
-        gap: 0.75rem;
-        align-items: center;
-        margin: 0.45rem 0;
-        font-size: 0.92rem;
-      }
-      label.row span { flex: 1; }
-      input[type='text'],
-      input[type='number'],
-      input[type='date'],
-      select {
-        width: 100%;
-        min-height: 42px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 0.45rem 0.65rem;
-        font: inherit;
-      }
-      .field { margin: 0.55rem 0; }
-      .field small { color: var(--soft); }
-      .checks { display: grid; gap: 0.35rem; margin: 0.4rem 0 0.7rem; }
-      .checks label { display: flex; gap: 0.55rem; align-items: flex-start; font-size: 0.92rem; }
-      .measure {
-        display: grid;
-        grid-template-columns: 1.4fr 0.7fr;
-        gap: 0.5rem;
-        align-items: center;
-        padding: 0.55rem 0;
-        border-top: 1px solid var(--line);
-      }
-      .measure:first-of-type { border-top: 0; }
-      .measure label { display: flex; gap: 0.5rem; align-items: flex-start; font-size: 0.9rem; }
-      .hint { color: var(--soft); font-size: 0.78rem; }
-      .sum {
-        position: sticky;
-        top: 0.75rem;
-      }
-      .kpi {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.55rem;
-        margin-bottom: 0.8rem;
-      }
-      .kpi div {
-        background: var(--blue-soft);
-        border-radius: 12px;
-        padding: 0.7rem 0.75rem;
-      }
-      .kpi strong { display: block; font-size: 1.25rem; color: var(--blue-dark); }
-      .kpi em { font-style: normal; color: var(--soft); font-size: 0.78rem; }
-      .kpi .full { grid-column: 1 / -1; background: var(--blue); color: #fff; }
-      .kpi .full strong { color: #fff; }
-      .kpi .full em { color: rgba(255,255,255,.85); }
-      table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
-      th, td { text-align: left; padding: 0.4rem 0.25rem; border-bottom: 1px solid var(--line); vertical-align: top; }
-      th { color: var(--soft); font-weight: 600; }
-      .right { text-align: right; }
-      .btns { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.9rem; }
-      button {
-        min-height: 44px;
-        border: 0;
-        border-radius: 8px;
-        padding: 0 0.95rem;
-        font: inherit;
-        font-weight: 700;
-        cursor: pointer;
-        background: var(--blue);
-        color: #fff;
-      }
-      button.ghost {
-        background: #fff;
-        color: var(--heading);
-        border: 1px solid var(--line);
-      }
-      .note { color: var(--soft); font-size: 0.8rem; margin: 0.7rem 0 0; }
-      .ghead {
-        margin: 0.85rem 0 0.2rem;
-        font-size: 0.78rem;
-        font-weight: 800;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        color: var(--blue-dark);
-      }
-      #print-sheet { display: none; }
+      .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+      .hint { color: var(--soft); font-size: 0.78rem; margin: 0.15rem 0 0.4rem; }
+      .tog { display: flex; justify-content: space-between; gap: 0.7rem; align-items: flex-start; }
+      .tog input { width: 1.15rem; height: 1.15rem; margin-top: 0.15rem; accent-color: var(--blue); }
+      .euro { display: flex; align-items: center; gap: 0.35rem; }
+      .euro span { color: var(--soft); }
+      .checks label { display: flex; gap: 0.45rem; align-items: flex-start; font-size: 0.86rem; margin: 0.25rem 0; }
+      .dash { background: #2a3038; color: #fff; border-radius: 14px; padding: 0.85rem; }
+      .dash h2 { color: #fff; }
+      .kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; margin-bottom: 0.7rem; }
+      .kpis div { background: #3a424c; border-radius: 10px; padding: 0.55rem 0.65rem; }
+      .kpis strong { display: block; font-size: 1.15rem; }
+      .kpis em { font-style: normal; color: #c5ccd4; font-size: 0.75rem; }
+      .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; }
+      .tile { border-radius: 10px; padding: 0.55rem 0.6rem; color: #fff; min-height: 88px; }
+      .tile.BAFA { background: var(--bafa); }
+      .tile.KfW { background: var(--kfw); }
+      .tile.Finanzamt { background: var(--fa); }
+      .tile small { display: block; opacity: .85; font-size: 0.7rem; }
+      .tile b { display: block; font-size: 1.15rem; margin: 0.15rem 0; }
+      .warn { background: #fdecec; border: 1px solid #e7b0b0; color: #8a1f1f; border-radius: 10px; padding: 0.65rem 0.75rem; margin: 0.7rem 0; font-size: 0.86rem; }
+      .detail { background: #fff; color: var(--text); border-radius: 12px; padding: 0.75rem 0.8rem; margin-top: 0.55rem; border-left: 6px solid var(--kfw); }
+      .detail.BAFA { border-left-color: var(--bafa); }
+      .detail.Finanzamt { border-left-color: var(--fa); }
+      .detail .top { display: flex; justify-content: space-between; gap: 0.5rem; }
+      .pill { display: inline-block; font-size: 0.68rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 999px; color: #fff; }
+      .pill.Zuschuss, .pill.Tilgungszuschuss { background: var(--bafa); }
+      .pill.Steuerbonus { background: var(--fa); }
+      .lines { font-size: 0.84rem; }
+      .lines div { display: flex; justify-content: space-between; gap: 0.5rem; padding: 0.2rem 0; border-bottom: 1px solid var(--line); }
+      .red { color: #b42318; font-weight: 800; }
+      .btns { display: flex; gap: 0.45rem; flex-wrap: wrap; margin-top: 0.7rem; }
+      button, .filebtn { min-height: 42px; border: 0; border-radius: 8px; padding: 0 0.85rem; font: inherit; font-weight: 700; cursor: pointer; background: var(--blue); color: #fff; }
+      button.ghost { background: #fff; color: var(--heading); border: 1px solid var(--line); }
+      #print-root { display: none; }
       @media print {
         body { background: #fff; }
-        .wrap { max-width: none; padding: 0; }
-        header.app, .grid, .note { display: none !important; }
-        #print-sheet { display: block !important; padding: 0.5cm; }
-        #print-sheet h1 { font-size: 18pt; margin: 0 0 4pt; color: #085ea4; }
-        #print-sheet table { font-size: 10pt; }
+        .page > *:not(#print-root) { display: none !important; }
+        #print-root { display: block !important; }
+        .detail { break-inside: avoid; }
       }
     </style>
   </head>
   <body>
-    <div class="wrap">
+    <div class="page">
       <header class="app">
-        <div class="brand">
-          Ingenieurbüro Spaderna
-          <span>Förderrechner BEG · BAFA, KfW 458, Steuerbonus</span>
-        </div>
-        <div class="badge">Stand 21.07.2026</div>
+        <h1>Förderrechner Sanierung und Heizung</h1>
+        <p>Ingenieurbüro Spaderna · Angaben zu Haus und Maßnahmen – Förderung über BAFA, KfW und Finanzamt. Unverbindlich, Stand 21.07.2026.</p>
       </header>
-      <div class="grid">
+      <div class="tabs">
+        <span class="bafa">BAFA</span>
+        <span class="kfw">KfW</span>
+        <span class="fa">Finanzamt</span>
+      </div>
+      <div class="layout">
         <div>
           <section class="card">
-            <h2>Gebäude &amp; Haushalt</h2>
-            <div class="field">
-              <label>Objekt / Kunde</label>
-              <input id="kunde" type="text" placeholder="Name oder Adresse" />
+            <div class="step">SCHRITT 1</div>
+            <h2>Gebäude &amp; Haushalte</h2>
+            <label class="lbl">Objekt / Kunde</label>
+            <input id="kunde" type="text" placeholder="Name oder Adresse" />
+            <div class="row2">
+              <div>
+                <label class="lbl">Bauantrag / Bauanzeige</label>
+                <input id="built" type="date" />
+              </div>
+              <div>
+                <label class="lbl">Geplantes Antragsdatum</label>
+                <input id="date" type="date" />
+              </div>
             </div>
-            <div class="field">
-              <label>Antragsdatum</label>
-              <input id="antrag" type="date" />
-              <small>Steuert Klimageschwindigkeitsbonus und WPB ab Q1/2027.</small>
+            <p class="hint">Gebäude in der Regel mindestens 5 Jahre alt (BEG). Antragsdatum steuert den Klimageschwindigkeitsbonus.</p>
+            <label class="lbl">Anzahl Wohneinheiten (max. 200)</label>
+            <input id="we" type="number" min="1" max="200" value="1" />
+            <div class="row2">
+              <div>
+                <label class="lbl">WE 1 Nutzung</label>
+                <select id="use">
+                  <option value="self">selbstgenutzt</option>
+                  <option value="rent">vermietet</option>
+                </select>
+              </div>
+              <div>
+                <label class="lbl">Haushaltseinkommen (zvE)</label>
+                <select id="income">
+                  <option value="30000">bis 30.000 €</option>
+                  <option value="40000">bis 40.000 €</option>
+                  <option value="50000">bis 50.000 €</option>
+                  <option value="90000">über 50.000 €</option>
+                </select>
+              </div>
             </div>
-            <label class="row"><span>Wohneinheiten</span>
-              <input id="we" type="number" min="1" max="200" value="1" style="max-width:7rem" />
-            </label>
-            <label class="row"><span>zu verst. Haushaltseinkommen € / Jahr</span>
-              <input id="income" type="number" min="0" step="1000" value="45000" style="max-width:9rem" />
-            </label>
             <div class="checks">
-              <label><input id="self" type="checkbox" checked /> Selbstgenutzt (Hauptwohnung)</label>
-              <label><input id="child" type="checkbox" /> Mind. 1 Kind unter 18 (Familienzuschlag +10.000 €)</label>
-              <label><input id="isfp" type="checkbox" /> iSFP liegt vor</label>
-              <label><input id="wpb" type="checkbox" /> Worst Performing Building (Klasse H / &gt; 300 kWh/m²a)</label>
-              <label><input id="tax" type="checkbox" /> Alternative: Steuerbonus § 35c statt Zuschuss</label>
+              <label><input id="family" type="checkbox" /> Haushalt mit min. 1 Kind unter 18</label>
+              <label><input id="isfp" type="checkbox" /> iSFP vorhanden</label>
             </div>
-            <div class="field">
-              <label>Alte Heizung</label>
-              <select id="old">
-                <option value="oel">Öl</option>
-                <option value="gas_zentral">Gas-Zentralheizung</option>
-                <option value="gas_etage">Gasetage</option>
-                <option value="kohle">Kohle</option>
-                <option value="nachtspeicher">Nachtspeicher</option>
-                <option value="biomasse_alt">Biomasse älter als 20 Jahre</option>
-                <option value="kein">Keine / defekt / sonstige</option>
-              </select>
-            </div>
+            <label class="lbl">JSON aus dem anderen Rechner laden</label>
+            <input id="jsonfile" type="file" accept="application/json,.json" />
           </section>
-          <section class="card" style="margin-top:1rem">
-            <h2>Maßnahmen &amp; Kosten</h2>
-            <p class="hint">Kosten brutto, soweit förderfähig. Haken = Maßnahme wird gerechnet.</p>
+          <section class="card">
+            <div class="step">SCHRITT 2</div>
+            <h2>Förderprogramme &amp; Maßnahmen</h2>
+            <p class="hint">Maßnahme aktivieren und Gesamtinvestition eintragen. Rechts erscheint der beste Weg (Zuschuss oder Steuerbonus).</p>
             <div id="measures"></div>
           </section>
         </div>
-        <aside class="sum card">
-          <h2>Maximale Förderung</h2>
-          <div class="kpi">
-            <div class="full"><em>Gesamtzuschuss</em><strong id="kpi-total">0 €</strong></div>
-            <div><em>KfW Heizung</em><strong id="kpi-kfw">0 €</strong></div>
-            <div><em>BAFA EM</em><strong id="kpi-bafa">0 €</strong></div>
-            <div><em>Steuerbonus</em><strong id="kpi-tax">0 €</strong></div>
-            <div><em>Eigenanteil</em><strong id="kpi-rest">0 €</strong></div>
+        <aside>
+          <div class="dash">
+            <h2>Berechnung möglicher Fördermittel</h2>
+            <div class="kpis">
+              <div><em>Gesamtzuschuss (empfohlener Weg)</em><strong id="kpi-g">0 €</strong></div>
+              <div><em>Investitionen</em><strong id="kpi-i">0 €</strong></div>
+              <div><em>BAFA</em><strong id="kpi-bafa">0 €</strong></div>
+              <div><em>KfW</em><strong id="kpi-kfw">0 €</strong></div>
+              <div><em>Finanzamt</em><strong id="kpi-fa">0 €</strong></div>
+              <div><em>Quote</em><strong id="kpi-q">0 %</strong></div>
+            </div>
+            <div class="tiles" id="tiles"></div>
+            <p class="hint" style="color:#c5ccd4">Zusätzlich sind zinsgünstige KfW-Kredite möglich (nicht in der Zuschusssumme).</p>
+            <div class="btns">
+              <button type="button" id="btn-pdf">PDF exportieren</button>
+              <button class="ghost" type="button" id="btn-reset">Zurücksetzen</button>
+            </div>
           </div>
-          <table>
-            <thead>
-              <tr><th>Weg</th><th>Satz</th><th class="right">Zuschuss</th></tr>
-            </thead>
-            <tbody id="rows"></tbody>
-          </table>
-          <div class="btns">
-            <button type="button" id="btn-pdf">PDF exportieren</button>
-            <button class="ghost" type="button" id="btn-reset">Zurücksetzen</button>
-          </div>
-          <p class="note" id="notes"></p>
+          <div id="warn"></div>
+          <div id="details"></div>
+          <div id="loans"></div>
         </aside>
       </div>
+      <div id="print-root"></div>
     </div>
-    <div id="print-sheet"></div>
     <script type="module">
-      import { MEASURES, calculate } from './assets/js/foerder-calc.js';
+      import { CATALOG, calculate, emptyMeasures, importEfbJson } from './assets/js/foerder-calc.js';
 
-      const euro = (n) =>
-        Number(n || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
-
-      const groups = {
-        heizung: 'Heizung (KfW 458)',
-        huelle: 'Gebäudehülle (BAFA)',
-        anlage: 'Anlagentechnik (BAFA)',
-        planung: 'Planung',
-        beratung: 'Beratung',
-      };
-
+      const euro = (v) => Number(v || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
       const box = document.getElementById('measures');
-      let lastGroup = '';
-      box.innerHTML = MEASURES.map((m) => {
-        const head =
-          m.group !== lastGroup
-            ? `<div class="ghead">${groups[m.group]}</div>`
-            : '';
-        lastGroup = m.group;
-        return (
-          head +
-          `<div class="measure">
-            <label>
-              <input type="checkbox" data-on="${m.id}" />
-              <span>${m.label}<div class="hint">${m.hint}</div></span>
-            </label>
-            <input type="number" min="0" step="100" value="0" data-cost="${m.id}" />
-          </div>`
-        );
+      let last = '';
+      box.innerHTML = CATALOG.map((item) => {
+        const head = item.group !== last ? `<div class="ghead">${item.group}</div>` : '';
+        last = item.group;
+        let extra = '';
+        if (item.id === 'waermepumpe') {
+          extra = `
+            <label class="lbl">Wärmeerzeuger</label>
+            <select data-erz>
+              <option value="wp_eu">Wärmepumpe – EU-Ursprung</option>
+              <option value="wp">Wärmepumpe</option>
+              <option value="bio">Biomasse</option>
+              <option value="solar">Solarthermie</option>
+            </select>
+            <div class="checks">
+              <label><input type="checkbox" data-old /> Austausch einer alten fossilen Heizung (Geschwindigkeitsbonus)</label>
+              <label><input type="checkbox" data-eevor /> Austausch einer EE-Heizung, Inbetriebnahme vor 01.01.2008 (ab Q1/2027)</label>
+            </div>`;
+        }
+        if (item.id === 'gebaeudenetz') {
+          extra = `<div class="checks"><label><input type="checkbox" data-old /> Austausch einer alten fossilen Heizung</label></div>`;
+        }
+        if (item.id === 'daemmung') {
+          extra = `<div class="checks"><label><input type="checkbox" data-wpb /> Worst Performing Building (Dämmung, Bonus ab Q1/2027)</label></div>`;
+        }
+        if (item.id === 'komplett') {
+          extra = `
+            <label class="lbl">Angestrebte Effizienzhaus-Klasse</label>
+            <select data-eh>
+              <option value="85">EH 85 EE</option>
+              <option value="70">EH 70 EE</option>
+              <option value="55">EH 55 EE</option>
+              <option value="40" selected>EH 40 EE</option>
+            </select>
+            <div class="checks">
+              <label><input type="checkbox" data-nh /> Nachhaltigkeits-Klasse (NH/QNG) +5 %</label>
+              <label><input type="checkbox" data-wpb /> Worst Performing Building +10 %</label>
+              <label><input type="checkbox" data-ser /> Serielle Sanierung +15 %</label>
+            </div>`;
+        }
+        const kredit = item.id === 'ergkredit';
+        return `${head}
+          <div class="measure card" data-id="${item.id}">
+            <div class="tog">
+              <label><input type="checkbox" data-on /> <strong>${item.label}</strong><div class="hint">${item.hint}</div></label>
+            </div>
+            ${extra}
+            <label class="lbl">${kredit ? 'Kreditbetrag' : 'Gesamtinvestition dieser Maßnahme'}</label>
+            <div class="euro"><input type="number" min="0" step="100" value="0" data-invest /><span>€</span></div>
+          </div>`;
       }).join('');
 
-      function today() {
-        return new Date().toISOString().slice(0, 10);
-      }
-      document.getElementById('antrag').value = today();
+      document.getElementById('date').value = new Date().toISOString().slice(0, 10);
 
-      function read() {
-        const on = {};
-        const costs = {};
-        MEASURES.forEach((m) => {
-          on[m.id] = Boolean(box.querySelector(`[data-on="${m.id}"]`)?.checked);
-          costs[m.id] = box.querySelector(`[data-cost="${m.id}"]`)?.value;
+      function readMeasures() {
+        const measures = emptyMeasures();
+        box.querySelectorAll('.measure').forEach((el) => {
+          const id = el.dataset.id;
+          measures[id] = {
+            active: el.querySelector('[data-on]').checked,
+            invest: Number(el.querySelector('[data-invest]').value || 0),
+            kredit: id === 'ergkredit' ? Number(el.querySelector('[data-invest]').value || 0) : 0,
+            old: Boolean(el.querySelector('[data-old]')?.checked),
+            eeVor: Boolean(el.querySelector('[data-eevor]')?.checked),
+            wpb: Boolean(el.querySelector('[data-wpb]')?.checked),
+            eh: el.querySelector('[data-eh]')?.value || '40',
+            nh: Boolean(el.querySelector('[data-nh]')?.checked),
+            ser: Boolean(el.querySelector('[data-ser]')?.checked),
+            erz: el.querySelector('[data-erz]')?.value,
+          };
         });
+        return measures;
+      }
+
+      function applyMeasures(measures) {
+        box.querySelectorAll('.measure').forEach((el) => {
+          const row = measures[el.dataset.id];
+          if (!row) return;
+          el.querySelector('[data-on]').checked = Boolean(row.active);
+          el.querySelector('[data-invest]').value = row.kredit || row.invest || 0;
+          if (el.querySelector('[data-old]')) el.querySelector('[data-old]').checked = Boolean(row.old);
+          if (el.querySelector('[data-eevor]')) el.querySelector('[data-eevor]').checked = Boolean(row.eeVor);
+          if (el.querySelector('[data-wpb]')) el.querySelector('[data-wpb]').checked = Boolean(row.wpb);
+          if (el.querySelector('[data-eh]') && row.eh) el.querySelector('[data-eh]').value = row.eh;
+          if (el.querySelector('[data-nh]')) el.querySelector('[data-nh]').checked = Boolean(row.nh);
+          if (el.querySelector('[data-ser]')) el.querySelector('[data-ser]').checked = Boolean(row.ser);
+        });
+      }
+
+      function state() {
+        const measures = readMeasures();
         return {
           kunde: document.getElementById('kunde').value,
-          antrag: document.getElementById('antrag').value,
           we: document.getElementById('we').value,
+          selfOccupied: document.getElementById('use').value === 'self',
           income: document.getElementById('income').value,
-          selfOccupied: document.getElementById('self').checked,
-          hasChild: document.getElementById('child').checked,
+          family: document.getElementById('family').checked,
           isfp: document.getElementById('isfp').checked,
-          wpb: document.getElementById('wpb').checked,
-          taxInstead: document.getElementById('tax').checked,
-          oldHeating: document.getElementById('old').value,
-          biomassOld: document.getElementById('old').value === 'biomasse_alt',
-          on,
-          costs,
+          date: document.getElementById('date').value,
+          built: document.getElementById('built').value,
+          oldFossil: Boolean(measures.waermepumpe.old || measures.gebaeudenetz.old),
+          eeVor: Boolean(measures.waermepumpe.eeVor),
+          wpbHuelle: Boolean(measures.daemmung.wpb),
+          measures,
         };
       }
 
       function render() {
-        const input = read();
-        const r = calculate(input);
-        document.getElementById('kpi-total').textContent = euro(r.grantTotal);
-        document.getElementById('kpi-kfw').textContent = euro(r.kfw);
-        document.getElementById('kpi-bafa').textContent = euro(r.bafa);
-        document.getElementById('kpi-tax').textContent = euro(r.tax);
-        document.getElementById('kpi-rest').textContent = euro(r.rest);
-        document.getElementById('rows').innerHTML = r.rows
+        const s = state();
+        const r = calculate(s);
+        document.getElementById('kpi-g').textContent = euro(r.grantTotal);
+        document.getElementById('kpi-i').textContent = euro(r.investTotal);
+        document.getElementById('kpi-bafa').textContent = euro(r.totals.BAFA);
+        document.getElementById('kpi-kfw').textContent = euro(r.totals.KfW);
+        document.getElementById('kpi-fa').textContent = euro(r.totals.Finanzamt);
+        document.getElementById('kpi-q').textContent = (r.quote || 0) + ' %';
+        document.getElementById('tiles').innerHTML = r.per
+          .filter((p) => p.rec)
           .map(
-            (row) =>
-              `<tr><td>${row.label}<div class="hint">${row.agency} · ${row.detail}</div></td><td>${row.rate} %</td><td class="right">${euro(row.grant)}</td></tr>`
+            (p) =>
+              `<div class="tile ${p.rec.agency}"><small>${p.rec.program} · ${p.rec.agency}</small><b>${euro(p.rec.amount)}</b><small>${p.label}<br>Investition ${euro(p.invest)}</small></div>`
           )
-          .join('') || `<tr><td colspan="3">Maßnahmen anhaken und Kosten eintragen.</td></tr>`;
-        document.getElementById('notes').innerHTML = r.notes.join('<br>');
-        document.getElementById('print-sheet').innerHTML = `
+          .join('');
+        document.getElementById('warn').innerHTML = r.warnings.map((w) => `<div class="warn">${w}</div>`).join('');
+        document.getElementById('details').innerHTML = r.per
+          .filter((p) => p.rec)
+          .map((p) => {
+            const rec = p.rec;
+            const lines = (rec.lines || [])
+              .map((ln) => `<div><span>${ln.k}</span><span>${ln.v}</span></div>`)
+              .join('');
+            return `<article class="detail ${rec.agency}">
+              <div class="top">
+                <div><span class="pill ${rec.unit}">${rec.unit}</span>
+                <h3 style="margin:.35rem 0 0">${p.label}</h3>
+                <div class="hint">${rec.agency} · ${rec.program}</div></div>
+                <div style="text-align:right"><b>${euro(rec.amount)}</b><div class="hint">Investition ${euro(p.invest)}</div></div>
+              </div>
+              <div class="lines">${lines}</div>
+              <div style="display:flex;justify-content:space-between;margin-top:.45rem"><strong>Förderung</strong><span class="red">${euro(rec.amount)}</span></div>
+              <p class="hint">${rec.note || ''}</p>
+            </article>`;
+          })
+          .join('');
+        document.getElementById('loans').innerHTML = r.loans
+          .map(
+            (l) =>
+              `<article class="detail KfW"><span class="pill Zuschuss">KREDIT</span><h3>${l.title}</h3><div class="hint">${l.program}</div><div style="display:flex;justify-content:space-between"><span>Kreditbetrag</span><strong>${euro(l.amount)}</strong></div><p class="hint">${l.text}</p></article>`
+          )
+          .join('');
+        document.getElementById('print-root').innerHTML = `
           <h1>Förderübersicht – Ingenieurbüro Spaderna</h1>
-          <p>${input.kunde || 'Kundenprojekt'} · Antrag ${r.antrag} · ${r.we} WE</p>
-          <p>Investition ${euro(r.costTotal)} · Förderung ${euro(r.grantTotal)} · Eigenanteil ${euro(r.rest)}</p>
-          <table>
-            <thead><tr><th>Maßnahme / Weg</th><th>förderfähig</th><th>Satz</th><th>Zuschuss</th></tr></thead>
-            <tbody>
-              ${r.rows
-                .map(
-                  (row) =>
-                    `<tr><td>${row.label}<br><span style="color:#5b6573">${row.detail}</span></td><td>${euro(row.eligible)}</td><td>${row.rate} %</td><td>${euro(row.grant)}</td></tr>`
-                )
-                .join('')}
-            </tbody>
-          </table>
-          <p style="margin-top:12pt;font-size:9pt;color:#5b6573">${r.notes.join(' ')} Keine Rechtsberatung. Ziegelanger 5, 96250 Ebensfeld / Oberbrunn · 09573 2225410</p>
-        `;
-        ping();
-      }
-
-      function ping() {
+          <p>${s.kunde || 'Kundenprojekt'} · Antrag ${r.g.date} · ${r.g.we} WE · iSFP ${s.isfp ? 'ja' : 'nein'}</p>
+          <p><strong>${euro(r.grantTotal)} Zuschuss</strong> · Investitionen ${euro(r.investTotal)}</p>
+          ${document.getElementById('warn').innerHTML}
+          ${document.getElementById('details').innerHTML}
+          ${document.getElementById('loans').innerHTML}
+          <p class="hint">Unverbindliche Schätzung. Keine Rechtsberatung. Ziegelanger 5, 96250 Ebensfeld · 09573 2225410. Quellen: BMWK, BMWSB, BMF, BAFA, KfW.</p>`;
         const h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
-        if (window.parent !== window) {
-          window.parent.postMessage({ type: 'FOERDER_HEIGHT', height: h }, '*');
-        }
+        if (window.parent !== window) window.parent.postMessage({ type: 'FOERDER_HEIGHT', height: h }, '*');
       }
 
-      document.querySelector('.wrap').addEventListener('input', render);
-      document.querySelector('.wrap').addEventListener('change', render);
+      document.querySelector('.page').addEventListener('input', render);
+      document.querySelector('.page').addEventListener('change', render);
       document.getElementById('btn-pdf').addEventListener('click', () => window.print());
-      document.getElementById('btn-reset').addEventListener('click', () => {
-        document.getElementById('kunde').value = '';
-        document.getElementById('we').value = '1';
-        document.getElementById('income').value = '45000';
-        document.getElementById('self').checked = true;
-        document.getElementById('child').checked = false;
-        document.getElementById('isfp').checked = false;
-        document.getElementById('wpb').checked = false;
-        document.getElementById('tax').checked = false;
-        document.getElementById('old').value = 'oel';
-        document.getElementById('antrag').value = today();
-        MEASURES.forEach((m) => {
-          const c = box.querySelector(`[data-on="${m.id}"]`);
-          const n = box.querySelector(`[data-cost="${m.id}"]`);
-          if (c) c.checked = false;
-          if (n) n.value = '0';
-        });
+      document.getElementById('btn-reset').addEventListener('click', () => location.reload());
+      document.getElementById('jsonfile').addEventListener('change', async (ev) => {
+        const file = ev.target.files?.[0];
+        if (!file) return;
+        const data = JSON.parse(await file.text());
+        const s = importEfbJson(data);
+        document.getElementById('we').value = s.we;
+        document.getElementById('use').value = s.selfOccupied ? 'self' : 'rent';
+        document.getElementById('income').value = String(s.income <= 30000 ? 30000 : s.income <= 40000 ? 40000 : s.income <= 50000 ? 50000 : 90000);
+        document.getElementById('family').checked = s.family;
+        document.getElementById('isfp').checked = s.isfp;
+        if (s.date) document.getElementById('date').value = s.date;
+        if (s.built) document.getElementById('built').value = s.built;
+        applyMeasures(s.measures);
         render();
       });
       render();
