@@ -75,12 +75,27 @@
       .btns { display: flex; gap: 0.45rem; flex-wrap: wrap; margin-top: 0.7rem; }
       button, .filebtn { min-height: 42px; border: 0; border-radius: 8px; padding: 0 0.85rem; font: inherit; font-weight: 700; cursor: pointer; background: var(--blue); color: #fff; }
       button.ghost { background: #fff; color: var(--heading); border: 1px solid var(--line); }
-      #print-root { display: none; }
+      .path-row { margin-top: 0.45rem; font-size: 0.8rem; color: var(--soft); }
+      .path-row button { min-height: 32px; padding: 0 0.55rem; font-size: 0.78rem; margin: 0.15rem 0.2rem 0 0; }
+      .path-row button.on { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--blue); }
+      .note { white-space: pre-wrap; }
+      .explain h2 { font-size: 1.15rem; margin: 1.2rem 0 0.5rem; }
+      .explain h3 { font-size: 0.95rem; margin: 0.9rem 0 0.35rem; color: var(--heading); }
+      .explain p, .explain li { font-size: 0.86rem; line-height: 1.45; color: var(--text); }
+      .explain ul { margin: 0.2rem 0 0.6rem 1.1rem; padding: 0; }
+      .print-best-head { display: none; }
+      #print-root .tiles { margin: 0.6rem 0 1rem; }
+      #print-root .print-cover { margin-bottom: 1rem; }
       @media print {
         body { background: #fff; }
         .page > *:not(#print-root) { display: none !important; }
         #print-root { display: block !important; }
         .detail { break-inside: avoid; }
+        .print-cover, .print-best { page-break-after: always; }
+        .print-best-head { display: block; }
+        .print-best h1 { font-size: 1.35rem; margin-bottom: 0.2rem; }
+        .print-best .sum { font-size: 1.8rem; margin: 0.35rem 0; }
+        .path-row { display: none !important; }
       }
     </style>
   </head>
@@ -88,7 +103,7 @@
     <div class="page">
       <header class="app">
         <h1>Förderrechner Sanierung und Heizung</h1>
-        <p>Ingenieurbüro Spaderna · Angaben zu Haus und Maßnahmen – Förderung über BAFA, KfW und Finanzamt. Unverbindlich, Stand 21.07.2026.</p>
+        <p>Ingenieurbüro Spaderna · Angaben zu Haus und Maßnahmen – Förderung über BAFA, KfW und Finanzamt. Unverbindlich. Version/letzte Anpassungen: 02.09.2026.</p>
       </header>
       <div class="tabs">
         <span class="bafa">BAFA</span>
@@ -159,7 +174,7 @@
               <div><em>Quote</em><strong id="kpi-q">0 %</strong></div>
             </div>
             <div class="tiles" id="tiles"></div>
-            <p class="hint" style="color:#c5ccd4">Zusätzlich sind zinsgünstige KfW-Kredite möglich (nicht in der Zuschusssumme).</p>
+            <p class="hint">Zusätzlich sind zinsgünstige KfW-Kredite und/oder regionale Förderungen möglich (in Summe nicht enthalten, werden nach Berechnung angezeigt).</p>
             <div class="btns">
               <button type="button" id="btn-pdf">PDF exportieren</button>
               <button class="ghost" type="button" id="btn-reset">Zurücksetzen</button>
@@ -170,12 +185,74 @@
           <div id="loans"></div>
         </aside>
       </div>
+      <section class="card explain" id="explain">
+        <h2>So rechnet der Rechner</h2>
+        <p>Der Förderrechner nennt je Maßnahme den besten Weg zu max. Zuschuss bzw. Steuererleichterung. Wo es eine Alternative gibt (Zuschuss ↔ Steuerbonus), lässt sich der Weg direkt auf der Karte umschalten – die Summe rechnet mit. Zusätzlich müssen individuell bei Kreditprogrammen die tagesaktuellen Zinsersparnisse einkalkuliert werden.</p>
+        <p>Betrachtet werden aktuell bei der Berechnung immer die Wohneinheiten eines Hauses mit den Gesamtkosten für das ganze Haus; für mehrere Häuser (wie z. B. beim Gebäudenetz) müssen mehrere Berechnungen parallel gestartet werden. Sollen nicht alle WE eines MFH bei der Berechnung berücksichtigt werden, muss bei der jeweiligen WE „wird saniert“ weggeklickt werden.</p>
+        <p>BEG EM, BEG WG und Steuerbonus schließen sich für dieselbe Maßnahme aus. Wegen des Kombiverbots / der 3-Jahres-Sperre zwischen BEG WG und BEG EM (wenn beide Anträge ab 21.07.2026) sollte pro Berechnung vorab ein Weg gewählt werden – Einzelmaßnahmen oder Effizienzhaus-Sanierung. Lediglich der Steuerbonus kann aktuell jeweils dazu für nicht identische Maßnahmen kombiniert werden.</p>
+        <p>Der Deckel der BEG-EM-Einzelmaßnahmen (Dämmung, Fenster/Türen, Anlagentechnik, Heizungsoptimierung) gilt gemeinsam und ist nach WE gestaffelt: 1. WE 30.000 €, ab 2. je 15.000 €, ab 7. je 8.000 € (mit iSFP 60.000 / 30.000 / 15.000 €). Übersteigen die Kosten aller EM die max. förderfähigen Kosten, wird hier für die Berechnung in fester Reihenfolge gefüllt: Dämmung zuerst (WPB-Bonus auf die vollen Dämmkosten), dann die übrigen EM; jede Karte zeigt ihre eigenen förderfähigen Kosten. Zu beachten: Wenn der iSFP-Bonus bei der Berechnung berücksichtigt werden soll, muss „iSFP vorhanden“ unter Schritt 1 ausgewählt werden, selbst wenn „Energieberatung / iSFP“ als Maßnahme gewählt wird.</p>
+        <p>Zusätzlich zu den genannten Förderungen sind immer regionale Programme von Ländern und Kommunen zu überprüfen.</p>
+
+        <h2>Erläuterungen zu Förderprogrammen</h2>
+        <h3>Planung &amp; Beratung</h3>
+        <p><strong>Energieberatung / iSFP:</strong> Voraussetzung: Bauantrag/Bauanzeige liegt mindestens 10 Jahre zurück. BAFA „Energieberatung für Wohngebäude“ (EBW): 50 % der Beratungskosten, max. 650 € (EFH/ZFH) bzw. 850 € (MFH ab 3 WE). Die Beratung mündet in einen individuellen Sanierungsfahrplan (iSFP), der weitere Boni freischaltet.</p>
+        <p><strong>Zuschlag WEG:</strong> Werden die Beratungsergebnisse in einer Eigentümerversammlung erläutert, gibt es einmalig max. 250 € pro WEG zusätzlich zum Höchstzuschuss.</p>
+        <p><strong>iSFP-Bonus:</strong> Mit individuellem Sanierungsfahrplan (iSFP) steigt der gemeinsame Höchstbetrag der BEG-EM-Einzelmaßnahmen: 1. WE auf 60.000 €, ab der 2. auf je 30.000 €, ab der 7. auf je 15.000 €. Fördersatz: 15 % auf den Basis-Anteil, 20 % (15 % + 5 % iSFP-Bonus) auf den Betrag oberhalb des Basis-Deckels (nur BEG-Einzelmaßnahmen). Gilt je Antrag – förderfähige Ausgaben aus anderen Anträgen werden nicht angerechnet.</p>
+
+        <h3>Heizung</h3>
+        <p><strong>Heizungsförderung:</strong> KfW „Heizungsförderung für Wohngebäude“ (458): 30 % Grundförderung auf den Austausch einer alten fossilen Heizung gegen erneuerbare Wärme, plus Boni – gesamt max. 70 % (bzw. 80 %). Förderfähige Kosten nach WE gestaffelt (siehe „Max. Investitionssumme“).</p>
+        <p>Ab Q1/2027: Für Wärmepumpen 15 % Grundförderung + 15 % Wertschöpfungs-Bonus (bei EU-Fertigung); andere erneuerbare Erzeuger weiterhin 30 %.</p>
+        <p>Ab Q1/2027: Beim Ersatz einer bestehenden EE-Heizung entfällt die Förderung, wenn die alte Anlage ab dem 01.01.2008 in Betrieb ging (oder bereits ein Wärme-/Gebäudenetz-Anschluss besteht); bei Inbetriebnahme vor dem 01.01.2008 sind nur 25 % der Kosten förderfähig. Ausnahme: Ersatz fossiler Erzeuger in bivalenten Systemen bleibt förderfähig.</p>
+        <p><strong>Geschwindigkeitsbonus:</strong> 16 % beim Austausch von Gas-Zentral (&gt;20 J.), Biomasse (&gt;20 J.), Gasetagen-, Öl-, Kohle- oder Nachtspeicher-Heizung (nur selbstgenutzte WE). Ab 01.02.2027 Reduzierung um je 4 Prozentpunkte alle 6 Monate. Der Fördergeber erkennt je Eigentümer max. 1 selbstgenutzte WE an (z. B. bei EFH mit Einliegerwohnung).</p>
+        <p><strong>Einkommensbonus:</strong> 40 % bei zu versteuerndem Haushaltseinkommen bis 30 T€, 30 % bis 40 T€, 10 % bis 50 T€ (nur selbstgenutzte WE). Familienzuschlag: mit mind. 1 minderjährigen Kind erhöht sich die Bemessungsgrenze um 10 T€.</p>
+        <p><strong>Max. Zuschuss (Heizung):</strong> Max. 80 % bei Einkommen bis 30 T€ (Familie bis 40 T€), sonst max. 70 %.</p>
+        <p><strong>Max. Investitionssumme (Heizung):</strong> 28 T€ für die 1. WE, je 15 T€ ab der 2., je 8 T€ ab der 7. WE; ab 01.02.2027 Reduzierung um je 750 € alle 6 Monate.</p>
+        <p><strong>Gebäudenetz:</strong> BAFA BEG EM: 30 % Grundförderung (plus dieselben Boni wie bei der Heizung) für Errichtung, Umbau oder Anschluss an ein Gebäudenetz. Die zugehörige Fachplanung/Baubegleitung wird hier über BAFA mit 50 % gefördert (Pflicht).</p>
+
+        <h3>Heizungsoptimierung</h3>
+        <p><strong>Heizungsoptimierung:</strong> BAFA BEG EM: 15 % (+ evtl. iSFP-Bonus) auf die Optimierung der bestehenden Heizung; die Emissionsminderung (bei Biomasseanlagen) wird mit 50 % gefördert. Bei BEG EM (max. 5 WE): Heizung &gt; 2 J. und fossile Heizung &lt; 20 J.; beim Steuerbonus Heizung &gt; 2 J. Kombinierbar mit KfW 458 bzw. BEG EM Gebäudenetz – aber erst Optimierung abschließen, dann Antrag für neue Heiztechnik.</p>
+
+        <h3>Gebäudehülle &amp; Technik</h3>
+        <p><strong>BEG-Einzelmaßnahmen:</strong> Mindestinvestitionsvolumen: 300 € förderfähige Kosten je Einzelmaßnahme. BAFA BEG EM: 15 % Grundförderung auf Dämmung, Fenster/Türen, Anlagentechnik und Heizungsoptimierung. Mit iSFP 20 % auf den Betrag oberhalb des Basis-Deckels. Gemeinsamer Höchstbetrag, nach WE gestaffelt: 30.000 / 15.000 / 8.000 € (mit iSFP 60.000 / 30.000 / 15.000 €).</p>
+        <p>Ab Q1/2027: zusätzlich +5 % WPB-Bonus, nur auf die Dämmung (Dach/Fassade/Keller; nicht Fenster/Türen), mit iSFP.</p>
+
+        <h3>Effizienzhaus</h3>
+        <p><strong>Komplettsanierung zum Effizienzhaus:</strong> KfW BEG WG (261): zinsgünstiger Kredit bis 150.000 € pro WE mit Tilgungszuschuss von 0–40 % (je nach Effizienzhaus-Stufe und Boni). Voraussetzung ist das Erreichen einer Effizienzhaus-Stufe inkl. EE-Klasse; eine Kombination mit der BEG EM (Heizung 458 sowie BAFA-Einzelmaßnahmen) ist ausgeschlossen – 3 Jahre Sperrfrist in beide Richtungen, s. „Kombinationsverbot BEG WG ↔ BEG EM“. Pflicht für Lüftungsanlage mit WRG bei EH 40 EE.</p>
+        <p><strong>BEG WG Tilgungszuschuss/Boni:</strong> Basis: 5 % (EH Denkmal EE), 0 % (EH 85/70 EE), 5 % (EH 55 EE), 10 % (EH 40 EE). WPB-Bonus 10 % (EH 70/55/40 EE). SerSan-Bonus 15 % (EH 55/40); 5 % (EH 70 EE, vorauss. ab 09/2026). Nicht mit der BEG EM kombinierbar (s. u.). Auch §35c für dieselben Kosten ist ausgeschlossen.</p>
+        <p><strong>Kombinationsverbot BEG WG ↔ BEG EM:</strong> BEG EM und BEG WG/NWG schließen sich gegenseitig aus – für 3 Jahre, gerechnet ab Einreichung des Verwendungsnachweises, in beide Richtungen. Das Verbot greift nur, wenn beide Anträge ab 21.07.2026 gestellt wurden; frühere Anträge bleiben unberührt und dürfen mit einer neuen Zusage kombiniert werden, soweit die alten Förderbedingungen das zuließen. Ausweg: Verzicht auf eine Zusage – möglich nur, solange kein Verwendungsnachweis eingereicht ist; nach Bestätigung durch KfW bzw. BAFA entfällt die Wartezeit.</p>
+
+        <h3>Fachplanung &amp; Baubegleitung</h3>
+        <p><strong>Fachplanung/Baubegleitung:</strong> 50 % on top zur jeweiligen Maßnahme. BEG EM: max. 5 T€ (EFH/ZFH) bzw. 2 T€/WE, max. 20 T€ (MFH). BEG WG 261: max. 10 T€ (EFH/ZFH) bzw. 4 T€/WE, max. 40 T€ (MFH). Bei KfW 458 (Heizung) in der Maßnahme enthalten. Alternativ 50 % über den Steuerbonus: max. 40 T€ Steuererleichterung gesamt (nur Selbstnutzer mit ausreichender Steuerlast).</p>
+
+        <h3>Kauf &amp; Umbau</h3>
+        <p><strong>Jung kauft Alt:</strong> KfW 308: zinsgünstiger Kredit für Familien beim Kauf sanierungsbedürftiger Altbauten (Energieklasse F/G/H), mind. 1 Kind &lt; 18 J. im Haushalt. Kredithöhe nach Kinderzahl: 140.000 € (1 Kind), 160.000 € (2 Kinder), 180.000 € (ab 3 Kindern). Einkommensgrenze (zu versteuerndes Haushaltseinkommen): 90.000 € (1 Kind), 100.000 € (2), 110.000 € (ab 3, + 10.000 € je weiterem Kind). Sanierung binnen 4,5 J. auf EH 85 EE / Denkmal EE – oder neu über ein Paket kombinierter Einzelmaßnahmen ohne EH-Standard: Heizungstausch (≥ 65 % EE), Fenstertausch, Dämmung von Fassade und Dach bzw. oberster Geschossdecke.</p>
+        <p><strong>Gewerbe zu Wohnen:</strong> KfW 266: 30 % Zuschuss, förderfähig max. 100.000 € pro WE; die maximale Zuschusshöhe beträgt 300.000 € für mehrere Wohneinheiten, sofern in den letzten 3 Jahren keine De-minimis-Beihilfen bezogen wurden. Umbau eines nicht zu Wohnzwecken genutzten, beheizten Gebäude(teils) zu Wohnraum; neu ab 01.07.2026, befristet bis 31.12.2026. Sanierung auf min. EH 85 EE oder Denkmal EE in max. 4,5 J.; ohne EE-Klasse, wenn Heizung max. 5 J. alt oder EE-Anteil bereits 65 %.</p>
+        <p><strong>Wohneigentumsprogramm:</strong> KfW Wohneigentumsprogramm (124): zinsgünstiger Kredit bis 100.000 € für den Kauf oder Bau selbstgenutzten Wohneigentums.</p>
+
+        <h3>Erneuerbare Energien</h3>
+        <p><strong>Erneuerbare Energien:</strong> KfW 270 „Erneuerbare Energien – Standard“: zinsgünstiger Kredit (kein Zuschuss) für Anlagen zur Stromerzeugung aus erneuerbaren Energien – Photovoltaik, Wind- und Wasserkraft – sowie für Batteriespeicher. Finanzierung bis 100 % der förderfähigen Kosten.</p>
+
+        <h3>Barrierereduzierung &amp; Einbruchschutz</h3>
+        <p><strong>Altersgerechter Umbau:</strong> KfW „Altersgerecht Umbauen“: Der Investitionszuschuss 455-B ist seit dem 31.07.2026 gestoppt – aktuell nur noch als zinsgünstiger Kredit (KfW 159, bis 50.000 € je Wohneinheit) für Barrierereduzierung und Einbruchschutz förderfähig.</p>
+
+        <h3>Steuerbonus</h3>
+        <p><strong>Steuerbonus (§ 35c):</strong> Max. 40 T€ Steuervorteil (20 % von 200 T€ Ausgaben) je selbstnutzendem Eigentümer, verteilt auf 3 Jahre (7 % / 7 % / 6 %). In einem Mehrfamilienhaus kann ihn jeder selbstnutzende Eigentümer separat in Anspruch nehmen; nutzt ein Eigentümer mehrere Wohneinheiten selbst, zählt der Höchstbetrag nur einmal. Der Rechner rechnet vereinfacht mit einem Höchstbetrag. Kombinierbar mit BAFA/KfW, aber nicht für dieselbe Maßnahme (nur Selbstnutzer).</p>
+        <p>Alternativ § 35a EStG (Handwerkerleistung): max. 1,2 T€/Jahr (20 % auf 6 T€).</p>
+
+        <h3>Disclaimer</h3>
+        <p>Es handelt sich um eine unverbindliche Berechnung der eventuell möglichen Fördermittel. Sie ersetzt keine Förder-, Rechts- oder Steuerberatung. Datenbasis für die Berechnung sind die jeweils gültigen Förderrichtlinien von BAFA, KfW und BMF sowie die zugrundegelegte, individuelle Gebäude- und Haushalts-Situation mit Bezug zum Antragsdatum.</p>
+        <p>Trotz sorgfältiger Erstellung wird keine Gewähr für Richtigkeit, Vollständigkeit und Aktualität übernommen. Förderprogramme, Konditionen und Höchstbeträge können sich jederzeit – auch kurzfristig – ändern oder auslaufen. Die Berechnung begründet keinen Anspruch auf Förderung; verbindlich sind allein die Zusagen bzw. Bescheide der Fördergeber sowie die steuerliche Anerkennung durch das zuständige Finanzamt. Technische Voraussetzungen, Fristen und Kombinationsmöglichkeiten sind im Einzelfall zu prüfen.</p>
+        <p>Der Förderrechner richtet sich an fachkundige Anwender; die eigenverantwortliche Prüfung und die Beratungspflicht gegenüber Endkunden bleiben unberührt.</p>
+        <p>Version/letzte Anpassungen: 02.09.2026.</p>
+      </section>
       <div id="print-root"></div>
     </div>
     <script type="module">
-      import { CATALOG, calculate, emptyMeasures, importEfbJson } from './assets/js/foerder-calc.js';
+      import { CATALOG, calculate, emptyMeasures, importEfbJson } from './assets/js/foerder-calc.js?v=20260903';
 
       const euro = (v) => Number(v || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+      const pathKey = (opt) => (opt.agency === 'BAFA' ? 'bafa' : opt.agency === 'KfW' ? 'kfw' : 'fa');
+      let userPath = {};
       const box = document.getElementById('measures');
       let last = '';
       box.innerHTML = CATALOG.map((item) => {
@@ -206,6 +283,7 @@
           extra = `
             <label class="lbl">Angestrebte Effizienzhaus-Klasse</label>
             <select data-eh>
+              <option value="denkmal">EH Denkmal EE</option>
               <option value="85">EH 85 EE</option>
               <option value="70">EH 70 EE</option>
               <option value="55">EH 55 EE</option>
@@ -281,6 +359,7 @@
           eeVor: Boolean(measures.waermepumpe.eeVor),
           wpbHuelle: Boolean(measures.daemmung.wpb),
           measures,
+          userPath,
         };
       }
 
@@ -293,13 +372,14 @@
         document.getElementById('kpi-kfw').textContent = euro(r.totals.KfW);
         document.getElementById('kpi-fa').textContent = euro(r.totals.Finanzamt);
         document.getElementById('kpi-q').textContent = (r.quote || 0) + ' %';
-        document.getElementById('tiles').innerHTML = r.per
+        const tilesHtml = r.per
           .filter((p) => p.rec)
           .map(
             (p) =>
               `<div class="tile ${p.rec.agency}"><small>${p.rec.program} · ${p.rec.agency}</small><b>${euro(p.rec.amount)}</b><small>${p.label}<br>Investition ${euro(p.invest)}</small></div>`
           )
           .join('');
+        document.getElementById('tiles').innerHTML = tilesHtml;
         document.getElementById('warn').innerHTML = r.warnings.map((w) => `<div class="warn">${w}</div>`).join('');
         document.getElementById('details').innerHTML = r.per
           .filter((p) => p.rec)
@@ -308,6 +388,18 @@
             const lines = (rec.lines || [])
               .map((ln) => `<div><span>${ln.k}</span><span>${ln.v}</span></div>`)
               .join('');
+            const alts = (p.grants || []).filter(Boolean);
+            const pathBtns =
+              alts.length > 1
+                ? `<div class="path-row">Weg wählen: ${alts
+                    .map((g) => {
+                      const key = pathKey(g);
+                      const on = rec.agency === g.agency && rec.program === g.program ? 'on' : '';
+                      return `<button type="button" class="${on}" data-id="${p.id}" data-path="${key}">${g.unit} · ${g.agency}</button>`;
+                    })
+                    .join('')}</div>`
+                : '';
+            const extra = p.xnote ? `<p class="hint note">${p.xnote}</p>` : '';
             return `<article class="detail ${rec.agency}">
               <div class="top">
                 <div><span class="pill ${rec.unit}">${rec.unit}</span>
@@ -317,27 +409,48 @@
               </div>
               <div class="lines">${lines}</div>
               <div style="display:flex;justify-content:space-between;margin-top:.45rem"><strong>Förderung</strong><span class="red">${euro(rec.amount)}</span></div>
-              <p class="hint">${rec.note || ''}</p>
+              <p class="hint note">${rec.note || ''}</p>
+              ${pathBtns}${extra}
             </article>`;
           })
           .join('');
         document.getElementById('loans').innerHTML = r.loans
           .map(
             (l) =>
-              `<article class="detail KfW"><span class="pill Zuschuss">KREDIT</span><h3>${l.title}</h3><div class="hint">${l.program}</div><div style="display:flex;justify-content:space-between"><span>Kreditbetrag</span><strong>${euro(l.amount)}</strong></div><p class="hint">${l.text}</p></article>`
+              `<article class="detail KfW"><span class="pill Zuschuss">KREDIT</span><h3>${l.title}</h3><div class="hint">${l.program}</div><div style="display:flex;justify-content:space-between"><span>Kreditbetrag</span><strong>${euro(l.amount)}</strong></div><p class="hint note">${l.text}</p></article>`
           )
           .join('');
+        const explain = document.getElementById('explain').innerHTML;
         document.getElementById('print-root').innerHTML = `
-          <h1>Förderübersicht – Ingenieurbüro Spaderna</h1>
-          <p>${s.kunde || 'Kundenprojekt'} · Antrag ${r.g.date} · ${r.g.we} WE · iSFP ${s.isfp ? 'ja' : 'nein'}</p>
-          <p><strong>${euro(r.grantTotal)} Zuschuss</strong> · Investitionen ${euro(r.investTotal)}</p>
-          ${document.getElementById('warn').innerHTML}
+          <div class="print-cover">
+            <h1>Förderübersicht – Ingenieurbüro Spaderna</h1>
+            <p>${s.kunde || 'Kundenprojekt'} · Antrag ${r.g.date} · ${r.g.we} WE · iSFP ${s.isfp ? 'ja' : 'nein'}</p>
+            <p><strong>${euro(r.grantTotal)} Zuschuss</strong> · Investitionen ${euro(r.investTotal)} · Förderquote ca. ${r.quote || 0} %</p>
+            ${document.getElementById('warn').innerHTML}
+            <p class="hint">Seite 1: Deckblatt · Seite 2: gewählter bester Weg je Maßnahme · danach Einzelkarten, Kredite und Erläuterungen.</p>
+          </div>
+          <div class="print-best">
+            <p class="print-best-head hint">GESAMTFÖRDERUNG · GEWÄHLTE OPTION JE MASSNAHME · KONDITIONEN AB Q1/2027</p>
+            <h1>Berechnung möglicher Fördermittel</h1>
+            <p class="sum"><strong>${euro(r.grantTotal)} Zuschuss</strong></p>
+            <p>Investitionen gesamt <strong>${euro(r.investTotal)}</strong> · Förderquote ca. <strong>${r.quote || 0} %</strong></p>
+            <div class="tiles">${tilesHtml}</div>
+            <p class="hint">Zusätzlich sind zinsgünstige KfW-Kredite und/oder regionale Förderungen möglich (in Summe nicht enthalten, werden nach Berechnung angezeigt).</p>
+          </div>
           ${document.getElementById('details').innerHTML}
           ${document.getElementById('loans').innerHTML}
-          <p class="hint">Unverbindliche Schätzung. Keine Rechtsberatung. Ziegelanger 5, 96250 Ebensfeld · 09573 2225410. Quellen: BMWK, BMWSB, BMF, BAFA, KfW.</p>`;
+          <section class="explain">${explain}</section>
+          <p class="hint">Unverbindliche Schätzung. Keine Rechtsberatung. Ziegelanger 5, 96250 Ebensfeld · 09573 2225410. Quellen: BMWK, BMWSB, BMF, BAFA, KfW. Version 02.09.2026.</p>`;
         const h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
         if (window.parent !== window) window.parent.postMessage({ type: 'FOERDER_HEIGHT', height: h }, '*');
       }
+
+      document.getElementById('details').addEventListener('click', (ev) => {
+        const btn = ev.target.closest('[data-path]');
+        if (!btn) return;
+        userPath[btn.dataset.id] = btn.dataset.path;
+        render();
+      });
 
       document.querySelector('.page').addEventListener('input', render);
       document.querySelector('.page').addEventListener('change', render);

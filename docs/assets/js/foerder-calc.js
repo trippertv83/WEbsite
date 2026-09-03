@@ -54,7 +54,38 @@ function opt(agency, program, amount, unit, lines, note) {
   return { agency, program, amount: euro(amount), unit, lines: lines || [], note: note || '' };
 }
 
-function pickRec(bafa, kfw, fa) {
+const NOTE = {
+  ebw: '50 % der Kosten der Energieberatung/des Sanierungsfahrplans, gedeckelt auf 650 €.',
+  heat: (we, cap) =>
+    `Basisförderung 30 % auf die gedeckelten Gebäudeausgaben (alle WE). Boni (Geschwindigkeit/Einkommen) nur je selbstgenutzter WE auf deren Anteil, gedeckelt auf Gebäude-Höchstbetrag ${cap.toLocaleString('de-DE')} € ÷ ${we} = ${Math.round(cap / we).toLocaleString('de-DE')} € pro WE; Gesamtsatz je WE max. 80/70 %. Ab Q1/2027: 15 % + 15 % Wertschöpfungs-Bonus (EU).`,
+  netz: (we, cap) =>
+    `Basisförderung 30 % auf die gedeckelten Gebäudeausgaben (alle WE). Boni (Geschwindigkeit/Einkommen) nur je selbstgenutzter WE auf deren Anteil, gedeckelt auf Gebäude-Höchstbetrag ${cap.toLocaleString('de-DE')} € ÷ ${we} = ${Math.round(cap / we).toLocaleString('de-DE')} € pro WE; Gesamtsatz je WE max. 80/70 %.`,
+  planHeat:
+    'Fachplanung und Baubegleitung ist in KfW 458 in Maßnahme enthalten – ein separater 50 %-Zuschuss ist nur über den Steuerbonus möglich.',
+  tax20:
+    '20 % der Ausgaben des selbstgenutzten Anteils, max. Steuererleichterung 40.000 € je selbstnutzendem Eigentümer – gemeinsam für alle Maßnahmen einschließlich Heizung, verteilt auf 3 Jahre (7 % / 7 % / 6 %) inkl. 50 % auf die Baubegleitung (anzusetzen im 1. Jahr). Achtung: Nur selbstnutzende Eigentümer mit ausreichender Steuerlast.',
+  tax50em:
+    '50 % über den Steuerbonus als Alternative zur BAFA-Baubegleitung – max. 40.000 € Steuererleichterung gesamt (nur Selbstnutzer mit ausreichender Steuerlast). Keine Doppelförderung derselben Kosten.',
+  emiss:
+    '50 % Zuschuss für Maßnahmen zur Emissionsminderung an Biomasseheizungen (kein gemeinsamer Deckel wie bei den übrigen Einzelmaßnahmen).',
+  pool:
+    'Mindestinvestitionsvolumen: 300 € förderfähige Kosten je Einzelmaßnahme. BAFA BEG EM: 15 % Grundförderung auf Dämmung, Fenster/Türen, Anlagentechnik und Heizungsoptimierung. Mit iSFP 20 % auf den Betrag oberhalb des Basis-Deckels. Gemeinsamer Höchstbetrag, nach WE gestaffelt: 30.000 / 15.000 / 8.000 € (mit iSFP 60.000 / 30.000 / 15.000 €). Ab Q1/2027: zusätzlich +5 % WPB-Bonus, nur auf die Dämmung (Dach/Fassade/Keller; nicht Fenster/Türen), mit iSFP.',
+  bbEm:
+    '50 % – möglich, weil min. eine Maßnahme über BAFA BEG EM gefördert wird. Deckel 5.000 € (EFH/ZFH).',
+  wg:
+    'Zinsgünstiger Förderkredit (max. 150.000 € pro WE); der Tilgungszuschuss ist ein Teilschuldenerlass in % des Kreditbetrags. Eine Kombination mit der BEG EM (Heizung 458 sowie BAFA-Einzelmaßnahmen wie Hülle/Anlagen) ist ausgeschlossen – 3 Jahre Sperrfrist in beide Richtungen (wenn beide Anträge ab 21.07.2026, ab Verwendungsnachweis).',
+  bbWg:
+    '50 % – möglich, weil die Komplettsanierung über BEG WG 261 läuft. Deckel 10.000 € (EFH/ZFH).',
+  gzw:
+    'Umbau beheizter Gewerbefläche zu Wohnraum. Neu ab 01.07.2026, befristet bis 31.12.2026. Die maximale Zuschusshöhe beträgt 300.000 € für mehrere Wohneinheiten, sofern in den letzten 3 Jahren keine De-minimis-Beihilfen bezogen wurden.',
+  kredit:
+    'Ergänzend auf Wunsch: BEG EM 358/359 · Ergänzungskredit (bis 120.000 € pro WE)',
+  zins: 'Tagesaktuelle Zinskonditionen sind der KfW zu entnehmen bzw. mit der Bank abzustimmen.',
+};
+
+function pickRec(bafa, kfw, fa, prefer) {
+  const map = { bafa, kfw, fa };
+  if (prefer && map[prefer]) return map[prefer];
   const opts = [bafa, kfw, fa].filter(Boolean);
   if (!opts.length) return null;
   return opts.reduce((a, b) => (b.amount > a.amount ? b : a));
@@ -75,7 +106,7 @@ function heatLike(cost, g) {
   ];
   if (g.self) {
     lines.push({
-      k: `WE 1 · Bonus ${bonusPct} % (${g.speed}% Geschw. + ${g.eink}% Eink., gedeckelt) · Anteil ${money(share)}`,
+      k: `WE 1 · gleicher Anteil · Bonus ${bonusPct} % (${g.speed}% Geschw. + ${g.eink}% Eink., gedeckelt) · Anteil ${money(share)}`,
       v: '+ ' + money(bonus),
     });
   }
@@ -100,11 +131,11 @@ function tax20(cost, self, left) {
       { k: 'Selbstgenutzter Anteil (100 % der Ausgaben)', v: money(cost) },
       { k: '20 % Steuerbonus (über 3 Jahre)', v: money(amount) },
     ],
-    '20 % über 3 Jahre (7/7/6 %), max. 40.000 € je selbstnutzendem Eigentümer. Nicht mit Zuschuss für dieselbe Maßnahme kombinierbar.'
+    NOTE.tax20
   );
 }
 
-function tax50(cost, self, left) {
+function tax50(cost, self, left, note) {
   if (!self || cost <= 0) return null;
   const amount = euro(Math.min(cost * 0.5, left));
   return opt(
@@ -116,7 +147,7 @@ function tax50(cost, self, left) {
       { k: 'Selbstgenutzter Anteil (100 %)', v: money(cost) },
       { k: '50 % Steuerbonus', v: money(amount) },
     ],
-    '50 % Steuerbonus auf Fachplanung/Baubegleitung. Keine Doppelförderung.'
+    note || NOTE.planHeat
   );
 }
 
@@ -176,13 +207,16 @@ export function calculate(state) {
   const poolIds = ['heizopt_eff', 'daemmung', 'fenster', 'anlagen'];
   const poolSum = poolIds.reduce((s, id) => s + cost(id), 0);
   const baseCap = weStack(we, 30000, 15000, 8000);
-  const maxCap = isfp ? weStack(we, 60000, 30000, 16000) : baseCap;
+  const maxCap = isfp ? weStack(we, 60000, 30000, 15000) : baseCap;
 
   const per = [];
   const loans = [];
 
+  const userPath = state.userPath || {};
+  const capHeat = weStack(we, HEAT_CAP1, 15000, 8000);
+
   function row(id, label, bafa, kfw, fa, extraLoans, xnote) {
-    const rec = pickRec(bafa, kfw, fa);
+    const rec = pickRec(bafa, kfw, fa, userPath[id]);
     const grants = [bafa, kfw, fa].filter(Boolean);
     per.push({
       id,
@@ -210,7 +244,7 @@ export function calculate(state) {
       opt('BAFA', 'EBW', amount, 'Zuschuss', [
         { k: '50 % der Kosten', v: money(raw) },
         { k: we <= 2 ? 'Höchstzuschuss (EFH/ZFH)' : 'Höchstzuschuss (MFH)', v: money(cap) },
-      ], '50 % der Kosten der Energieberatung/des Sanierungsfahrplans, gedeckelt auf 650 € (EFH/ZFH).'),
+      ], NOTE.ebw),
       null,
       null
     );
@@ -223,8 +257,10 @@ export function calculate(state) {
       'waermepumpe',
       'Heizungstechnik',
       null,
-      opt('KfW', 'BEG EM 458', h.amount, 'Zuschuss', h.lines, 'Basisförderung 30 %. Boni nur selbstgenutzte WE. Gesamtsatz max. 80/70 %. Ab Q1/2027: 15 % + 15 % Wertschöpfungs-Bonus (EU).'),
-      tax20(c, self, TAX_MAX)
+      opt('KfW', 'BEG EM 458', h.amount, 'Zuschuss', h.lines, NOTE.heat(we, capHeat)),
+      tax20(c, self, TAX_MAX),
+      [],
+      NOTE.kredit
     );
   }
 
@@ -238,9 +274,11 @@ export function calculate(state) {
     row(
       'gebaeudenetz',
       'Gebäudenetz',
-      opt('BAFA', 'BEG EM', h.amount, 'Zuschuss', h.lines, 'Wie Heizungsförderung, Antrag BAFA. Gesamtsatz max. 80/70 %.'),
+      opt('BAFA', 'BEG EM', h.amount, 'Zuschuss', h.lines, NOTE.netz(we, capHeat)),
       null,
-      tax20(c, self, TAX_MAX)
+      tax20(c, self, TAX_MAX),
+      [],
+      NOTE.kredit
     );
   }
 
@@ -252,9 +290,11 @@ export function calculate(state) {
       opt('BAFA', 'BEG EM', c * 0.5, 'Zuschuss', [
         { k: 'Förderfähige Ausgaben', v: money(c) },
         { k: '50 % Fördersatz (Emissionsminderung)', v: money(c * 0.5) },
-      ], '50 % an Biomasseheizungen, kein gemeinsamer Deckel der übrigen EM.'),
+      ], NOTE.emiss),
       null,
-      null
+      null,
+      [],
+      NOTE.kredit
     );
   }
 
@@ -289,7 +329,7 @@ export function calculate(state) {
         bafaAmt,
         'Zuschuss',
         lines,
-        `Gemeinsamer Höchstbetrag ${maxCap.toLocaleString('de-DE')} €${isfp ? ' (mit iSFP)' : ''}.`
+        NOTE.pool
       ),
       null,
       tax20(c, self, TAX_MAX)
@@ -305,31 +345,37 @@ export function calculate(state) {
       ? opt('BAFA', 'BEG EM', elig * 0.5, 'Zuschuss', [
           { k: `Förderfähig (Deckel ${cap.toLocaleString('de-DE')} €)`, v: money(elig) },
           { k: '50 % Fördersatz', v: money(elig * 0.5) },
-        ], '50 % – möglich, weil min. eine Maßnahme über BAFA BEG EM gefördert wird. Deckel 5.000 € (EFH/ZFH).')
+        ], NOTE.bbEm)
       : null;
-    row('bb_em', 'Fachplanung & Baubegleitung – alle Einzelmaßnahmen', bafa, null, tax50(c, self, TAX_MAX));
+    row('bb_em', 'Fachplanung & Baubegleitung – alle Einzelmaßnahmen', bafa, null, tax50(c, self, TAX_MAX, NOTE.tax50em));
   }
 
   if (on('komplett')) {
     const c = cost('komplett');
     const loan = Math.min(c, 150000 * we);
     const eh = m.komplett.eh || '40';
-    let pct = eh === '40' || eh === '40ee' ? 10 : eh === '55' ? 10 : 5;
+    let pct = 0;
+    if (eh === 'denkmal') pct = 5;
+    else if (eh === '55') pct = 5;
+    else if (eh === '40' || eh === '40ee') pct = 10;
     const lines = [
-      { k: 'Förderkredit (bis 150.000 €/WE)', v: money(loan) },
-      { k: `Basis-Tilgungszuschuss ${eh === '40' ? '40 EE' : 'EH ' + eh}`, v: `${pct} %` },
+      { k: 'Förderkredit (bis 150.000 € = 150.000 €/WE)', v: money(loan) },
+      { k: `Basis-Tilgungszuschuss ${eh === '40' || eh === '40ee' ? '40 EE' : 'EH ' + eh}`, v: `${pct} %` },
     ];
     if (m.komplett.nh) {
       pct += 5;
       lines.push({ k: '+ NH-Klasse (Nachhaltigkeit)', v: '+ 5 %' });
     }
-    if (m.komplett.wpb) {
+    if (m.komplett.wpb && ['70', '55', '40', '40ee'].includes(eh)) {
       pct += 10;
       lines.push({ k: '+ Worst Performing Building', v: '+ 10 %' });
     }
-    if (m.komplett.ser) {
+    if (m.komplett.ser && ['55', '40', '40ee'].includes(eh)) {
       pct += 15;
       lines.push({ k: '+ Serielle Sanierung', v: '+ 15 %' });
+    } else if (m.komplett.ser && eh === '70') {
+      pct += 5;
+      lines.push({ k: '+ Serielle Sanierung (EH 70)', v: '+ 5 %' });
     }
     lines.push({ k: 'Tilgungszuschuss gesamt', v: `${pct} %` });
     const amount = euro(loan * (pct / 100));
@@ -338,7 +384,7 @@ export function calculate(state) {
       'komplett',
       'Komplettsanierung zum Effizienzhaus',
       null,
-      opt('KfW', 'BEG WG 261', amount, 'Tilgungszuschuss', lines, 'Nicht kombinierbar mit BEG EM 458 / BAFA-Einzelmaßnahmen. 3 Jahre Sperre.'),
+      opt('KfW', 'BEG WG 261', amount, 'Tilgungszuschuss', lines, NOTE.wg + '\n' + NOTE.zins),
       null
     );
   }
@@ -353,7 +399,7 @@ export function calculate(state) {
       opt('KfW', 'BEG WG 261', elig * 0.5, 'Tilgungszuschuss', [
         { k: 'Förderfähig (Deckel 10.000 €)', v: money(elig) },
         { k: '50 % Fördersatz', v: money(elig * 0.5) },
-      ], '50 %, weil Komplettsanierung über 261 läuft.'),
+      ], NOTE.bbWg),
       null
     );
   }
@@ -368,7 +414,7 @@ export function calculate(state) {
       opt('KfW', '266', elig * 0.3, 'Zuschuss', [
         { k: 'Förderfähig (100.000 €/WE)', v: money(elig) },
         { k: '30 % Zuschuss', v: money(elig * 0.3) },
-      ], 'Umbau Gewerbe zu Wohnen. 01.07.2026–31.12.2026. Max. 300.000 €.'),
+      ], NOTE.gzw),
       null
     );
   }
@@ -388,7 +434,7 @@ export function calculate(state) {
       title: 'Ergänzungskredit Einzelmaßnahmen',
       program: 'KfW · 358/359',
       amount: euro(Math.min(want || emInv, emInv || want, 120000 * we)),
-      text: 'Setzt BAFA-Bescheid oder KfW-458-Zusage voraus. Bis 120.000 €/WE. Zinsvorteil Selbstnutzer bis 90.000 € zvE.',
+      text: `Maximal bis zur Höhe der beantragten BEG-EM-Investition (${euro(emInv).toLocaleString('de-DE')} €).\nZinsgünstiger Kredit bis 120.000 € je Wohneinheit\nErgänzend zur BEG-EM-Förderung – setzt einen BAFA-Zuwendungsbescheid oder eine KfW-458-Zusage voraus. Bei KfW 358 zusätzlicher Zinsvorteil bis 2,5 % für Selbstnutzer (max. 1 WE, Haushaltseinkommen bis 90.000 €).\n${NOTE.zins}`,
     });
   }
   if (on('kauf_altbau')) {
@@ -397,7 +443,7 @@ export function calculate(state) {
       title: 'Jung kauft alt',
       program: 'KfW · 308',
       amount: euro(cost('kauf_altbau')),
-      text: 'Kredit 140.000 / 160.000 / 180.000 € nach Kinderzahl. EH 85 EE oder Paket Einzelmaßnahmen.',
+      text: `Zinsgünstiger Kredit 140.000–180.000 € (je nach Kinderzahl)\nZwei Sanierungswege: EH 85 EE / Denkmal EE oder – neu – ein Paket kombinierter Einzelmaßnahmen ohne EH-Standard (Heizungstausch mit ≥ 65 % EE, Fenstertausch, Dämmung von Fassade und Dach bzw. oberster Geschossdecke). Kredithöhe nach Kinderzahl: 140.000 € (1 Kind) / 160.000 € (2) / 180.000 € (ab 3). Einkommensgrenze (zu versteuerndes Haushaltseinkommen): 90.000 € / 100.000 € / 110.000 € (+ 10.000 € je weiterem Kind).\n${NOTE.zins}`,
     });
   }
   if (on('wohneigentum')) {
@@ -406,7 +452,7 @@ export function calculate(state) {
       title: 'Wohneigentumsprogramm',
       program: 'KfW · 124',
       amount: euro(Math.min(cost('wohneigentum'), 100000)),
-      text: 'Zinsgünstiger Kredit bis 100.000 €, kombinierbar.',
+      text: `Zinsgünstiger Kredit bis 100.000 €\nZinsgünstiger Kredit für Kauf oder Bau von selbstgenutztem Wohneigentum – kombinierbar mit anderen Förderprogrammen.\n${NOTE.zins}`,
     });
   }
   if (on('stromerzeugung')) {
@@ -415,7 +461,7 @@ export function calculate(state) {
       title: 'Erneuerbare Energien',
       program: 'KfW · 270',
       amount: euro(cost('stromerzeugung')),
-      text: 'Nur Kredit, kein Zuschuss. PV, Wind, Wasser, Speicher.',
+      text: `Zinsgünstiger Kredit bis 100 % der Kosten\nReines Kreditprogramm (kein Zuschuss): Finanzierung von Photovoltaik, Wind- und Wasserkraft sowie Batteriespeichern.\n${NOTE.zins}`,
     });
   }
   if (on('altersgerecht')) {
@@ -424,7 +470,7 @@ export function calculate(state) {
       title: 'Altersgerechter Umbau',
       program: 'KfW · 159',
       amount: euro(Math.min(cost('altersgerecht'), 50000 * we)),
-      text: 'Kredit bis 50.000 €/WE. Zuschuss 455-B seit 31.07.2026 gestoppt.',
+      text: `Zinsgünstiger Kredit bis 50.000 € je Wohneinheit\nBarrierereduzierung/Einbruchschutz. Der Zuschuss KfW 455-B ist seit dem 31.07.2026 gestoppt – aktuell nur noch als zinsgünstiger Kredit (KfW 159) förderfähig.\n${NOTE.zins}`,
     });
   }
 
