@@ -17,21 +17,36 @@ function loadHtml2Pdf() {
 export async function printWithLetterhead(bodyHtml, filename = 'Spaderna.pdf') {
   await loadHtml2Pdf();
   const css = document.createElement('style');
-  css.textContent = '#spaderna-pdf-source .print-cover,#spaderna-pdf-source .print-best{break-after:page;page-break-after:always}#spaderna-pdf-source .path-row{display:none}#spaderna-pdf-source .print-best-head{display:block}';
+  css.textContent =
+    '#spaderna-pdf-source .print-cover,#spaderna-pdf-source .print-best{break-after:page;page-break-after:always}' +
+    '#spaderna-pdf-source .path-row{display:none}' +
+    '#spaderna-pdf-source .print-best-head{display:block}' +
+    '#spaderna-pdf-source,#spaderna-pdf-source *{break-inside:auto!important;page-break-inside:auto!important}' +
+    '#spaderna-pdf-source table{width:100%;border-collapse:collapse}' +
+    '#spaderna-pdf-source th,#spaderna-pdf-source td{border-bottom:1px solid #d5dbe3;padding:4px 6px}';
   document.head.appendChild(css);
   const el = document.createElement('div');
   el.id = 'spaderna-pdf-source';
   el.innerHTML = bodyHtml || '';
-  el.style.cssText = 'position:fixed;left:0;top:0;width:190mm;padding:0 2mm 8mm;background:#fff;color:#1c222b;font-family:Segoe UI,system-ui,sans-serif;z-index:2147483646;';
+  el.style.cssText = 'position:absolute;left:0;top:0;width:190mm;padding:0 2mm 12mm;background:#fff;color:#1c222b;font-family:Segoe UI,system-ui,sans-serif;z-index:2147483646;height:auto;overflow:visible;';
   document.body.appendChild(el);
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
   const opt = {
     margin: [34, 12, 14, 12],
     filename,
     image: { type: 'jpeg', quality: 0.92 },
-    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 794 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      windowWidth: 794,
+      windowHeight: Math.max(el.scrollHeight, 1122),
+      height: el.scrollHeight,
+      scrollY: 0,
+    },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['css', 'legacy'] },
+    pagebreak: { mode: ['legacy'] },
   };
 
   try {

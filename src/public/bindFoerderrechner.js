@@ -5,7 +5,7 @@
  * Höhe im Editor zuerst ca. 1600 px, passt sich per postMessage an.
  */
 
-const URL = 'https://trippertv83.github.io/WEbsite/foerderrechner.html?v=20260904h';
+const URL = 'https://trippertv83.github.io/WEbsite/foerderrechner.html?v=20260904i';
 
 function exists(id) {
   try {
@@ -21,7 +21,7 @@ export function bindFoerderrechner() {
   if (!box) return;
   try {
     const src = String(box.src || '');
-    if (!/foerderrechner\.html\?v=20260904h/i.test(src)) box.src = URL;
+    if (!/foerderrechner\.html\?v=20260904i/i.test(src)) box.src = URL;
   } catch {
     /* */
   }
