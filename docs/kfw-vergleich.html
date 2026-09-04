@@ -103,7 +103,7 @@
         a[href]::after { content: none !important; }
       }
     </style>
-    <link rel="stylesheet" href="assets/css/print-briefpapier.css?v=20260904g" />
+    <link rel="stylesheet" href="assets/css/print-briefpapier.css?v=20260904h" />
   </head>
   <body>
     <div class="page">
@@ -247,7 +247,7 @@
     <script type="module">
       import { PROGRAMS, SNAPSHOT, suggestProgram, variantsFor, loadKonditionen, KFW_ANZEIGER, begWgGrantPct, GRANT_SOURCE, loadGrantTable } from './assets/js/kfw-konditionen.js?v=20260903g';
       import { compareScenarios, breakEvenKfwRate, sensitivity, verdict, money, pct, n, euro } from './assets/js/kfw-loan-calc.js?v=20260903g';
-      import { printWithLetterhead } from './assets/js/print-brief.js?v=20260904g';
+      import { printWithLetterhead } from './assets/js/print-brief.js?v=20260904h';
 
       let kond = { rows: SNAPSHOT, auto: false, stand: '', fetched: '', source: KFW_ANZEIGER };
       let grantInfo = { auto: false, source: GRANT_SOURCE };
@@ -510,7 +510,7 @@
           <p>Orientierungsrechnung, keine Finanzberatung. Vergleichshorizont siehe Tabelle.</p>
           ${$('summary').innerHTML}
           ${$('out').innerHTML}
-        `);
+        `, 'KfW-Vergleich-Spaderna.pdf');
       });
       $('btn-rates').addEventListener('click', async () => {
         kond = await loadKonditionen();
