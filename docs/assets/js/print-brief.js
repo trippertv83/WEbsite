@@ -43,16 +43,49 @@ function flattenTables(root) {
       });
       box.appendChild(row);
     });
+    box.className = 'pdf-keep';
     table.replaceWith(box);
   });
 }
 
-function addCanvasPages(pdf, canvas) {
+function keepRanges(root, canvas) {
+  const scale = canvas.height / Math.max(root.scrollHeight, 1);
+  const sel = '.detail, .tile, .pdf-keep, .card, .print-cover, .warn';
+  const origin = root.getBoundingClientRect();
+  const ranges = [];
+  root.querySelectorAll(sel).forEach((n) => {
+    const parentKeep = n.parentElement && n.parentElement.closest(sel);
+    if (parentKeep) return;
+    const r = n.getBoundingClientRect();
+    ranges.push({
+      top: (r.top - origin.top) * scale,
+      bottom: (r.bottom - origin.top) * scale,
+    });
+  });
+  ranges.sort((a, b) => a.top - b.top);
+  return ranges;
+}
+
+function sliceEnd(y, pagePx, canvasH, ranges) {
+  const maxEnd = Math.min(y + pagePx, canvasH);
+  if (maxEnd >= canvasH - 1) return canvasH;
+  let end = maxEnd;
+  for (const b of ranges) {
+    if (b.top < maxEnd - 2 && b.bottom > maxEnd + 2) {
+      if (b.top > y + 40) end = Math.min(end, b.top);
+    }
+  }
+  if (end <= y + 40) return maxEnd;
+  return end;
+}
+
+function addCanvasPages(pdf, canvas, ranges) {
   const pageW = pdf.internal.pageSize.getWidth();
   const pageH = pdf.internal.pageSize.getHeight();
   const left = 12;
   const right = 12;
-  const top = 36;
+  const kopfH = (pageW - 24) * (160 / 1654);
+  const top = 8 + kopfH + 8;
   const bottom = 12;
   const contentW = pageW - left - right;
   const contentH = pageH - top - bottom;
@@ -61,7 +94,7 @@ function addCanvasPages(pdf, canvas) {
   let y = 0;
   let first = true;
   while (y < canvas.height) {
-    const slicePx = Math.min(pagePx, canvas.height - y);
+    const slicePx = sliceEnd(y, pagePx, canvas.height, ranges) - y;
     const slice = document.createElement('canvas');
     slice.width = canvas.width;
     slice.height = Math.max(1, Math.ceil(slicePx));
@@ -89,7 +122,8 @@ export async function printWithLetterhead(bodyHtml, filename = 'Spaderna.pdf') {
     '#spaderna-pdf-source table{width:100%;border-collapse:collapse}' +
     '#spaderna-pdf-source th,#spaderna-pdf-source td{border-bottom:1px solid #d5dbe3;padding:4px 6px}' +
     '#spaderna-pdf-source h1{font-size:20px;margin:0 0 8px;color:#1c222b}' +
-    '#spaderna-pdf-source p{margin:0 0 8px}';
+    '#spaderna-pdf-source p{margin:0 0 8px}' +
+    '#spaderna-pdf-source .detail{margin-top:12px}';
   document.head.appendChild(css);
   const mount = document.createElement('div');
   mount.style.cssText =
@@ -128,7 +162,7 @@ export async function printWithLetterhead(bodyHtml, filename = 'Spaderna.pdf') {
     }
     const JsPDF = window.jspdf.jsPDF || window.jspdf;
     const pdf = new JsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-    addCanvasPages(pdf, canvas);
+    addCanvasPages(pdf, canvas, keepRanges(el, canvas));
     const pageW = pdf.internal.pageSize.getWidth();
     const x = 12;
     const w = pageW - 24;
