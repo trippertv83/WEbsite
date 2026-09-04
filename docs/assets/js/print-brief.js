@@ -48,67 +48,69 @@ function flattenTables(root) {
   });
 }
 
-function keepRanges(root, canvas) {
-  const scale = canvas.height / Math.max(root.scrollHeight, 1);
-  const sel = '.detail, .tile, .pdf-keep, .card, .print-cover, .warn';
-  const origin = root.getBoundingClientRect();
-  const ranges = [];
-  root.querySelectorAll(sel).forEach((n) => {
-    const parentKeep = n.parentElement && n.parentElement.closest(sel);
-    if (parentKeep) return;
-    const r = n.getBoundingClientRect();
-    ranges.push({
-      top: (r.top - origin.top) * scale,
-      bottom: (r.bottom - origin.top) * scale,
-    });
-  });
-  ranges.sort((a, b) => a.top - b.top);
-  return ranges;
-}
-
-function sliceEnd(y, pagePx, canvasH, ranges) {
-  const maxEnd = Math.min(y + pagePx, canvasH);
-  if (maxEnd >= canvasH - 1) return canvasH;
-  let end = maxEnd;
-  for (const b of ranges) {
-    if (b.top < maxEnd - 2 && b.bottom > maxEnd + 2) {
-      if (b.top > y + 40) end = Math.min(end, b.top);
-    }
-  }
-  if (end <= y + 40) return maxEnd;
-  return end;
-}
-
-function addCanvasPages(pdf, canvas, ranges) {
-  const pageW = pdf.internal.pageSize.getWidth();
-  const pageH = pdf.internal.pageSize.getHeight();
+function pageMetrics() {
+  const pageW = 210;
+  const pageH = 297;
   const left = 12;
-  const right = 12;
-  const kopfH = (pageW - 24) * (160 / 1654);
+  const contentWmm = pageW - 24;
+  const kopfH = contentWmm * (160 / 1654);
   const top = 8 + kopfH + 8;
-  const bottom = 12;
-  const contentW = pageW - left - right;
-  const contentH = pageH - top - bottom;
-  const pxPerMm = canvas.width / contentW;
-  const pagePx = contentH * pxPerMm;
-  let y = 0;
-  let first = true;
-  while (y < canvas.height) {
-    const slicePx = sliceEnd(y, pagePx, canvas.height, ranges) - y;
-    const slice = document.createElement('canvas');
-    slice.width = canvas.width;
-    slice.height = Math.max(1, Math.ceil(slicePx));
-    const ctx = slice.getContext('2d');
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, slice.width, slice.height);
-    ctx.drawImage(canvas, 0, y, canvas.width, slicePx, 0, 0, canvas.width, slicePx);
-    if (!first) pdf.addPage();
-    first = false;
-    pdf.setPage(pdf.internal.getNumberOfPages());
-    pdf.setFillColor(255, 255, 255);
-    pdf.rect(0, 0, pageW, pageH, 'F');
-    pdf.addImage(slice.toDataURL('image/jpeg', 0.92), 'JPEG', left, top, contentW, slicePx / pxPerMm);
-    y += slicePx;
+  const bottom = 14;
+  const contentHmm = pageH - top - bottom;
+  const cssW = 794;
+  const cssH = Math.floor(contentHmm * (cssW / contentWmm));
+  return { pageW, pageH, left, top, contentWmm, contentHmm, cssW, cssH, kopfH };
+}
+
+function atomicBlocks(root) {
+  const keep = '.detail, .card, .tile, .pdf-keep, .warn, .print-cover';
+  const out = [];
+  const visit = (n) => {
+    if (!n || n.nodeType !== 1) return;
+    if (n.matches('.print-best')) {
+      [...n.children].forEach((c) => {
+        if (c.classList.contains('tiles')) [...c.children].forEach((t) => out.push(t));
+        else out.push(c);
+      });
+      return;
+    }
+    if (n.matches(keep)) {
+      out.push(n);
+      return;
+    }
+    if (n.children.length) {
+      [...n.children].forEach(visit);
+      return;
+    }
+    if ((n.textContent || '').trim()) out.push(n);
+  };
+  [...root.children].forEach(visit);
+  return out;
+}
+
+async function capturePage(pageEl, cssW, cssH) {
+  return window.html2canvas(pageEl, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: '#ffffff',
+    logging: false,
+    scrollX: 0,
+    scrollY: 0,
+    width: cssW,
+    height: cssH,
+    windowWidth: cssW,
+    windowHeight: cssH,
+  });
+}
+
+function stampKopf(pdf, kopfH) {
+  const pageW = pdf.internal.pageSize.getWidth();
+  const x = 12;
+  const w = pageW - 24;
+  const n = pdf.internal.getNumberOfPages();
+  for (let i = 1; i <= n; i++) {
+    pdf.setPage(i);
+    pdf.addImage(KOPF, 'PNG', x, 8, w, kopfH);
   }
 }
 
@@ -141,37 +143,40 @@ export async function printWithLetterhead(bodyHtml, filename = 'Spaderna.pdf') {
     window.parent.postMessage({ type: 'KFW_HEIGHT', height: 2400 }, '*');
   }
   await waitFrames();
-  const captureH = Math.max(el.scrollHeight, el.offsetHeight, 200);
+  const m = pageMetrics();
+  const queue = atomicBlocks(el);
+  el.style.display = 'none';
 
   try {
-    const canvas = await window.html2canvas(el, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      logging: false,
-      scrollX: 0,
-      scrollY: 0,
-      width: 794,
-      height: captureH,
-      windowWidth: 794,
-      windowHeight: captureH,
-    });
-    if (!canvas || canvas.width < 8 || canvas.height < 8) {
-      window.alert('PDF-Inhalt konnte nicht erfasst werden. Bitte Seite neu laden (Strg+F5) und erneut versuchen.');
-      return;
-    }
     const JsPDF = window.jspdf.jsPDF || window.jspdf;
     const pdf = new JsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-    addCanvasPages(pdf, canvas, keepRanges(el, canvas));
-    const pageW = pdf.internal.pageSize.getWidth();
-    const x = 12;
-    const w = pageW - 24;
-    const kopfH = w * (160 / 1654);
-    const n = pdf.internal.getNumberOfPages();
-    for (let i = 1; i <= n; i++) {
-      pdf.setPage(i);
-      pdf.addImage(KOPF, 'PNG', x, 8, w, kopfH);
+    let first = true;
+    while (queue.length) {
+      const pageEl = document.createElement('div');
+      pageEl.style.cssText = `width:${m.cssW}px;height:${m.cssH}px;overflow:hidden;background:#fff;color:#1c222b;font-family:Segoe UI,system-ui,sans-serif;font-size:13px;line-height:1.45;box-sizing:border-box;padding:0 8px;`;
+      mount.appendChild(pageEl);
+      while (queue.length) {
+        const node = queue[0];
+        pageEl.appendChild(node);
+        const pageTop = pageEl.getBoundingClientRect().top;
+        const box = node.getBoundingClientRect();
+        const marginB = parseFloat(getComputedStyle(node).marginBottom) || 0;
+        const bottom = box.bottom - pageTop + marginB;
+        if (pageEl.childElementCount > 1 && bottom > m.cssH - 8) {
+          queue[0] = pageEl.removeChild(node);
+          break;
+        }
+        queue.shift();
+      }
+      const canvas = await capturePage(pageEl, m.cssW, m.cssH);
+      pageEl.remove();
+      if (!first) pdf.addPage();
+      first = false;
+      pdf.setFillColor(255, 255, 255);
+      pdf.rect(0, 0, m.pageW, m.pageH, 'F');
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', m.left, m.top, m.contentWmm, m.contentHmm);
     }
+    stampKopf(pdf, m.kopfH);
     pdf.save(filename);
   } catch (err) {
     window.alert('PDF konnte nicht erzeugt werden. Bitte Seite neu laden und erneut versuchen.');
