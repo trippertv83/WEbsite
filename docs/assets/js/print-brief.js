@@ -11,12 +11,12 @@ function extraCss() {
   return `
     @page {
       size: A4;
-      margin: 12mm 14mm 14mm 14mm;
+      margin: 0;
     }
     html, body {
       background: #fff !important;
       margin: 0 !important;
-      padding: 0 !important;
+      padding: 10mm 14mm 12mm 14mm !important;
       color: #1c222b !important;
       font-family: 'Segoe UI', system-ui, sans-serif;
     }
@@ -67,7 +67,7 @@ function buildHtml(bodyHtml) {
   return `<!DOCTYPE html>
 <html lang="de"><head>
 <meta charset="utf-8">
-<title>Ingenieurbüro Spaderna</title>
+<title></title>
 ${styles}
 </head><body>
 <table class="print-sheet">
@@ -83,6 +83,7 @@ function printDocument(html) {
     popup.document.open();
     popup.document.write(html);
     popup.document.close();
+    popup.document.title = '';
     waitAndPrint(popup.document, popup);
     return;
   }
@@ -97,6 +98,7 @@ function printDocument(html) {
   doc.open();
   doc.write(html);
   doc.close();
+  doc.title = '';
   waitAndPrint(doc, iframe.contentWindow, () => iframe.remove());
 }
 
