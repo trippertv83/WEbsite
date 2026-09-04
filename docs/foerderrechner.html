@@ -129,8 +129,8 @@
       .print-best-head { display: none; }
       #print-root { display: none !important; }
       @media print {
-        @page { margin: 0; }
-        html, body { background: #fff; margin: 0; padding: 12mm 14mm; }
+        @page { size: A4; margin: 0; }
+        html, body { background: #fff; margin: 0; padding: 34mm 16mm 16mm; }
         a[href]::after { content: none !important; }
         .screen-ui { display: none !important; }
         #print-root { display: block !important; }
@@ -145,6 +145,7 @@
         .tiles { grid-template-columns: 1fr 1fr; }
       }
     </style>
+    <link rel="stylesheet" href="assets/css/print-briefpapier.css?v=20260904a" />
   </head>
   <body>
     <div class="page">

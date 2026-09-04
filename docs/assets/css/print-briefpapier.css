@@ -1,0 +1,33 @@
+/* Spaderna-Briefpapier auf jeder Druckseite (Zinsvergleich + Fördercheck). */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  html, body {
+    background: #fff !important;
+    margin: 0 !important;
+    padding: 34mm 16mm 16mm 16mm !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 210mm;
+    height: 297mm;
+    z-index: 0;
+    pointer-events: none;
+    background: url('../briefpapier.png') no-repeat center top / 210mm 297mm;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  #print-root,
+  #explain,
+  .page {
+    position: relative;
+    z-index: 1;
+  }
+}
