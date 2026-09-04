@@ -143,7 +143,7 @@
         .tiles { grid-template-columns: 1fr 1fr; }
       }
     </style>
-    <link rel="stylesheet" href="assets/css/print-briefpapier.css?v=20260904d" />
+    <link rel="stylesheet" href="assets/css/print-briefpapier.css?v=20260904e" />
   </head>
   <body>
     <div class="page">
@@ -292,6 +292,7 @@
     <div id="print-root"></div>
     <script type="module">
       import { CATALOG, calculate, emptyMeasures, importEfbJson } from './assets/js/foerder-calc.js?v=20260903b';
+      import { printWithLetterhead } from './assets/js/print-brief.js?v=20260904e';
 
       const euro = (v) => Number(v || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
       const pathKey = (opt) => (opt.agency === 'BAFA' ? 'bafa' : opt.agency === 'KfW' ? 'kfw' : 'fa');
@@ -484,28 +485,20 @@
           )
           .join('');
         lastPrint = { s, r, tilesHtml };
-        fillPrint();
         const h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
         if (window.parent !== window) window.parent.postMessage({ type: 'FOERDER_HEIGHT', height: h }, '*');
       }
 
-      function wrapLetter(inner) {
-        return `<img class="print-kopf" src="assets/briefpapier-kopf.png" alt=""><div class="print-body">${inner}</div>`;
-      }
-
-      function fillPrint() {
-        const root = document.getElementById('print-root');
-        try {
-          if (!lastPrint) {
-            root.innerHTML = wrapLetter('<p>Bitte zuerst Maßnahmen und Beträge eintragen, dann erneut als PDF exportieren.</p>');
-            return;
-          }
-          const { s, r, tilesHtml } = lastPrint;
-          const notes = Array.from(document.querySelectorAll('#explain details > :not(summary)')).map((el) => el.outerHTML).join('');
-          root.innerHTML = wrapLetter(`
+      function printInner() {
+        if (!lastPrint) {
+          return '<p>Bitte zuerst Maßnahmen und Beträge eintragen, dann erneut als PDF exportieren.</p>';
+        }
+        const { s, r, tilesHtml } = lastPrint;
+        const notes = Array.from(document.querySelectorAll('#explain details > :not(summary)')).map((el) => el.outerHTML).join('');
+        return `
           <div class="print-cover">
             <h1>Förderübersicht – Ingenieurbüro Spaderna</h1>
-            <p>${s.kunde || 'Kundenprojekt'} · Antrag ${r.g.date} · ${r.g.we} WE · iSFP ${s.isfp ? 'ja' : 'nein'}</p>
+            <p>${s.kunde || 'Kundenprojekt'} · Antrag ${r.g?.date || ''} · ${r.g?.we ?? ''} WE · iSFP ${s.isfp ? 'ja' : 'nein'}</p>
             <p><strong>${euro(r.grantTotal)} Zuschuss</strong> · Investitionen ${euro(r.investTotal)} · Förderquote ca. ${r.quote || 0} %</p>
             ${document.getElementById('warn').innerHTML}
           </div>
@@ -520,10 +513,7 @@
           ${document.getElementById('details').innerHTML}
           ${document.getElementById('loans').innerHTML}
           ${notes}
-          <p class="hint">Unverbindliche Schätzung. Keine Rechtsberatung. Ziegelanger 5, 96250 Ebensfeld · 09573 2225410. Version 02.09.2026.</p>`);
-        } catch (err) {
-          root.innerHTML = wrapLetter('<p>Die Druckansicht konnte nicht erzeugt werden. Bitte Seite neu laden und erneut als PDF exportieren.</p>');
-        }
+          <p class="hint">Unverbindliche Schätzung. Keine Rechtsberatung. Ziegelanger 5, 96250 Ebensfeld · 09573 2225410. Version 02.09.2026.</p>`;
       }
       document.getElementById('details').addEventListener('click', (ev) => {
         const btn = ev.target.closest('[data-path]');
@@ -537,25 +527,7 @@
       document.querySelector('.page').addEventListener('change', render);
       document.getElementById('btn-pdf').addEventListener('click', () => {
         document.querySelector('#explain details')?.setAttribute('open', '');
-        fillPrint();
-        const prev = document.title;
-        document.title = 'Ingenieurbüro Spaderna';
-        window.addEventListener('afterprint', () => { document.title = prev; }, { once: true });
-        window.print();
-      });
-      window.addEventListener('beforeprint', () => {
-        document.querySelector('#explain details')?.setAttribute('open', '');
-        fillPrint();
-        if (!document.title.startsWith('Ingenieurbüro')) {
-          document.documentElement.dataset.prevTitle = document.title;
-          document.title = 'Ingenieurbüro Spaderna';
-        }
-      });
-      window.addEventListener('afterprint', () => {
-        if (document.documentElement.dataset.prevTitle) {
-          document.title = document.documentElement.dataset.prevTitle;
-          delete document.documentElement.dataset.prevTitle;
-        }
+        printWithLetterhead(printInner());
       });
       document.getElementById('btn-reset').addEventListener('click', () => location.reload());
       document.getElementById('jsonfile').addEventListener('change', async (ev) => {

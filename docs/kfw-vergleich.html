@@ -103,7 +103,7 @@
         a[href]::after { content: none !important; }
       }
     </style>
-    <link rel="stylesheet" href="assets/css/print-briefpapier.css?v=20260904d" />
+    <link rel="stylesheet" href="assets/css/print-briefpapier.css?v=20260904e" />
   </head>
   <body>
     <div class="page">
@@ -247,6 +247,7 @@
     <script type="module">
       import { PROGRAMS, SNAPSHOT, suggestProgram, variantsFor, loadKonditionen, KFW_ANZEIGER, begWgGrantPct, GRANT_SOURCE, loadGrantTable } from './assets/js/kfw-konditionen.js?v=20260903g';
       import { compareScenarios, breakEvenKfwRate, sensitivity, verdict, money, pct, n, euro } from './assets/js/kfw-loan-calc.js?v=20260903g';
+      import { printWithLetterhead } from './assets/js/print-brief.js?v=20260904e';
 
       let kond = { rows: SNAPSHOT, auto: false, stand: '', fetched: '', source: KFW_ANZEIGER };
       let grantInfo = { auto: false, source: GRANT_SOURCE };
@@ -504,20 +505,12 @@
       $('btn-go').addEventListener('click', go);
       $('btn-pdf').addEventListener('click', () => {
         go();
-        $('print-root').innerHTML = `
-          <img class="print-kopf" src="assets/briefpapier-kopf.png" alt="">
-          <div class="print-body">
+        printWithLetterhead(`
           <h1>KfW-Kredit vs. Hausbank – Ingenieurbüro Spaderna</h1>
           <p>Orientierungsrechnung, keine Finanzberatung. Vergleichshorizont siehe Tabelle.</p>
           ${$('summary').innerHTML}
           ${$('out').innerHTML}
-          </div>
-        `;
-        const prev = document.title;
-        document.title = 'Ingenieurbüro Spaderna';
-        const restore = () => { document.title = prev; };
-        window.addEventListener('afterprint', restore, { once: true });
-        window.print();
+        `);
       });
       $('btn-rates').addEventListener('click', async () => {
         kond = await loadKonditionen();
