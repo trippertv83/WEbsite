@@ -24,6 +24,29 @@ function waitFrames() {
   });
 }
 
+function flattenTables(root) {
+  root.querySelectorAll('table').forEach((table) => {
+    const box = document.createElement('div');
+    box.style.cssText = 'display:block;width:100%;margin:8px 0 14px;';
+    table.querySelectorAll('tr').forEach((tr) => {
+      const row = document.createElement('div');
+      const cells = [...tr.children];
+      const head = cells.some((c) => c.tagName === 'TH');
+      row.style.cssText =
+        'display:flex;gap:8px;justify-content:space-between;padding:5px 0;border-bottom:1px solid #d5dbe3;font-size:12px;line-height:1.35;' +
+        (head ? 'font-weight:700;color:#1c222b;' : '');
+      cells.forEach((cell, i) => {
+        const col = document.createElement('div');
+        col.textContent = (cell.innerText || cell.textContent || '').replace(/\s+/g, ' ').trim();
+        col.style.cssText = i === 0 ? 'flex:1.4;text-align:left;' : 'flex:1;text-align:right;';
+        row.appendChild(col);
+      });
+      box.appendChild(row);
+    });
+    table.replaceWith(box);
+  });
+}
+
 function addCanvasPages(pdf, canvas) {
   const pageW = pdf.internal.pageSize.getWidth();
   const pageH = pdf.internal.pageSize.getHeight();
@@ -68,18 +91,23 @@ export async function printWithLetterhead(bodyHtml, filename = 'Spaderna.pdf') {
     '#spaderna-pdf-source h1{font-size:20px;margin:0 0 8px;color:#1c222b}' +
     '#spaderna-pdf-source p{margin:0 0 8px}';
   document.head.appendChild(css);
+  const mount = document.createElement('div');
+  mount.style.cssText =
+    'position:fixed;left:0;top:0;width:794px;background:#fff;z-index:2147483646;overflow:visible;';
   const el = document.createElement('div');
   el.id = 'spaderna-pdf-source';
   el.innerHTML = bodyHtml || '<p>Keine Inhalte zum Export.</p>';
   el.style.cssText =
-    'position:absolute;left:0;top:0;width:794px;padding:8px 16px 24px;background:#fff;color:#1c222b;font-family:Segoe UI,system-ui,sans-serif;font-size:13px;line-height:1.45;z-index:2147483646;display:block;visibility:visible;opacity:1;';
-  document.body.appendChild(el);
-  const captureH = Math.max(el.scrollHeight, el.offsetHeight, 200);
+    'width:794px;padding:8px 16px 24px;background:#fff;color:#1c222b;font-family:Segoe UI,system-ui,sans-serif;font-size:13px;line-height:1.45;display:block;';
+  flattenTables(el);
+  mount.appendChild(el);
+  document.body.appendChild(mount);
   if (window.parent !== window) {
-    window.parent.postMessage({ type: 'FOERDER_HEIGHT', height: captureH + 80 }, '*');
-    window.parent.postMessage({ type: 'KFW_HEIGHT', height: captureH + 80 }, '*');
+    window.parent.postMessage({ type: 'FOERDER_HEIGHT', height: 2400 }, '*');
+    window.parent.postMessage({ type: 'KFW_HEIGHT', height: 2400 }, '*');
   }
   await waitFrames();
+  const captureH = Math.max(el.scrollHeight, el.offsetHeight, 200);
 
   try {
     const canvas = await window.html2canvas(el, {
@@ -89,20 +117,10 @@ export async function printWithLetterhead(bodyHtml, filename = 'Spaderna.pdf') {
       logging: false,
       scrollX: 0,
       scrollY: 0,
+      width: 794,
+      height: captureH,
       windowWidth: 794,
-      onclone(doc) {
-        const n = doc.getElementById('spaderna-pdf-source');
-        if (!n) return;
-        n.style.position = 'static';
-        n.style.left = 'auto';
-        n.style.top = 'auto';
-        n.style.display = 'block';
-        n.style.visibility = 'visible';
-        n.style.opacity = '1';
-        n.style.background = '#fff';
-        n.style.color = '#1c222b';
-        n.style.width = '794px';
-      },
+      windowHeight: captureH,
     });
     if (!canvas || canvas.width < 8 || canvas.height < 8) {
       window.alert('PDF-Inhalt konnte nicht erfasst werden. Bitte Seite neu laden (Strg+F5) und erneut versuchen.');
@@ -125,7 +143,7 @@ export async function printWithLetterhead(bodyHtml, filename = 'Spaderna.pdf') {
     window.alert('PDF konnte nicht erzeugt werden. Bitte Seite neu laden und erneut versuchen.');
     throw err;
   } finally {
-    el.remove();
+    mount.remove();
     css.remove();
   }
 }

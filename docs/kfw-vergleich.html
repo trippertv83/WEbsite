@@ -103,7 +103,7 @@
         a[href]::after { content: none !important; }
       }
     </style>
-    <link rel="stylesheet" href="assets/css/print-briefpapier.css?v=20260904k" />
+    <link rel="stylesheet" href="assets/css/print-briefpapier.css?v=20260904m" />
   </head>
   <body>
     <div class="page">
@@ -247,7 +247,7 @@
     <script type="module">
       import { PROGRAMS, SNAPSHOT, suggestProgram, variantsFor, loadKonditionen, KFW_ANZEIGER, begWgGrantPct, GRANT_SOURCE, loadGrantTable } from './assets/js/kfw-konditionen.js?v=20260903g';
       import { compareScenarios, breakEvenKfwRate, sensitivity, verdict, money, pct, n, euro } from './assets/js/kfw-loan-calc.js?v=20260903g';
-      import { printWithLetterhead } from './assets/js/print-brief.js?v=20260904k';
+      import { printWithLetterhead } from './assets/js/print-brief.js?v=20260904m';
 
       let kond = { rows: SNAPSHOT, auto: false, stand: '', fetched: '', source: KFW_ANZEIGER };
       let grantInfo = { auto: false, source: GRANT_SOURCE };
@@ -503,8 +503,13 @@
         });
       });
       $('btn-go').addEventListener('click', go);
-      $('btn-pdf').addEventListener('click', () => {
+      $('btn-pdf').addEventListener('click', async () => {
         go();
+        await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 50)));
+        if (!$('out').innerHTML.trim()) {
+          window.alert('Bitte zuerst „Vergleich berechnen“, dann erneut PDF.');
+          return;
+        }
         printWithLetterhead(`
           <h1>KfW-Kredit vs. Hausbank – Ingenieurbüro Spaderna</h1>
           <p>Orientierungsrechnung, keine Finanzberatung. Vergleichshorizont siehe Tabelle.</p>
