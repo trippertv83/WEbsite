@@ -4,7 +4,7 @@
  * URL: https://trippertv83.github.io/WEbsite/kfw-vergleich.html
  */
 
-const URL = 'https://trippertv83.github.io/WEbsite/kfw-vergleich.html?v=20260904e';
+const URL = 'https://trippertv83.github.io/WEbsite/kfw-vergleich.html?v=20260904f';
 
 function exists(id) {
   try {
@@ -20,7 +20,7 @@ export function bindKfwVergleich() {
   if (!box) return;
   try {
     const src = String(box.src || '');
-    if (!/kfw-vergleich\.html\?v=20260904e/i.test(src)) box.src = URL;
+    if (!/kfw-vergleich\.html\?v=20260904f/i.test(src)) box.src = URL;
   } catch {
     /* */
   }

@@ -143,7 +143,7 @@
         .tiles { grid-template-columns: 1fr 1fr; }
       }
     </style>
-    <link rel="stylesheet" href="assets/css/print-briefpapier.css?v=20260904e" />
+    <link rel="stylesheet" href="assets/css/print-briefpapier.css?v=20260904f" />
   </head>
   <body>
     <div class="page">
@@ -292,7 +292,7 @@
     <div id="print-root"></div>
     <script type="module">
       import { CATALOG, calculate, emptyMeasures, importEfbJson } from './assets/js/foerder-calc.js?v=20260903b';
-      import { printWithLetterhead } from './assets/js/print-brief.js?v=20260904e';
+      import { printWithLetterhead } from './assets/js/print-brief.js?v=20260904f';
 
       const euro = (v) => Number(v || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
       const pathKey = (opt) => (opt.agency === 'BAFA' ? 'bafa' : opt.agency === 'KfW' ? 'kfw' : 'fa');
