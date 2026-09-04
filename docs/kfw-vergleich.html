@@ -103,7 +103,7 @@
         a[href]::after { content: none !important; }
       }
     </style>
-    <link rel="stylesheet" href="assets/css/print-briefpapier.css?v=20260904b" />
+    <link rel="stylesheet" href="assets/css/print-briefpapier.css?v=20260904d" />
   </head>
   <body>
     <div class="page">
@@ -242,8 +242,8 @@
       <section class="card screen-ui note">
         <p>Orientierungsrechnung, keine Finanz-, Rechts- oder Förderberatung. Zinssätze der KfW setzt die Hausbank bei Zusage fest; der Anzeiger nennt Höchstsätze. Förderfähigkeit, Höchstbeträge, Einkommensgrenzen und Kombinationsverbote sind am konkreten Vorhaben und Antragstag zu prüfen. Quelle: KfW-Konditionenanzeiger / kfw.de.</p>
       </section>
-      <div id="print-root"></div>
     </div>
+    <div id="print-root"></div>
     <script type="module">
       import { PROGRAMS, SNAPSHOT, suggestProgram, variantsFor, loadKonditionen, KFW_ANZEIGER, begWgGrantPct, GRANT_SOURCE, loadGrantTable } from './assets/js/kfw-konditionen.js?v=20260903g';
       import { compareScenarios, breakEvenKfwRate, sensitivity, verdict, money, pct, n, euro } from './assets/js/kfw-loan-calc.js?v=20260903g';
@@ -505,10 +505,13 @@
       $('btn-pdf').addEventListener('click', () => {
         go();
         $('print-root').innerHTML = `
+          <img class="print-kopf" src="assets/briefpapier-kopf.png" alt="">
+          <div class="print-body">
           <h1>KfW-Kredit vs. Hausbank – Ingenieurbüro Spaderna</h1>
           <p>Orientierungsrechnung, keine Finanzberatung. Vergleichshorizont siehe Tabelle.</p>
           ${$('summary').innerHTML}
           ${$('out').innerHTML}
+          </div>
         `;
         const prev = document.title;
         document.title = 'Ingenieurbüro Spaderna';

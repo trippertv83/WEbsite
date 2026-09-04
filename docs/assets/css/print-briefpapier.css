@@ -1,30 +1,37 @@
-/* Spaderna-Briefpapier auf jeder Druckseite. Text nur unter Logo und Linie. */
+/* Briefpapier sitzt im oberen Seitenrand – der Text beginnt darunter, auf jeder Seite. */
 @media print {
   @page {
     size: A4;
-    margin-top: 40mm;
-    margin-right: 16mm;
-    margin-bottom: 16mm;
-    margin-left: 16mm;
+    margin: 36mm 12mm 14mm 12mm;
   }
   html, body {
     background: #fff !important;
     margin: 0 !important;
     padding: 0 !important;
+    color: #1c222b !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  body::before {
-    content: '';
+  .page {
+    display: none !important;
+  }
+  #print-root {
+    display: block !important;
+    color: #1c222b !important;
+    background: transparent !important;
+  }
+  .print-kopf {
     position: fixed;
+    top: -34mm;
     left: 0;
-    top: 0;
-    width: 210mm;
-    height: 297mm;
-    z-index: 0;
-    pointer-events: none;
-    background: url('../briefpapier.png') no-repeat center top / 210mm 297mm;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    width: 100%;
+    height: 32mm;
+    object-fit: contain;
+    object-position: left top;
+    z-index: 10;
+  }
+  .print-body {
+    display: block;
+    color: #1c222b;
   }
 }
