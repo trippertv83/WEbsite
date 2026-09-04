@@ -129,8 +129,7 @@
       .print-best-head { display: none; }
       #print-root { display: none !important; }
       @media print {
-        @page { size: A4; margin: 0; }
-        html, body { background: #fff; margin: 0; padding: 34mm 16mm 16mm; }
+        @page { size: A4; }
         a[href]::after { content: none !important; }
         .screen-ui { display: none !important; }
         #print-root { display: block !important; }
@@ -145,7 +144,7 @@
         .tiles { grid-template-columns: 1fr 1fr; }
       }
     </style>
-    <link rel="stylesheet" href="assets/css/print-briefpapier.css?v=20260904a" />
+    <link rel="stylesheet" href="assets/css/print-briefpapier.css?v=20260904b" />
   </head>
   <body>
     <div class="page">
@@ -231,7 +230,6 @@
       <section class="card explain" id="explain">
         <details>
         <summary>Hinweise, Rechenlogik und Förderprogramme</summary>
-        <h2>So rechnet der Rechner</h2>
         <p>Der Förderrechner nennt je Maßnahme den besten Weg zu max. Zuschuss bzw. Steuererleichterung. Wo es eine Alternative gibt (Zuschuss ↔ Steuerbonus), lässt sich der Weg direkt auf der Karte umschalten – die Summe rechnet mit. Zusätzlich müssen individuell bei Kreditprogrammen die tagesaktuellen Zinsersparnisse einkalkuliert werden.</p>
         <p>Betrachtet werden aktuell bei der Berechnung immer die Wohneinheiten eines Hauses mit den Gesamtkosten für das ganze Haus; für mehrere Häuser (wie z. B. beim Gebäudenetz) müssen mehrere Berechnungen parallel gestartet werden. Sollen nicht alle WE eines MFH bei der Berechnung berücksichtigt werden, muss bei der jeweiligen WE „wird saniert“ weggeklickt werden.</p>
         <p>BEG EM, BEG WG und Steuerbonus schließen sich für dieselbe Maßnahme aus. Wegen des Kombiverbots / der 3-Jahres-Sperre zwischen BEG WG und BEG EM (wenn beide Anträge ab 21.07.2026) sollte pro Berechnung vorab ein Weg gewählt werden – Einzelmaßnahmen oder Effizienzhaus-Sanierung. Lediglich der Steuerbonus kann aktuell jeweils dazu für nicht identische Maßnahmen kombiniert werden.</p>

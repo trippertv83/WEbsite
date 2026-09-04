@@ -95,8 +95,7 @@
       #print-root h1 { font-size: 1.25rem; margin: 0 0 0.35rem; }
       #print-root h2 { font-size: 1rem; margin: 0 0 0.4rem; }
       @media print {
-        @page { size: A4; margin: 0; }
-        html, body { background: #fff; margin: 0; padding: 34mm 16mm 16mm; }
+        @page { size: A4; }
         .screen-ui { display: none !important; }
         #print-root { display: block !important; }
         table { break-inside: avoid; }
@@ -104,7 +103,7 @@
         a[href]::after { content: none !important; }
       }
     </style>
-    <link rel="stylesheet" href="assets/css/print-briefpapier.css?v=20260904a" />
+    <link rel="stylesheet" href="assets/css/print-briefpapier.css?v=20260904b" />
   </head>
   <body>
     <div class="page">
