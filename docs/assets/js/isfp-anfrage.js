@@ -1,5 +1,6 @@
 import { attachSignPad, stripDataUrl } from './sign-pad.js';
 import { honorForUnits, objectLine, personLine, renderVertragHtml, renderVollmachtHtml } from './isfp-docs.js';
+import { fillIsfpPdfs } from './isfp-pdf.js';
 
 const MASSNAHMEN = [
   ['fenster', 'Austausch der Fenster'],
@@ -346,7 +347,7 @@ export function startIsfpAnfrage({ session, service, form, doneEl, postJson, fil
     const honor = honorForUnits(payload.anzahlWE);
     form.innerHTML = `
       <p class="steps">Schritt 2 von 3 · Vertrag iSFP</p>
-      <p class="hint">Personen- und Objektdaten aus dem Erfassungsbogen sind übernommen. Honorar laut Vertrag: ${honor.typ}, ${honor.gesamt} (Zuschuss ${honor.zuschuss}, Eigenanteil ${honor.eigen}).</p>
+      <p class="hint">Personen- und Objektdaten aus dem Erfassungsbogen sind übernommen. Honorar laut Vertrag: ${honor.typ}, ${honor.gesamt} (Zuschuss ${honor.zuschuss}, Eigenanteil ${honor.eigen}). Die Unterschrift wird in das Original-PDF des Vertrags gesetzt.</p>
       <div id="vertrag-preview" class="doc-preview"></div>
       <label class="check"><input type="checkbox" id="widerrufVerzicht" /> Ich verlange ausdrücklich, dass mit der Leistung vor Ende der 14-tägigen Widerrufsfrist begonnen wird.</label>
       <label class="check"><input type="checkbox" id="acceptVertrag" required /> Ich habe den Vertrag gelesen und schließe ihn elektronisch ab.</label>
@@ -384,7 +385,7 @@ export function startIsfpAnfrage({ session, service, form, doneEl, postJson, fil
   function showVollmacht() {
     form.innerHTML = `
       <p class="steps">Schritt 3 von 3 · Vollmacht BAFA (EBW)</p>
-      <p class="hint">Vollmachtgeber = Ihre Personendaten. Bevollmächtigter = Ingenieurbüro Spaderna.</p>
+      <p class="hint">Vollmachtgeber = Ihre Personendaten. Bevollmächtigter = Ingenieurbüro Spaderna. Die Unterschrift wird in das originale BAFA-PDF übernommen.</p>
       <div id="vollmacht-preview" class="doc-preview">${renderVollmachtHtml(payload, { at: nowStamp() })}</div>
       <label class="check"><input type="checkbox" id="acceptVollmacht" required /> Ich erteile die Vollmacht elektronisch und stimme der Datenweitergabe an das BAFA zu.</label>
       ${signPanel('sign-vollmacht', 'Unterschrift Vollmachtgeber')}
@@ -410,11 +411,27 @@ export function startIsfpAnfrage({ session, service, form, doneEl, postJson, fil
     }
     payload.vollmachtSignAt = nowStamp();
     payload.vollmachtSignImage = vollmachtPad.toDataURL();
-    localMsg.className = 'msg';
-    localMsg.textContent = 'Wird gesendet …';
     button.disabled = true;
+    localMsg.className = 'msg';
+    localMsg.textContent = 'Vertrag und Vollmacht werden als PDF erzeugt …';
     try {
       const honor = honorForUnits(payload.anzahlWE);
+      const pdfFiles = await fillIsfpPdfs(payload);
+      for (const pdf of pdfFiles) {
+        const uploaded = await postJson('inquiryFile', {
+          sessionToken: session.token,
+          name: pdf.name,
+          mimeType: 'application/pdf',
+          category: pdf.category,
+          contentBase64: pdf.base64,
+        });
+        files.push({
+          name: pdf.name,
+          label: pdf.label,
+          url: uploaded.downloadUrl || uploaded.fileUrl,
+        });
+      }
+      localMsg.textContent = 'Wird gesendet …';
       const answers = { ...payload, objekt: objectLine(payload), honorTyp: honor.typ, honorGesamt: honor.gesamt };
       delete answers.vertragSignImage;
       delete answers.vollmachtSignImage;
