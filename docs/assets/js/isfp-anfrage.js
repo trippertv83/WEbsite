@@ -1,8 +1,8 @@
 import { attachSignPad, stripDataUrl } from './sign-pad.js';
 import { honorForUnits, objectLine, personLine, renderVertragHtml, renderVollmachtHtml } from './isfp-docs.js';
 import { fillIsfpPdfs } from './isfp-pdf.js';
-import { enrichLueftung } from './lueftung-bogen.js';
-import { renderLueftungKonzeptHtml } from './lueftung-konzept.js';
+import { enrichLueftung } from './lueftung-bogen.js?v=20260905f';
+import { renderLueftungKonzeptHtml } from './lueftung-konzept.js?v=20260905f';
 import { exportPdfWithLetterhead } from './print-brief.js?v=20260905e';
 
 const MASSNAHMEN = [
