@@ -27,7 +27,7 @@
         background: var(--bg);
       }
       main {
-        max-width: 720px;
+        max-width: 800px;
         margin: 0 auto;
         padding: 1.5rem 1rem 3rem;
       }
@@ -85,6 +85,54 @@
       .done { display: none; }
       .done.is-on { display: block; }
       form.is-off { display: none; }
+      fieldset {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        margin: 1rem 0;
+        padding: 0.75rem 1rem 1rem;
+      }
+      legend { font-weight: 700; color: var(--heading); padding: 0 0.35rem; }
+      .check {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        font-weight: 500;
+        margin: 0.45rem 0;
+      }
+      .check input { width: auto; margin-top: 0.2rem; }
+      .yesno { display: flex; gap: 1rem; }
+      .steps { font-weight: 700; color: var(--blue); margin: 0 0 0.8rem; }
+      .doc-preview {
+        max-height: 420px;
+        overflow: auto;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 1rem;
+        background: #fafbfc;
+        margin: 0.75rem 0;
+      }
+      .legal-doc h2 { margin-top: 0; font-size: 1.15rem; }
+      .legal-doc h3 { font-size: 1rem; }
+      .sign-wrap canvas {
+        display: block;
+        width: 100%;
+        max-width: 640px;
+        height: 180px;
+        border: 1px dashed var(--line);
+        border-radius: 8px;
+        background: #fff;
+        touch-action: none;
+      }
+      .sign-img { display: block; max-width: 280px; height: auto; background: #fff; }
+      button.ghost {
+        background: #fff;
+        color: var(--blue);
+        border: 1px solid var(--blue);
+        margin-top: 0.5rem;
+        width: auto;
+        padding: 0.4rem 0.8rem;
+        min-height: 40px;
+      }
     </style>
   </head>
   <body>
@@ -129,6 +177,7 @@
     <script type="module">
       import { serviceById, API_BASE } from './assets/js/services.js';
       import { loadSession, clearSession } from './assets/js/session.js';
+      import { startIsfpAnfrage } from './assets/js/isfp-anfrage.js';
 
       const session = loadSession();
       if (!session || !session.token) {
@@ -141,10 +190,57 @@
       const form = document.getElementById('form');
       const msg = document.getElementById('msg');
 
+      function val(idName) {
+        const el = document.getElementById(idName);
+        return el ? String(el.value || '').trim() : '';
+      }
+
+      function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const text = String(reader.result || '');
+            const comma = text.indexOf(',');
+            resolve(comma >= 0 ? text.slice(comma + 1) : text);
+          };
+          reader.onerror = () => reject(new Error('Datei konnte nicht gelesen werden.'));
+          reader.readAsDataURL(file);
+        });
+      }
+
+      async function postJson(path, payload) {
+        const res = await fetch(API_BASE + '/' + path, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const text = await res.text();
+        let data = {};
+        try { data = text ? JSON.parse(text) : {}; } catch { data = { error: text }; }
+        if (!res.ok) {
+          if (res.status === 401) {
+            clearSession();
+            throw new Error('Bitte zuerst als Kunde anmelden.');
+          }
+          throw new Error(data.error || 'Serverfehler ' + res.status);
+        }
+        return data;
+      }
+
       if (!service || service.cta !== 'form') {
         document.getElementById('titel').textContent = 'Leistung nicht gefunden';
         form.innerHTML =
           '<p>Bitte gehen Sie zurück zur Übersicht und wählen Sie eine Leistung.</p>';
+      } else if (service.id === 'isfp') {
+        document.title = 'Anfrage: ' + service.titel;
+        startIsfpAnfrage({
+          session,
+          service,
+          form,
+          doneEl: document.getElementById('done'),
+          postJson,
+          fileToBase64,
+        });
       } else {
         document.title = 'Anfrage: ' + service.titel;
         document.getElementById('titel').textContent = service.titel;
@@ -202,43 +298,7 @@
           .join('');
       }
 
-      function val(idName) {
-        const el = document.getElementById(idName);
-        return el ? String(el.value || '').trim() : '';
-      }
-
-      function fileToBase64(file) {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            const text = String(reader.result || '');
-            const comma = text.indexOf(',');
-            resolve(comma >= 0 ? text.slice(comma + 1) : text);
-          };
-          reader.onerror = () => reject(new Error('Datei konnte nicht gelesen werden.'));
-          reader.readAsDataURL(file);
-        });
-      }
-
-      async function postJson(path, payload) {
-        const res = await fetch(API_BASE + '/' + path, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        const text = await res.text();
-        let data = {};
-        try { data = text ? JSON.parse(text) : {}; } catch { data = { error: text }; }
-        if (!res.ok) {
-          if (res.status === 401) {
-            clearSession();
-            throw new Error('Bitte zuerst als Kunde anmelden.');
-          }
-          throw new Error(data.error || 'Serverfehler ' + res.status);
-        }
-        return data;
-      }
-
+      if (service && service.cta === 'form' && service.id !== 'isfp') {
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
         if (!service) return;
@@ -303,6 +363,7 @@
           button.disabled = false;
         }
       });
+      }
       }
     </script>
   </body>

@@ -442,6 +442,11 @@ export async function sendServiceInquiryEmail(body = {}) {
   const contact = body.contact || {};
   const answers = body.answers || {};
   const files = Array.isArray(body.files) ? body.files : [];
+  const skip = new Set(['vertragHtml', 'vollmachtHtml', 'vertragSignImage', 'vollmachtSignImage']);
+  const answerHtml = Object.entries(answers)
+    .filter(([key, value]) => !skip.has(key) && value != null && String(value) !== '')
+    .map(([key, value]) => `<li>${escapeHtml(key)}: ${escapeHtml(String(value))}</li>`)
+    .join('');
   const fileHtml = files
     .map((file) => {
       const label = file.label || file.name || 'Datei';
@@ -468,20 +473,27 @@ ${body.customerNumber ? ` · Nr. ${escapeHtml(body.customerNumber)}` : ''}</p>
 <li>Adresse: ${escapeHtml(contact.adresse || '')}</li>
 </ul>
 <h3>Erfassung</h3>
-<ul>
-<li>Gebäudetyp: ${escapeHtml(answers.gebaeudetyp || '')}</li>
-<li>Baujahr: ${escapeHtml(answers.baujahr || '')}</li>
-<li>Fläche: ${escapeHtml(answers.wohnflaeche || '')}</li>
-<li>Heizung: ${escapeHtml(answers.heizung || '')}</li>
-</ul>
+<ul>${answerHtml || '<li>keine weiteren Angaben</li>'}</ul>
+${body.docsHtml?.vertrag ? `<h3>Vertrag (ausgefüllt, e-signiert)</h3>${body.docsHtml.vertrag}` : ''}
+${body.docsHtml?.vollmacht ? `<h3>Vollmacht (ausgefüllt, e-signiert)</h3>${body.docsHtml.vollmacht}` : ''}
 <p>${escapeHtml(answers.nachricht || '')}</p>
 <h3>Dateien</h3>
 <ul>${fileHtml || '<li>keine</li>'}</ul>`;
   const text = `${subject}
 ${contact.name} ${contact.email} ${contact.phone}
 ${contact.ort} ${contact.adresse}
-${answers.gebaeudetyp} ${answers.baujahr} ${answers.wohnflaeche} ${answers.heizung}
-${answers.nachricht || ''}
+${Object.entries(answers)
+    .filter(([key, value]) => !skip.has(key) && value != null && String(value) !== '')
+    .map(([key, value]) => `${key}: ${value}`)
+    .join('\n')}
 ${fileText}`;
-  return sendViaHttpMail({ to: adminEmail, subject, html, text, attachments: [] });
+  const signatures = body.signatures || {};
+  const attachments = [];
+  if (signatures.vertrag) {
+    attachments.push({ name: 'unterschrift-vertrag.png', contentBase64: signatures.vertrag });
+  }
+  if (signatures.vollmacht) {
+    attachments.push({ name: 'unterschrift-vollmacht.png', contentBase64: signatures.vollmacht });
+  }
+  return sendViaHttpMail({ to: adminEmail, subject, html, text, attachments });
 }

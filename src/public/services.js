@@ -15,10 +15,9 @@ export const SERVICES = [
     cta: 'form',
     bedarfTitel: 'Für das Angebot benötigen wir',
     bedarf: [
+      'Online-Erfassungsbogen (Datenblatt)',
+      'Elektronische Unterschrift Vertrag und Vollmacht',
       'Pläne, Grundrisse und Schnitte',
-      'Unterschriebenen Vertrag',
-      'Ausgefüllten Erfassungsbogen',
-      'Vollmacht zur Antragstellung',
     ],
   },
   {
