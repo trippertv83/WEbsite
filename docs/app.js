@@ -3,10 +3,10 @@
  */
 
 import { AppConfig } from './config.example.js';
-import { getState, patch, serializeForBackend } from './assets/js/state.js';
+import { getState, patch, patchCustomer, patchBuilding, serializeForBackend } from './assets/js/state.js';
 import { createOrderNumber, qs, showToast } from './assets/js/utils.js';
 import { bindStepper, renderStepper, showStep } from './assets/js/wizard.js';
-import { bindRegister } from './assets/js/step-register.js?v=20260901c';
+import { bindRegister, showWizard } from './assets/js/step-register.js?v=20260905a';
 import { bindBuildingLive, validateStepBuilding } from './assets/js/step-building.js';
 import {
   bindConsumption,
@@ -21,6 +21,7 @@ import { renderPreview } from './assets/js/step-preview.js';
 import { renderOrder, validateStepOrder } from './assets/js/step-order.js';
 import { addCertificateToCart, getProductId, isPlaceholderProductId } from './assets/js/checkout.js';
 import { submitOrder } from './assets/js/api-client.js';
+import { loadSession } from './assets/js/session.js';
 
 function canEnterStep(target) {
   if (!getState().registered) return false;
@@ -115,6 +116,40 @@ function bindNav() {
 }
 
 function init() {
+  const session = loadSession();
+  const next = new URLSearchParams(location.search).get('next');
+  if (next) {
+    location.replace('kunde.html' + location.search);
+    return;
+  }
+  if (!session) {
+    location.replace('kunde.html?next=' + encodeURIComponent('index.html'));
+    return;
+  }
+  patchCustomer({
+    name: session.name || '',
+    email: session.email || '',
+    phone: session.phone || '',
+    strasse: session.strasse || '',
+    hausnummer: session.hausnummer || '',
+    plz: session.plz || '',
+    ort: session.ort || '',
+    customerType: session.customerType || '',
+    companyName: session.companyName || '',
+    firstName: session.firstName || '',
+    lastName: session.lastName || '',
+    sevdeskCustomerId: session.sevdeskCustomerId || null,
+    customerNumber: session.customerNumber || null,
+  });
+  patch({ registered: true });
+  if (session.plz || session.ort || session.strasse) {
+    patchBuilding({
+      plz: session.plz || '',
+      ort: session.ort || '',
+      strasse: session.strasse || '',
+      hausnummer: session.hausnummer || '',
+    });
+  }
   bindRegister();
   renderStepper();
   bindStepper(canEnterStep, (step) => enterStep(step));
@@ -122,7 +157,12 @@ function init() {
   bindConsumption();
   bindDocuments();
   bindNav();
+  showWizard();
   showStep(1);
+  ['plz', 'ort', 'strasse', 'hausnummer'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el && session[id] && !el.value) el.value = session[id];
+  });
 }
 
 init();

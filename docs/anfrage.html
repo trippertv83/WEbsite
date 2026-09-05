@@ -133,7 +133,7 @@
       const session = loadSession();
       if (!session || !session.token) {
         const next = encodeURIComponent(location.pathname + location.search);
-        location.replace('index.html?next=' + next);
+        location.replace('kunde.html?next=' + next);
       } else {
 
       const id = new URLSearchParams(location.search).get('id');
@@ -154,8 +154,18 @@
         if (session) {
           const nameEl = document.getElementById('name');
           const emailEl = document.getElementById('email');
+          const phoneEl = document.getElementById('phone');
+          const ortEl = document.getElementById('ort');
+          const adresseEl = document.getElementById('adresse');
           if (nameEl && session.name) nameEl.value = session.name;
           if (emailEl && session.email) emailEl.value = session.email;
+          if (phoneEl && session.phone) phoneEl.value = session.phone;
+          if (ortEl && (session.plz || session.ort)) {
+            ortEl.value = [session.plz, session.ort].filter(Boolean).join(' ');
+          }
+          if (adresseEl && (session.strasse || session.hausnummer)) {
+            adresseEl.value = [session.strasse, session.hausnummer].filter(Boolean).join(' ');
+          }
         }
 
         const bogen = document.getElementById('bogen');

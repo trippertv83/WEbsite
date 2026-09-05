@@ -6,7 +6,7 @@
 
 import { SERVICES } from 'public/services';
 
-const URL = 'https://trippertv83.github.io/WEbsite/leistungen.html?v=20260903k';
+const URL = 'https://trippertv83.github.io/WEbsite/leistungen.html?v=20260905a';
 
 function exists(id) {
   try {

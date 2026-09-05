@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kunde anlegen | Ingenieurbüro Spaderna</title>
+    <link rel="stylesheet" href="style.css?v=20260905a" />
+    <style>
+      .ask-actions {
+        display: grid;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+      }
+      @media (min-width: 640px) {
+        .ask-actions { grid-template-columns: 1fr 1fr; }
+      }
+      .ask-actions .btn { width: 100%; }
+      .btn--ghost {
+        background: #fff;
+        color: #1c222b;
+        border: 1px solid #d5dbe3;
+      }
+    </style>
+  </head>
+  <body class="is-register-only">
+    <a class="skip-link" href="#main">Zum Inhalt springen</a>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <span class="brand">
+          <span class="brand__mark" aria-hidden="true">IS</span>
+          <span>
+            <span class="brand__name">Ingenieurbüro Spaderna</span>
+            <span class="brand__tag">Kunde anlegen, danach Erfassung</span>
+          </span>
+        </span>
+      </div>
+    </header>
+
+    <main id="main" style="max-width: 760px; margin: 0 auto; padding: 1.25rem 1rem 3rem">
+      <section class="card" id="customer-ask">
+        <div class="panel__head">
+          <div>
+            <h1 tabindex="-1">Sind Sie bereits Kunde?</h1>
+            <p>
+              Dieser Schritt ist bei jeder Anfrage gleich. Erst danach geht es zum
+              jeweiligen Erfassungsbogen. Ihre personenbezogenen Daten können später
+              wiederverwendet werden.
+            </p>
+          </div>
+        </div>
+        <div class="ask-actions">
+          <button class="btn btn--primary" type="button" id="ask-yes">Ja, ich bin Kunde</button>
+          <button class="btn btn--ghost" type="button" id="ask-no">Nein, ich lege mich neu an</button>
+        </div>
+      </section>
+
+      <section class="card register-gate" id="register-gate" hidden>
+        <div class="panel__head">
+          <div>
+            <h1 tabindex="-1">Kundenkonto</h1>
+            <p id="register-lead">Bitte Angaben ergänzen.</p>
+          </div>
+        </div>
+        <p>
+          <button class="btn btn--ghost" type="button" id="ask-back">Zurück zur Auswahl</button>
+        </p>
+        <div class="choice-group" role="radiogroup" aria-label="Anmeldeart" style="margin-bottom: 1rem" hidden>
+          <label class="choice">
+            <input type="radio" name="authMode" id="auth-mode-register" value="register" checked />
+            <span>Neuer Kunde</span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="authMode" id="auth-mode-login" value="login" />
+            <span>Ich bin schon Kunde</span>
+          </label>
+        </div>
+        <p id="register-alert" class="notice notice--error" hidden role="alert"></p>
+        <form id="form-register" novalidate>
+          <div id="register-new-fields">
+          <div class="field">
+            <span class="field__label" id="party-label">Ich bin</span>
+            <div class="choice-group" role="radiogroup" aria-labelledby="party-label">
+              <label class="choice">
+                <input type="radio" name="customerType" value="firma" />
+                <span>Firma</span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="customerType" value="herr" />
+                <span>Herr</span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="customerType" value="frau" />
+                <span>Frau</span>
+              </label>
+            </div>
+            <span class="field__error" data-error-for="customerType"></span>
+          </div>
+          <div id="company-name-fields" hidden>
+            <div class="field" style="margin-top: 1rem">
+              <label class="field__label" for="reg-companyName">Firmenname</label>
+              <input class="input" id="reg-companyName" name="companyName" autocomplete="organization" />
+              <span class="field__error" data-error-for="companyName"></span>
+            </div>
+            <div id="contact-person-fields" style="margin-top: 1rem">
+              <p class="field__label">Ansprechpartner</p>
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field__label" for="reg-contactFirst">Vorname</label>
+                  <input class="input" id="reg-contactFirst" name="contactFirstName" autocomplete="given-name" />
+                  <span class="field__error" data-error-for="contactFirstName"></span>
+                </div>
+                <div class="field">
+                  <label class="field__label" for="reg-contactLast">Nachname</label>
+                  <input class="input" id="reg-contactLast" name="contactLastName" autocomplete="family-name" />
+                  <span class="field__error" data-error-for="contactLastName"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="person-name-fields" class="grid-2" style="margin-top: 1rem" hidden>
+            <div class="field">
+              <label class="field__label" for="reg-firstName">Vorname</label>
+              <input class="input" id="reg-firstName" name="firstName" autocomplete="given-name" />
+              <span class="field__error" data-error-for="firstName"></span>
+            </div>
+            <div class="field">
+              <label class="field__label" for="reg-lastName">Nachname</label>
+              <input class="input" id="reg-lastName" name="lastName" autocomplete="family-name" />
+              <span class="field__error" data-error-for="lastName"></span>
+            </div>
+          </div>
+          <div class="grid-3" style="margin-top: 1rem">
+            <div class="field">
+              <label class="field__label" for="reg-strasse">Straße</label>
+              <input class="input" id="reg-strasse" name="strasse" required autocomplete="address-line1" />
+              <span class="field__error" data-error-for="strasse"></span>
+            </div>
+            <div class="field">
+              <label class="field__label" for="reg-hausnummer">Hausnummer</label>
+              <input class="input" id="reg-hausnummer" name="hausnummer" required autocomplete="address-line2" />
+              <span class="field__error" data-error-for="hausnummer"></span>
+            </div>
+            <div class="field">
+              <label class="field__label" for="reg-plz">PLZ</label>
+              <input class="input" id="reg-plz" name="plz" inputmode="numeric" maxlength="5" required autocomplete="postal-code" />
+              <span class="field__error" data-error-for="plz"></span>
+            </div>
+          </div>
+          <div class="field" style="margin-top: 1rem">
+            <label class="field__label" for="reg-ort">Ort</label>
+            <input class="input" id="reg-ort" name="ort" required autocomplete="address-level2" />
+            <span class="field__error" data-error-for="ort"></span>
+          </div>
+          </div>
+          <div class="field" style="margin-top: 1rem">
+            <label class="field__label" for="reg-email">E-Mail</label>
+            <input class="input" id="reg-email" name="email" type="email" required autocomplete="email" />
+            <span class="field__error" data-error-for="email"></span>
+          </div>
+          <div class="field" style="margin-top: 1rem" id="register-phone-field">
+            <label class="field__label" for="reg-phone">Telefon</label>
+            <input class="input" id="reg-phone" name="phone" type="tel" required autocomplete="tel" placeholder="z. B. 0171 1234567" />
+            <span class="field__hint">Wird für Rückfragen und nach SevDesk übernommen.</span>
+            <span class="field__error" data-error-for="phone"></span>
+          </div>
+          <div class="legal" id="register-consent">
+            <label class="checkbox">
+              <input type="checkbox" id="accept-register-privacy" name="acceptRegisterPrivacy" />
+              <span>
+                Ich willige ein, dass meine Angaben zur Kundenanlage in SevDesk
+                verarbeitet werden.
+              </span>
+            </label>
+            <span class="field__error" data-error-for="acceptRegisterPrivacy"></span>
+          </div>
+          <div id="code-block">
+            <div id="code-fields" class="field" style="margin-top: 1rem">
+              <label class="field__label" for="reg-code">Bestätigungscode aus der E-Mail</label>
+              <input class="input" id="reg-code" name="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" />
+              <span class="field__hint">Erst nach der Bestätigung geht es zur Erfassung.</span>
+              <span class="field__error" data-error-for="code"></span>
+            </div>
+            <div class="btn-row" style="margin-top: 1rem">
+              <button class="btn" type="button" id="btn-send-code">Code an E-Mail senden</button>
+            </div>
+          </div>
+        </form>
+        <div class="btn-row">
+          <button class="btn btn--primary" type="button" id="btn-register">
+            Code bestätigen und weiter
+          </button>
+        </div>
+      </section>
+    </main>
+    <script type="module">
+      import { bindRegister } from './assets/js/step-register.js?v=20260905a';
+      bindRegister();
+    </script>
+  </body>
+</html>

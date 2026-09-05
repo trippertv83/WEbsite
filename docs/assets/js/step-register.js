@@ -6,7 +6,7 @@ import { getState, patch, patchCustomer } from './state.js';
 import { validateLogin, validateRegistration, isEmpty } from './validation.js';
 import { clearFormErrors, qs, setFieldError, showToast } from './utils.js';
 import { registerCustomer, requestRegisterCode } from './api-client.js';
-import { saveSession, safeNextPath } from './session.js';
+import { loadSession, saveSession, safeNextPath } from './session.js';
 
 function currentMode() {
   return qs('#auth-mode-login')?.checked ? 'login' : 'register';
@@ -70,8 +70,12 @@ export function applyRegisterErrors(errors) {
 
 export function showWizard() {
   document.body.classList.remove('is-register-only');
-  qs('#register-gate').hidden = true;
-  qs('#wizard-app').hidden = false;
+  const gate = qs('#register-gate');
+  const ask = qs('#customer-ask');
+  const app = qs('#wizard-app');
+  if (gate) gate.hidden = true;
+  if (ask) ask.hidden = true;
+  if (app) app.hidden = false;
   patch({ registered: true });
 }
 
@@ -81,7 +85,35 @@ function continueAfterAuth() {
     location.assign(next);
     return;
   }
-  showWizard();
+  if (qs('#wizard-app')) {
+    showWizard();
+    return;
+  }
+  location.assign('index.html');
+}
+
+function showAsk() {
+  const ask = qs('#customer-ask');
+  const gate = qs('#register-gate');
+  if (!ask || !gate) return;
+  ask.hidden = false;
+  gate.hidden = true;
+}
+
+function chooseCustomer(isExisting) {
+  const ask = qs('#customer-ask');
+  const gate = qs('#register-gate');
+  if (ask) ask.hidden = true;
+  if (gate) gate.hidden = false;
+  const login = qs('#auth-mode-login');
+  const neu = qs('#auth-mode-register');
+  if (isExisting && login) login.checked = true;
+  if (!isExisting && neu) neu.checked = true;
+  const session = loadSession();
+  if (isExisting && session?.email && qs('#reg-email')) {
+    qs('#reg-email').value = session.email;
+  }
+  syncModeUi();
 }
 
 function syncPartyUi() {
@@ -169,7 +201,12 @@ export async function submitRegistration() {
   setAlert(mode === 'login' ? 'Kunde wird gesucht…' : 'Code wird geprüft…', 'ok');
   try {
     const result = await registerCustomer(customer, mode, code);
-    saveSession(result);
+    saveSession({
+      ...result,
+      ...customer,
+      customerName: result.customerName || customer.name,
+      email: result.email || customer.email,
+    });
     patchCustomer({
       sevdeskCustomerId: result.sevdeskCustomerId || null,
       customerNumber: result.customerNumber || customer.customerNumber || null,
@@ -194,13 +231,39 @@ export async function submitRegistration() {
 }
 
 export function bindRegister() {
-  qs('#form-register').addEventListener('input', () => readRegisterForm());
-  qs('#auth-mode-register').addEventListener('change', syncModeUi);
-  qs('#auth-mode-login').addEventListener('change', syncModeUi);
-  qs('#form-register').addEventListener('change', (event) => {
+  qs('#form-register')?.addEventListener('input', () => readRegisterForm());
+  qs('#auth-mode-register')?.addEventListener('change', syncModeUi);
+  qs('#auth-mode-login')?.addEventListener('change', syncModeUi);
+  qs('#form-register')?.addEventListener('change', (event) => {
     if (event.target.name === 'customerType') syncPartyUi();
   });
-  qs('#btn-send-code').addEventListener('click', () => sendCode());
-  qs('#btn-register').addEventListener('click', () => submitRegistration());
-  syncModeUi();
+  qs('#btn-send-code')?.addEventListener('click', () => sendCode());
+  qs('#btn-register')?.addEventListener('click', () => submitRegistration());
+  qs('#ask-yes')?.addEventListener('click', () => chooseCustomer(true));
+  qs('#ask-no')?.addEventListener('click', () => chooseCustomer(false));
+  qs('#ask-back')?.addEventListener('click', () => showAsk());
+  if (qs('#customer-ask')) showAsk();
+  else syncModeUi();
+}
+
+export function resumeIfLoggedIn() {
+  const session = loadSession();
+  if (!session) return false;
+  patchCustomer({
+    name: session.name || '',
+    email: session.email || '',
+    phone: session.phone || '',
+    strasse: session.strasse || '',
+    hausnummer: session.hausnummer || '',
+    plz: session.plz || '',
+    ort: session.ort || '',
+    customerType: session.customerType || '',
+    companyName: session.companyName || '',
+    firstName: session.firstName || '',
+    lastName: session.lastName || '',
+    sevdeskCustomerId: session.sevdeskCustomerId || null,
+    customerNumber: session.customerNumber || null,
+  });
+  continueAfterAuth();
+  return true;
 }

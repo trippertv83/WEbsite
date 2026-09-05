@@ -5,6 +5,7 @@
 
 export const WIZARD_URL = 'index.html';
 export const ANFRAGE_URL = 'anfrage.html';
+export const AUTH_URL = 'kunde.html';
 export const PHONE_TEL = '+4995732225410';
 export const PHONE_LABEL = '09573 2225410';
 export const API_BASE = 'https://energieberater4.wixsite.com/dieterspaderna/_functions';
