@@ -399,16 +399,30 @@ function sanitize(name) {
   return String(name).replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 120);
 }
 
+function mediaOptionsFor(fileName, mimeType) {
+  const name = String(fileName || '').toLowerCase();
+  const mime = String(mimeType || '').toLowerCase();
+  if (/\.(png|jpe?g|gif|webp)$/.test(name) || mime.startsWith('image/')) {
+    const ext = (name.match(/\.(png|jpe?g|gif|webp)$/) || [])[1] || 'png';
+    const jpeg = ext === 'jpg' || ext === 'jpeg';
+    return {
+      mimeType: mime.startsWith('image/') ? mime : jpeg ? 'image/jpeg' : `image/${ext}`,
+      mediaType: 'image',
+    };
+  }
+  return {
+    mimeType: mime || 'application/pdf',
+    mediaType: 'document',
+  };
+}
+
 export async function uploadInquiryFile(file = {}) {
   if (!file.contentBase64) throw new Error('Datei fehlt.');
   const folder = `/anfragen/${Date.now().toString(36)}`;
   const fileName = sanitize(file.name) || 'dokument.pdf';
   const buffer = Buffer.from(file.contentBase64, 'base64');
   const uploaded = await mediaManager.upload(folder, buffer, fileName, {
-    mediaOptions: {
-      mimeType: file.mimeType || 'application/pdf',
-      mediaType: 'document',
-    },
+    mediaOptions: mediaOptionsFor(fileName, file.mimeType),
     metadataOptions: {
       isPrivate: true,
       isVisitorUpload: false,
