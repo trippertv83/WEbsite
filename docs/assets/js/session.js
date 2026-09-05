@@ -53,7 +53,8 @@ export function safeNextPath() {
   const next = new URLSearchParams(location.search).get('next');
   if (!next) return '';
   try {
-    const url = new URL(next, location.origin);
+    const base = location.origin + location.pathname.replace(/[^/]+$/, '');
+    const url = new URL(next, base);
     if (url.origin !== location.origin) return '';
     if (!ALLOWED_NEXT.test(url.pathname)) return '';
     return url.pathname + url.search;
