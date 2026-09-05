@@ -442,9 +442,9 @@ export async function sendServiceInquiryEmail(body = {}) {
   const contact = body.contact || {};
   const answers = body.answers || {};
   const files = Array.isArray(body.files) ? body.files : [];
-  const skip = new Set(['vertragHtml', 'vollmachtHtml', 'vertragSignImage', 'vollmachtSignImage']);
+  const skip = new Set(['vertragHtml', 'vollmachtHtml', 'vertragSignImage', 'vollmachtSignImage', 'wohnungen']);
   const answerHtml = Object.entries(answers)
-    .filter(([key, value]) => !skip.has(key) && value != null && String(value) !== '')
+    .filter(([key, value]) => !skip.has(key) && value != null && typeof value !== 'object' && String(value) !== '')
     .map(([key, value]) => `<li>${escapeHtml(key)}: ${escapeHtml(String(value))}</li>`)
     .join('');
   const fileHtml = files
@@ -483,7 +483,7 @@ ${body.docsHtml?.vollmacht ? `<h3>Vollmacht (ausgefüllt, e-signiert)</h3>${body
 ${contact.name} ${contact.email} ${contact.phone}
 ${contact.ort} ${contact.adresse}
 ${Object.entries(answers)
-    .filter(([key, value]) => !skip.has(key) && value != null && String(value) !== '')
+    .filter(([key, value]) => !skip.has(key) && value != null && typeof value !== 'object' && String(value) !== '')
     .map(([key, value]) => `${key}: ${value}`)
     .join('\n')}
 ${fileText}`;

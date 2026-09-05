@@ -1,6 +1,9 @@
 import { attachSignPad, stripDataUrl } from './sign-pad.js';
 import { honorForUnits, objectLine, personLine, renderVertragHtml, renderVollmachtHtml } from './isfp-docs.js';
 import { fillIsfpPdfs } from './isfp-pdf.js';
+import { bindLueftungForm, collectWohnungen, lueftungFieldsetHtml, validateLueftung } from './lueftung-bogen.js';
+import { renderLueftungKonzeptHtml } from './lueftung-konzept.js';
+import { exportPdfWithLetterhead } from './print-brief.js?v=20260905e';
 
 const MASSNAHMEN = [
   ['fenster', 'Austausch der Fenster'],
@@ -207,10 +210,6 @@ function bogenHtml(session) {
       </div>
       <div class="row">
         <div>
-          <label for="wohnflaecheWE">Beheizte Wohnfläche je Wohnung (m²)</label>
-          <input id="wohnflaecheWE" required inputmode="decimal" />
-        </div>
-        <div>
           <label for="anzahlWE">Anzahl der Wohneinheiten</label>
           <input id="anzahlWE" required inputmode="numeric" value="1" />
         </div>
@@ -235,6 +234,7 @@ function bogenHtml(session) {
       <label for="sanierungBisher">Bereits durchgeführte Sanierungsmaßnahmen</label>
       <textarea id="sanierungBisher"></textarea>
     </fieldset>
+    ${lueftungFieldsetHtml()}
     <fieldset>
       <legend>Erklärungen</legend>
       <label class="check"><input type="checkbox" id="erklDoppelt" required /> Ich beantrage keine doppelte Förderung für dieselbe Maßnahme und verstehe, dass die Förderquote max. 60 % beträgt. Eine steuerliche Förderung nach § 35c EStG kann ausgeschlossen sein. Parallel kein KfW-Antrag auf dieselben Kosten.</label>
@@ -251,6 +251,10 @@ function bogenHtml(session) {
 }
 
 function collectBogen() {
+  const wohnungen = collectWohnungen();
+  const wohnflaecheWE = wohnungen
+    .map((unit) => Number(String(unit.flaeche).replace(',', '.')) || 0)
+    .reduce((sum, n) => sum + n, 0);
   return {
     anrede: val('anrede'),
     firma: val('firma'),
@@ -279,13 +283,21 @@ function collectBogen() {
     bauAntrag: val('bauAntrag'),
     denkmal: radio('denkmal'),
     wohnen: radio('wohnen'),
-    wohnflaecheWE: val('wohnflaecheWE'),
+    wohnflaecheWE: String(wohnflaecheWE),
     anzahlWE: val('anzahlWE'),
     weGeschosse: radio('weGeschosse'),
     foerderungBeantragt: radio('foerderungBeantragt'),
     foerderungText: val('foerderungText'),
     isfpVorhanden: radio('isfpVorhanden'),
     sanierungBisher: val('sanierungBisher'),
+    lueftungEigentuemer: val('lueftungEigentuemer'),
+    lueftungErsteller: val('lueftungErsteller'),
+    lueftungDatum: val('lueftungDatum'),
+    gebaeudeStatus: val('gebaeudeStatus'),
+    gebaeudeartLueftung: val('gebaeudeartLueftung'),
+    windzone: val('windzone'),
+    abluftGebaeude: radio('abluftGebaeude'),
+    wohnungen,
     nachricht: val('nachricht'),
   };
 }
@@ -313,6 +325,7 @@ export function startIsfpAnfrage({ session, service, form, doneEl, postJson, fil
         `<input id="file-${item.key}" type="file" accept="application/pdf,.pdf" data-key="${item.key}" data-label="${item.label}" />`
     )
     .join('');
+  bindLueftungForm(session);
 
   let payload = null;
   let files = [];
@@ -413,10 +426,20 @@ export function startIsfpAnfrage({ session, service, form, doneEl, postJson, fil
     payload.vollmachtSignImage = vollmachtPad.toDataURL();
     button.disabled = true;
     localMsg.className = 'msg';
-    localMsg.textContent = 'Vertrag und Vollmacht werden als PDF erzeugt …';
+      localMsg.textContent = 'Vertrag, Vollmacht und Lüftungskonzept werden als PDF erzeugt …';
     try {
       const honor = honorForUnits(payload.anzahlWE);
       const pdfFiles = await fillIsfpPdfs(payload);
+      const luftPdf = await exportPdfWithLetterhead(
+        renderLueftungKonzeptHtml(payload),
+        'FS-Lueftungskonzept-DIN1946-6.pdf'
+      );
+      pdfFiles.push({
+        name: luftPdf.name,
+        label: 'FS Lüftungskonzept DIN 1946-6 (nur Büro)',
+        category: 'lueftungskonzept',
+        base64: luftPdf.contentBase64,
+      });
       for (const pdf of pdfFiles) {
         const uploaded = await postJson('inquiryFile', {
           sessionToken: session.token,
@@ -433,6 +456,10 @@ export function startIsfpAnfrage({ session, service, form, doneEl, postJson, fil
       }
       localMsg.textContent = 'Wird gesendet …';
       const answers = { ...payload, objekt: objectLine(payload), honorTyp: honor.typ, honorGesamt: honor.gesamt };
+      answers.wohnungenText = (payload.wohnungen || [])
+        .map((unit) => `${unit.name}: ${unit.flaeche} m², ${unit.belegung}, ${unit.typ}`)
+        .join('; ');
+      delete answers.wohnungen;
       delete answers.vertragSignImage;
       delete answers.vollmachtSignImage;
       await postJson('serviceInquiry', {
@@ -467,7 +494,7 @@ export function startIsfpAnfrage({ session, service, form, doneEl, postJson, fil
       form.classList.add('is-off');
       doneEl.classList.add('is-on');
       doneEl.innerHTML =
-        '<p>Vielen Dank. Erfassungsbogen, unterschriebener Vertrag und Vollmacht wurden an uns gesendet. Wir melden uns.</p>';
+        '<p>Vielen Dank. Erfassungsbogen, unterschriebener Vertrag, Vollmacht und das FS-Lüftungskonzept wurden an das Ingenieurbüro Spaderna gesendet.</p>';
     } catch (error) {
       localMsg.className = 'msg err';
       localMsg.textContent = error.message || 'Senden fehlgeschlagen.';
@@ -484,6 +511,7 @@ export function startIsfpAnfrage({ session, service, form, doneEl, postJson, fil
     button.disabled = true;
     try {
       payload = collectBogen();
+      validateLueftung(payload.wohnungen);
       files = await uploadFiles();
       showVertrag();
     } catch (error) {

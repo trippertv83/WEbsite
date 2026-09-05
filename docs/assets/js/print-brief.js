@@ -114,7 +114,7 @@ function stampKopf(pdf, kopfH) {
   }
 }
 
-export async function printWithLetterhead(bodyHtml, filename = 'Spaderna.pdf') {
+async function buildPdfWithLetterhead(bodyHtml, options = {}) {
   await loadPdfLibs();
   window.scrollTo(0, 0);
   const css = document.createElement('style');
@@ -177,12 +177,30 @@ export async function printWithLetterhead(bodyHtml, filename = 'Spaderna.pdf') {
       pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', m.left, m.top, m.contentWmm, m.contentHmm);
     }
     stampKopf(pdf, m.kopfH);
-    pdf.save(filename);
+    return pdf;
   } catch (err) {
-    window.alert('PDF konnte nicht erzeugt werden. Bitte Seite neu laden und erneut versuchen.');
+    if (!options.silent) {
+      window.alert('PDF konnte nicht erzeugt werden. Bitte Seite neu laden und erneut versuchen.');
+    }
     throw err;
   } finally {
     mount.remove();
     css.remove();
   }
+}
+
+export async function printWithLetterhead(bodyHtml, filename = 'Spaderna.pdf') {
+  const pdf = await buildPdfWithLetterhead(bodyHtml);
+  pdf.save(filename);
+}
+
+export async function exportPdfWithLetterhead(bodyHtml, filename = 'Spaderna.pdf') {
+  const pdf = await buildPdfWithLetterhead(bodyHtml, { silent: true });
+  const uri = pdf.output('datauristring');
+  const comma = uri.indexOf(',');
+  return {
+    name: filename,
+    mimeType: 'application/pdf',
+    contentBase64: comma >= 0 ? uri.slice(comma + 1) : uri,
+  };
 }
