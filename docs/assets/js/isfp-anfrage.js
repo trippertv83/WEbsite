@@ -1,7 +1,7 @@
 import { attachSignPad, stripDataUrl } from './sign-pad.js';
 import { honorForUnits, objectLine, personLine, renderVertragHtml, renderVollmachtHtml } from './isfp-docs.js';
 import { fillIsfpPdfs } from './isfp-pdf.js';
-import { bindLueftungForm, collectWohnungen, lueftungFieldsetHtml, validateLueftung } from './lueftung-bogen.js';
+import { bindLueftungForm, collectWohnungen, enrichLueftung, lueftungFieldsetHtml, validateLueftung } from './lueftung-bogen.js';
 import { renderLueftungKonzeptHtml } from './lueftung-konzept.js';
 import { exportPdfWithLetterhead } from './print-brief.js?v=20260905e';
 
@@ -255,7 +255,7 @@ function collectBogen() {
   const wohnflaecheWE = wohnungen
     .map((unit) => Number(String(unit.flaeche).replace(',', '.')) || 0)
     .reduce((sum, n) => sum + n, 0);
-  return {
+  return enrichLueftung({
     anrede: val('anrede'),
     firma: val('firma'),
     firstName: val('firstName'),
@@ -290,16 +290,9 @@ function collectBogen() {
     foerderungText: val('foerderungText'),
     isfpVorhanden: radio('isfpVorhanden'),
     sanierungBisher: val('sanierungBisher'),
-    lueftungEigentuemer: val('lueftungEigentuemer'),
-    lueftungErsteller: val('lueftungErsteller'),
-    lueftungDatum: val('lueftungDatum'),
-    gebaeudeStatus: val('gebaeudeStatus'),
-    gebaeudeartLueftung: val('gebaeudeartLueftung'),
-    windzone: val('windzone'),
-    abluftGebaeude: radio('abluftGebaeude'),
     wohnungen,
     nachricht: val('nachricht'),
-  };
+  });
 }
 
 function signPanel(id, title) {
@@ -325,7 +318,7 @@ export function startIsfpAnfrage({ session, service, form, doneEl, postJson, fil
         `<input id="file-${item.key}" type="file" accept="application/pdf,.pdf" data-key="${item.key}" data-label="${item.label}" />`
     )
     .join('');
-  bindLueftungForm(session);
+  bindLueftungForm();
 
   let payload = null;
   let files = [];

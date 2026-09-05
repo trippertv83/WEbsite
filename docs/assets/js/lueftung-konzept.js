@@ -49,8 +49,7 @@ export function renderLueftungKonzeptHtml(data) {
           <h3>${esc(unit.name || 'Nutzungseinheit')}</h3>
           <table>
             <tr><th>Wohnfläche</th><td>${esc(unit.flaeche)} m²</td></tr>
-            <tr><th>Belegungsdichte</th><td>${esc(unit.belegung)}</td></tr>
-            <tr><th>Personen</th><td>${esc(unit.personen || '—')}</td></tr>
+            <tr><th>Belegungsdichte</th><td>hoch (Ansatz)</td></tr>
             <tr><th>Wohnungstyp</th><td>${esc(unit.typ)}</td></tr>
             <tr><th>Fensterlose Räume</th><td>${esc(unit.fensterlos)}</td></tr>
             <tr><th>Ventilatorgestützte Abluft</th><td>${esc(unit.abluft)}</td></tr>
@@ -77,7 +76,7 @@ export function renderLueftungKonzeptHtml(data) {
           <tr><th>Neubau / Bestand</th><td>${esc(data.gebaeudeStatus === 'neubau' ? 'Neubau' : 'Bestandsgebäude')}</td></tr>
           <tr><th>Baujahr</th><td>${esc(data.baujahr)}</td></tr>
           <tr><th>Gebäudeart</th><td>${esc(data.gebaeudeartLueftung)}</td></tr>
-          <tr><th>Windzone</th><td>${esc(data.windzone)}</td></tr>
+          <tr><th>Windzone</th><td>${esc(data.windzone)}${data.windzoneHinweis ? ' · ' + esc(data.windzoneHinweis) : ''}</td></tr>
           <tr><th>Abluftanlagen Gebäude</th><td>${esc(data.abluftGebaeude)}</td></tr>
           <tr><th>Anzahl Nutzungseinheiten</th><td>${esc(data.anzahlWE)}</td></tr>
           <tr><th>Geplante Maßnahmen</th><td>${esc(data.massnahmen || '—')}</td></tr>
