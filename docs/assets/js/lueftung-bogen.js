@@ -56,9 +56,20 @@ function wohnungstypFromArt(art) {
 
 function unitsFromForm(data) {
   const count = Math.min(Math.max(Number(data.anzahlWE) || 1, 1), 40);
-  const flaeche = String(data.wohnflaecheWE || '').trim();
   const art = gebaeudeartFromWe(count);
   const typ = wohnungstypFromArt(art);
+  if (Array.isArray(data.wohnungen) && data.wohnungen.length) {
+    return data.wohnungen.map((unit, i) => ({
+      name: unit.name || 'Wohnung ' + (i + 1),
+      flaeche: String(unit.flaeche || '').trim(),
+      belegung: 'hoch',
+      typ,
+      personen: '',
+      fensterlos: unit.fensterlos === 'ja' ? 'ja' : 'nein',
+      abluft: 'keine',
+    }));
+  }
+  const flaeche = String(data.wohnflaecheWE || '').trim();
   return Array.from({ length: count }, (_, i) => ({
     name: 'Wohnung ' + (i + 1),
     flaeche,
@@ -68,6 +79,69 @@ function unitsFromForm(data) {
     fensterlos: 'nein',
     abluft: 'keine',
   }));
+}
+
+function weCount() {
+  const n = parseInt(document.getElementById('anzahlWE')?.value, 10);
+  return Number.isFinite(n) && n > 0 ? Math.min(n, 40) : 1;
+}
+
+function readWeRow(index) {
+  return {
+    name: 'Wohnung ' + (index + 1),
+    flaeche: String(document.getElementById('we-flaeche-' + index)?.value || '').trim(),
+    fensterlos: document.querySelector(`input[name="we-fensterlos-${index}"]:checked`)?.value || '',
+  };
+}
+
+function weRowHtml(index, preset = {}) {
+  const n = index + 1;
+  return `
+    <div class="we-card" data-we="${index}">
+      <p><b>Wohnung ${n}</b></p>
+      <label for="we-flaeche-${index}">Beheizte Wohnfläche (m²)</label>
+      <input id="we-flaeche-${index}" required inputmode="decimal" value="${String(preset.flaeche || '').replace(/"/g, '&quot;')}" />
+      <p>Fensterlose Räume in dieser Wohnung?</p>
+      <div class="yesno">
+        <label class="check"><input type="radio" name="we-fensterlos-${index}" value="nein" required ${preset.fensterlos !== 'ja' ? 'checked' : ''} /> Nein</label>
+        <label class="check"><input type="radio" name="we-fensterlos-${index}" value="ja" ${preset.fensterlos === 'ja' ? 'checked' : ''} /> Ja</label>
+      </div>
+    </div>`;
+}
+
+export function renderWeFlaechen() {
+  const list = document.getElementById('we-flaechen');
+  if (!list) return;
+  const count = weCount();
+  const prev = [];
+  list.querySelectorAll('.we-card').forEach((_, i) => prev.push(readWeRow(i)));
+  list.innerHTML = Array.from({ length: count }, (_, i) => weRowHtml(i, prev[i])).join('');
+}
+
+export function bindWeFlaechen() {
+  document.getElementById('anzahlWE')?.addEventListener('input', renderWeFlaechen);
+  document.getElementById('anzahlWE')?.addEventListener('change', renderWeFlaechen);
+  renderWeFlaechen();
+}
+
+export function collectWeFlaechen() {
+  const count = weCount();
+  const units = [];
+  for (let i = 0; i < count; i += 1) units.push(readWeRow(i));
+  return units;
+}
+
+export function validateWeFlaechen(units) {
+  if (!units.length) throw new Error('Bitte die Anzahl der Wohneinheiten angeben.');
+  units.forEach((unit, i) => {
+    const area = Number(String(unit.flaeche).replace(',', '.'));
+    if (!unit.flaeche || !Number.isFinite(area) || area <= 0) {
+      throw new Error('Bitte die Wohnfläche für Wohnung ' + (i + 1) + ' eintragen.');
+    }
+    if (!unit.fensterlos) {
+      throw new Error('Bitte angeben, ob in Wohnung ' + (i + 1) + ' fensterlose Räume vorhanden sind.');
+    }
+  });
 }
 
 export function enrichLueftung(data) {

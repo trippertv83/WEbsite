@@ -1,8 +1,8 @@
 import { attachSignPad, stripDataUrl } from './sign-pad.js';
 import { honorForUnits, objectLine, personLine, renderVertragHtml, renderVollmachtHtml } from './isfp-docs.js';
 import { fillIsfpPdfs } from './isfp-pdf.js';
-import { enrichLueftung } from './lueftung-bogen.js?v=20260905f';
-import { renderLueftungKonzeptHtml } from './lueftung-konzept.js?v=20260905f';
+import { bindWeFlaechen, collectWeFlaechen, enrichLueftung, validateWeFlaechen } from './lueftung-bogen.js?v=20260905g';
+import { renderLueftungKonzeptHtml } from './lueftung-konzept.js?v=20260905g';
 import { exportPdfWithLetterhead } from './print-brief.js?v=20260905e';
 
 const MASSNAHMEN = [
@@ -208,16 +208,9 @@ function bogenHtml(session) {
         <label class="check"><input type="radio" name="wohnen" value="ja" required /> Ja</label>
         <label class="check"><input type="radio" name="wohnen" value="nein" /> Nein</label>
       </div>
-      <div class="row">
-        <div>
-          <label for="wohnflaecheWE">Beheizte Wohnfläche je Wohnung (m²)</label>
-          <input id="wohnflaecheWE" required inputmode="decimal" />
-        </div>
-        <div>
-          <label for="anzahlWE">Anzahl der Wohneinheiten</label>
-          <input id="anzahlWE" required inputmode="numeric" value="1" />
-        </div>
-      </div>
+      <label for="anzahlWE">Anzahl der Wohneinheiten</label>
+      <input id="anzahlWE" required inputmode="numeric" value="1" />
+      <div id="we-flaechen"></div>
       <p>Wohneinheiten über mehrere Geschosse?</p>
       <div class="yesno">
         <label class="check"><input type="radio" name="weGeschosse" value="nein" required /> Nein</label>
@@ -254,6 +247,9 @@ function bogenHtml(session) {
 }
 
 function collectBogen() {
+  const wohnungen = collectWeFlaechen();
+  validateWeFlaechen(wohnungen);
+  const wohnflaecheWE = wohnungen[0] ? wohnungen[0].flaeche : '';
   return enrichLueftung({
     anrede: val('anrede'),
     firma: val('firma'),
@@ -282,13 +278,14 @@ function collectBogen() {
     bauAntrag: val('bauAntrag'),
     denkmal: radio('denkmal'),
     wohnen: radio('wohnen'),
-    wohnflaecheWE: val('wohnflaecheWE'),
+    wohnflaecheWE,
     anzahlWE: val('anzahlWE'),
     weGeschosse: radio('weGeschosse'),
     foerderungBeantragt: radio('foerderungBeantragt'),
     foerderungText: val('foerderungText'),
     isfpVorhanden: radio('isfpVorhanden'),
     sanierungBisher: val('sanierungBisher'),
+    wohnungen,
     nachricht: val('nachricht'),
   });
 }
@@ -316,6 +313,7 @@ export function startIsfpAnfrage({ session, service, form, doneEl, postJson, fil
         `<input id="file-${item.key}" type="file" accept="application/pdf,.pdf" data-key="${item.key}" data-label="${item.label}" />`
     )
     .join('');
+  bindWeFlaechen();
 
   let payload = null;
   let files = [];

@@ -123,7 +123,14 @@
         background: #fff;
         touch-action: none;
       }
-      .sign-img { display: block; max-width: 280px; height: auto; background: #fff; }
+      .we-card {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 0.75rem 0.85rem;
+        margin: 0.65rem 0;
+        background: #fafbfc;
+      }
+      .we-card p { margin: 0.35rem 0 0.45rem; }
       button.ghost {
         background: #fff;
         color: var(--blue);
@@ -177,7 +184,7 @@
     <script type="module">
       import { serviceById, API_BASE } from './assets/js/services.js';
       import { loadSession, clearSession, gateUrl } from './assets/js/session.js?v=20260905d';
-      import { startIsfpAnfrage } from './assets/js/isfp-anfrage.js?v=20260905f';
+      import { startIsfpAnfrage } from './assets/js/isfp-anfrage.js?v=20260905g';
 
       const session = loadSession();
       if (!session || !session.token) {
