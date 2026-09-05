@@ -243,7 +243,7 @@ function bogenHtml(session) {
     <label for="nachricht">Nachricht <span class="hint">(optional)</span></label>
     <textarea id="nachricht" placeholder="Kurz das Vorhaben beschreiben"></textarea>
     <div id="uploads"></div>
-    <p class="hint">PDF, JPG oder PNG, max. 4 MB je Datei. Vertrag und Vollmacht unterschreiben Sie im nächsten Schritt auf dieser Seite.</p>
+    <p class="hint">Nur PDF, max. 4 MB je Datei. Vertrag und Vollmacht unterschreiben Sie im nächsten Schritt auf dieser Seite.</p>
     <button type="submit" id="send">Erfassungsbogen senden</button>
     <p class="msg" id="msg"></p>
   `;
@@ -309,7 +309,7 @@ export function startIsfpAnfrage({ session, service, form, doneEl, postJson, fil
     .map(
       (item) =>
         `<label for="file-${item.key}">${item.label} <span class="hint">(Datei)</span></label>` +
-        `<input id="file-${item.key}" type="file" accept=".pdf,.jpg,.jpeg,.png,.zip" data-key="${item.key}" data-label="${item.label}" />`
+        `<input id="file-${item.key}" type="file" accept="application/pdf,.pdf" data-key="${item.key}" data-label="${item.label}" />`
     )
     .join('');
 
@@ -324,6 +324,7 @@ export function startIsfpAnfrage({ session, service, form, doneEl, postJson, fil
     for (const input of inputs) {
       const file = input.files && input.files[0];
       if (!file) continue;
+      if (!/\.pdf$/i.test(file.name)) throw new Error(file.name + ': bitte nur PDF hochladen.');
       if (file.size > 4 * 1024 * 1024) throw new Error(file.name + ' ist größer als 4 MB.');
       const uploaded = await postJson('inquiryFile', {
         sessionToken: session.token,

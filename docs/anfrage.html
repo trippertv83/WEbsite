@@ -166,7 +166,7 @@
         <label for="nachricht">Nachricht</label>
         <textarea id="nachricht" name="nachricht" placeholder="Kurz das Vorhaben beschreiben"></textarea>
         <div id="uploads"></div>
-        <p class="hint">PDF, JPG oder PNG, max. 4 MB je Datei. Die Unterlagen gehen direkt per E-Mail an uns.</p>
+        <p class="hint">Nur PDF, max. 4 MB je Datei. Die Unterlagen gehen direkt per E-Mail an uns.</p>
         <button type="submit" id="send">Anfrage senden</button>
         <p class="msg" id="msg"></p>
       </form>
@@ -287,7 +287,7 @@
               ' <span class="hint">(Datei)</span></label>' +
               '<input id="file-' +
               item.key +
-              '" type="file" accept=".pdf,.jpg,.jpeg,.png,.zip" data-key="' +
+              '" type="file" accept="application/pdf,.pdf" data-key="' +
               item.key +
               '" data-label="' +
               item.label +
@@ -311,6 +311,9 @@
           for (const input of inputs) {
             const file = input.files && input.files[0];
             if (!file) continue;
+            if (!/\.pdf$/i.test(file.name)) {
+              throw new Error(file.name + ': bitte nur PDF hochladen.');
+            }
             if (file.size > 4 * 1024 * 1024) {
               throw new Error(file.name + ' ist größer als 4 MB.');
             }
