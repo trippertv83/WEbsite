@@ -6,7 +6,7 @@ import { AppConfig } from './config.example.js';
 import { getState, patch, patchCustomer, patchBuilding, serializeForBackend } from './assets/js/state.js';
 import { createOrderNumber, qs, showToast } from './assets/js/utils.js';
 import { bindStepper, renderStepper, showStep } from './assets/js/wizard.js';
-import { bindRegister, showWizard } from './assets/js/step-register.js?v=20260905c';
+import { bindRegister, showWizard } from './assets/js/step-register.js?v=20260905d';
 import { bindBuildingLive, validateStepBuilding } from './assets/js/step-building.js';
 import {
   bindConsumption,
@@ -21,7 +21,7 @@ import { renderPreview } from './assets/js/step-preview.js';
 import { renderOrder, validateStepOrder } from './assets/js/step-order.js';
 import { addCertificateToCart, getProductId, isPlaceholderProductId } from './assets/js/checkout.js';
 import { submitOrder } from './assets/js/api-client.js';
-import { loadSession } from './assets/js/session.js';
+import { gateUrl, loadSession } from './assets/js/session.js?v=20260905d';
 
 function canEnterStep(target) {
   if (!getState().registered) return false;
@@ -119,11 +119,11 @@ function init() {
   const session = loadSession();
   const next = new URLSearchParams(location.search).get('next');
   if (next) {
-    location.replace('kunde.html' + location.search);
+    location.replace(gateUrl(next));
     return;
   }
   if (!session) {
-    location.replace('kunde.html?next=' + encodeURIComponent('index.html'));
+    location.replace(gateUrl('index.html'));
     return;
   }
   patchCustomer({

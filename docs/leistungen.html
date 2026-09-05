@@ -127,7 +127,8 @@
   <body>
     <div class="grid" id="grid"></div>
     <script type="module">
-      import { SERVICES, ANFRAGE_URL, WIZARD_URL, PHONE_TEL, AUTH_URL } from './assets/js/services.js?v=20260905b';
+      import { SERVICES, ANFRAGE_URL, WIZARD_URL, PHONE_TEL } from './assets/js/services.js?v=20260905d';
+      import { gateUrl } from './assets/js/session.js?v=20260905d';
 
       let items = SERVICES;
 
@@ -182,7 +183,7 @@
           item.cta === 'wizard'
             ? WIZARD_URL
             : ANFRAGE_URL + '?id=' + encodeURIComponent(item.id);
-        return AUTH_URL + '?next=' + encodeURIComponent(dest);
+        return gateUrl(dest);
       }
 
       function render() {

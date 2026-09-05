@@ -176,13 +176,12 @@
     </main>
     <script type="module">
       import { serviceById, API_BASE } from './assets/js/services.js';
-      import { loadSession, clearSession } from './assets/js/session.js';
+      import { loadSession, clearSession, gateUrl } from './assets/js/session.js?v=20260905d';
       import { startIsfpAnfrage } from './assets/js/isfp-anfrage.js';
 
       const session = loadSession();
       if (!session || !session.token) {
-        const next = encodeURIComponent(location.pathname + location.search);
-        location.replace('kunde.html?next=' + next);
+        location.replace(gateUrl('anfrage.html' + location.search));
       } else {
 
       const id = new URLSearchParams(location.search).get('id');

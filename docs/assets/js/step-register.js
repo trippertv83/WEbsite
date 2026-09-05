@@ -6,7 +6,7 @@ import { getState, patch, patchCustomer } from './state.js';
 import { validateLogin, validateRegistration, isEmpty } from './validation.js';
 import { clearFormErrors, qs, setFieldError, showToast } from './utils.js';
 import { registerCustomer, requestRegisterCode } from './api-client.js';
-import { loadSession, saveSession, safeNextPath } from './session.js?v=20260905c';
+import { loadSession, saveSession, safeNextPath } from './session.js?v=20260905d';
 
 function currentMode() {
   return qs('#auth-mode-login')?.checked ? 'login' : 'register';
