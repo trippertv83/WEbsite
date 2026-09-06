@@ -45,10 +45,10 @@
 
 .info-pop {
   position: absolute;
-  left: 50%;
+  left: 0;
   bottom: calc(100% + 10px);
-  transform: translateX(-50%);
-  width: min(320px, 78vw);
+  transform: none;
+  width: min(280px, calc(100vw - 2.5rem));
   padding: 0.7rem 0.85rem;
   background: #fff;
   color: var(--color-text);
@@ -71,9 +71,9 @@
 .info-pop::after {
   content: '';
   position: absolute;
-  left: 50%;
+  left: 0.85rem;
   top: 100%;
-  transform: translateX(-50%);
+  transform: none;
   border: 7px solid transparent;
   border-top-color: #fff;
 }
@@ -186,6 +186,7 @@
 
 .choice {
   position: relative;
+  min-width: 0;
 }
 
 .choice input {
@@ -217,6 +218,8 @@
   position: relative;
   display: flex;
   width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
   min-height: 58px;
   padding: 0.85rem 2.6rem 0.85rem 1rem;
   border-radius: var(--radius-md);
@@ -356,7 +359,13 @@
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 960px) {
+  .grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
   .grid-2,
   .grid-3 {
     grid-template-columns: 1fr;

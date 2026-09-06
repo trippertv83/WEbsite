@@ -1,8 +1,16 @@
+html {
+  overflow-x: clip;
+}
+
+body {
+  overflow-x: clip;
+}
+
 .site-header {
   position: sticky;
   top: 0;
   z-index: 20;
-  height: var(--header-h);
+  min-height: var(--header-h);
   display: flex;
   align-items: center;
   background: var(--color-surface);
@@ -10,12 +18,15 @@
 }
 
 .site-header__inner {
-  width: min(100% - 2rem, var(--max-width));
+  width: 100%;
+  max-width: var(--max-width);
   margin: 0 auto;
+  padding: 0.75rem 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
+  flex-wrap: wrap;
 }
 
 .brand {
@@ -24,6 +35,7 @@
   gap: 0.75rem;
   color: inherit;
   text-decoration: none;
+  min-width: 0;
 }
 
 .brand__mark {
@@ -36,6 +48,7 @@
   place-items: center;
   font-weight: 700;
   letter-spacing: 0.02em;
+  flex: 0 0 auto;
 }
 
 .brand__name {
@@ -50,16 +63,25 @@
   font-weight: 400;
 }
 
+#wizard-app {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
 #main {
-  width: min(100% - 2rem, var(--max-width));
+  width: 100%;
+  max-width: var(--max-width);
   margin: var(--space-6) auto var(--space-8);
+  padding: 0 1.25rem;
 }
 
 .site-main {
   display: grid;
-  grid-template-columns: 250px minmax(0, 1fr);
-  gap: var(--space-6);
+  grid-template-columns: minmax(0, 17.5rem) minmax(0, 1fr);
+  gap: var(--space-5);
   align-items: start;
+  min-width: 0;
 }
 
 [hidden] {
@@ -74,8 +96,10 @@
 }
 
 .site-footer__inner {
-  width: min(100% - 2rem, var(--max-width));
+  width: 100%;
+  max-width: var(--max-width);
   margin: 0 auto;
+  padding: 0 1.25rem;
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-4);
@@ -97,12 +121,13 @@
   top: 1rem;
 }
 
-body.is-register-only .site-main {
-  grid-template-columns: 1fr;
+body.is-register-only #wizard-app,
+body.is-register-only .stepper {
+  display: none !important;
 }
 
-body.is-register-only .stepper {
-  display: none;
+body.is-register-only .site-main {
+  grid-template-columns: 1fr;
 }
 
 .register-gate {
@@ -124,8 +149,10 @@ body.is-register-only .stepper {
 }
 
 .legal-fold {
-  width: min(100% - 2rem, var(--max-width));
+  width: 100%;
+  max-width: var(--max-width);
   margin: 0 auto 1rem;
+  padding: 0 1.25rem;
 }
 
 .legal-fold summary {
@@ -134,7 +161,7 @@ body.is-register-only .stepper {
   padding: 0.75rem 0;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .site-main {
     grid-template-columns: 1fr;
   }

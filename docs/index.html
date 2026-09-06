@@ -8,7 +8,7 @@
       content="Verbrauchsausweis für Wohngebäude online erstellen und bestellen."
     />
     <title>Verbrauchsausweis bestellen | Energieausweis Pro</title>
-    <link rel="stylesheet" href="style.css?v=20260906a" />
+    <link rel="stylesheet" href="style.css?v=20260906b" />
   </head>
   <body class="is-register-only">
     <a class="skip-link" href="#main">Zum Inhalt springen</a>
@@ -163,12 +163,7 @@
         </div>
       </section>
 
-      <div id="wizard-app" class="site-main" hidden>
-      <nav class="stepper card" aria-label="Bestellschritte">
-        <ol class="stepper__list" id="stepper-list"></ol>
-      </nav>
-
-      <div class="wizard-body">
+      <div id="wizard-app" hidden>
         <div class="wizard-progress">
           <div class="wizard-progress__meta">
             <span id="progress-step-label">Schritt 1 von 6</span>
@@ -185,6 +180,68 @@
             <span id="progress-fill"></span>
           </div>
         </div>
+        <div class="site-main">
+      <nav class="stepper card" aria-label="Bestellschritte">
+        <p class="stepper__heading">Übersicht</p>
+        <ol class="stepper__list" id="stepper-list">
+          <li class="stepper__item is-current">
+            <button type="button" data-goto="1" aria-current="step">
+              <span class="stepper__num">1</span>
+              <span>
+                <span class="stepper__kicker">Schritt 1</span>
+                <span class="stepper__title">Objektdaten</span>
+              </span>
+            </button>
+          </li>
+          <li class="stepper__item">
+            <button type="button" data-goto="2" disabled>
+              <span class="stepper__num">2</span>
+              <span>
+                <span class="stepper__kicker">Schritt 2</span>
+                <span class="stepper__title">Wärmeverbrauch</span>
+              </span>
+            </button>
+          </li>
+          <li class="stepper__item">
+            <button type="button" data-goto="3" disabled>
+              <span class="stepper__num">3</span>
+              <span>
+                <span class="stepper__kicker">Schritt 3</span>
+                <span class="stepper__title">Leerstand &amp; Energienutzung</span>
+              </span>
+            </button>
+          </li>
+          <li class="stepper__item">
+            <button type="button" data-goto="4" disabled>
+              <span class="stepper__num">4</span>
+              <span>
+                <span class="stepper__kicker">Schritt 4</span>
+                <span class="stepper__title">Bauteile</span>
+              </span>
+            </button>
+          </li>
+          <li class="stepper__item">
+            <button type="button" data-goto="5" disabled>
+              <span class="stepper__num">5</span>
+              <span>
+                <span class="stepper__kicker">Schritt 5</span>
+                <span class="stepper__title">Ausweisübersicht</span>
+              </span>
+            </button>
+          </li>
+          <li class="stepper__item">
+            <button type="button" data-goto="6" disabled>
+              <span class="stepper__num">6</span>
+              <span>
+                <span class="stepper__kicker">Schritt 6</span>
+                <span class="stepper__title">Abrechnung &amp; Lieferung</span>
+              </span>
+            </button>
+          </li>
+        </ol>
+      </nav>
+
+      <div class="wizard-body">
         <section class="panel" id="step-1" data-step="1">
           <div class="panel__head">
             <div>
@@ -701,6 +758,7 @@
         </section>
       </div>
       </div>
+      </div>
     </main>
 
     <section id="agb" class="card legal-fold">
@@ -838,6 +896,6 @@
       </div>
     </dialog>
     <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
-    <script type="module" src="app.js?v=20260906a"></script>
+    <script type="module" src="app.js?v=20260906b"></script>
   </body>
 </html>

@@ -45,6 +45,7 @@ function updateProgress(step) {
 
 export function renderStepper() {
   const list = qs('#stepper-list');
+  if (!list) return;
   const { step, maxReached } = getState();
   list.innerHTML = STEPS.map((item) => {
     const current = item.id === step ? 'is-current' : '';
@@ -79,7 +80,9 @@ export function showStep(step) {
 }
 
 export function bindStepper(canEnterStep, onEnter) {
-  qs('#stepper-list').addEventListener('click', (event) => {
+  const list = qs('#stepper-list');
+  if (!list) return;
+  list.addEventListener('click', (event) => {
     const btn = event.target.closest('[data-goto]');
     if (!btn || btn.disabled) return;
     const next = Number(btn.dataset.goto);
