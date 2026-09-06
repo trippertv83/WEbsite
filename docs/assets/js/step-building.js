@@ -113,6 +113,10 @@ export function applyBuildingErrors(errors) {
     const field = form.elements[name];
     if (field && typeof field.setAttribute === 'function') {
       field.setAttribute('aria-invalid', 'true');
+    } else {
+      [...form.querySelectorAll(`[name="${CSS.escape(name)}"]`)].forEach((el) => {
+        el.setAttribute('aria-invalid', 'true');
+      });
     }
     setFieldError(form, name, message);
   });

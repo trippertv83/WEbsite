@@ -163,7 +163,7 @@ export function renderCarriers() {
   const grid = qs('#carrier-grid');
   const selected = getState().consumption.energietraeger;
   grid.innerHTML = ENERGY_CARRIERS.map(
-    (c) => `<label class="choice">
+    (c) => `<label class="choice choice-card">
       <input type="radio" name="energietraeger" value="${c.id}" ${
         c.id === selected ? 'checked' : ''
       } />
@@ -195,13 +195,20 @@ export function renderPeriodCards() {
       <h3>${period.label}</h3>
       <div class="grid-3">
         <div class="field">
-          <label class="field__label" for="c-${index}">Verbrauch (${consumption.unit || 'kWh'})</label>
+          <div class="label-line">
+            <label class="field__label" for="c-${index}"><span class="req" aria-hidden="true">*</span>Jahresverbrauch (${consumption.unit || 'kWh'})</label>
+            ${
+              index === 0
+                ? `<button type="button" class="info-btn" aria-label="Hinweis zum Verbrauch" aria-expanded="false">i<span class="info-pop" role="tooltip">Tragen Sie den Jahresverbrauch des ganzen Gebäudes ein – keine Monatswerte und nicht nur eine Wohnung. Punkt als Tausendertrennzeichen und Komma als Dezimalzeichen werden erkannt.</span></button>`
+                : ''
+            }
+          </div>
           <input class="input" id="c-${index}" type="number" min="0.01" step="0.01"
             value="${period.consumption}" data-period="${index}" data-field="consumption" required />
           <span class="field__error" data-error-for="period-${index}-consumption"></span>
         </div>
         <div class="field">
-          <label class="field__label" for="v-${index}">Leerstand %</label>
+          <label class="field__label" for="v-${index}"><span class="req" aria-hidden="true">*</span>Leerstand %</label>
           <input class="input" id="v-${index}" type="number" min="0" max="99.9" step="0.1"
             value="${period.vacancy}" data-period="${index}" data-field="vacancy" required />
           <span class="field__error" data-error-for="period-${index}-vacancy"></span>
@@ -285,11 +292,17 @@ function renderUnitHint() {
     bar.style.marginTop = '1rem';
     qs('#form-consumption').insertBefore(bar, qs('#lager-open-wrap') || qs('#periods-container'));
   }
-  bar.innerHTML = `<span class="field__label">Einheit</span>
-    <div class="choice-group" role="radiogroup" aria-label="Einheit">
+  bar.innerHTML = `<div class="label-line">
+      <span class="field__label" id="unit-label"><span class="req" aria-hidden="true">*</span>Einheit</span>
+      <button type="button" class="info-btn" aria-label="Hinweis zur Einheit" aria-expanded="false">
+        i
+        <span class="info-pop" role="tooltip">Verwenden Sie dieselbe Einheit wie auf der Rechnung. Bei Erdgas in kWh kann zusätzlich der Brennwert (Hs) oder Heizwert (Hi) relevant sein.</span>
+      </button>
+    </div>
+    <div class="choice-group" role="radiogroup" aria-labelledby="unit-label">
       ${carrier.units
         .map(
-          (u) => `<label class="choice">
+          (u) => `<label class="choice choice-card" style="flex:1;min-width:7rem">
             <input type="radio" name="unit" value="${u.id}" ${
               u.id === consumption.unit ? 'checked' : ''
             } />

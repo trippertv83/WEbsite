@@ -1,6 +1,52 @@
+.wizard-body {
+  min-width: 0;
+  display: grid;
+  gap: var(--space-5);
+}
+
+.wizard-progress {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 1.1rem 1.25rem;
+}
+
+.wizard-progress__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: baseline;
+  margin-bottom: 0.7rem;
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+.wizard-progress__meta span:last-child {
+  color: var(--color-blue);
+  font-size: 0.92rem;
+}
+
+.wizard-progress__bar {
+  height: 10px;
+  background: #e7eef4;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.wizard-progress__bar > span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #2a7ab0, var(--color-blue));
+  border-radius: inherit;
+  transition: width 0.45s ease;
+}
+
 .stepper {
   position: sticky;
   top: calc(var(--header-h) + 1rem);
+  padding: 1.1rem 0.85rem;
 }
 
 .stepper__list {
@@ -8,22 +54,34 @@
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.4rem;
+  gap: 0.25rem;
 }
 
 .stepper__item button {
   width: 100%;
   text-align: left;
   display: grid;
-  grid-template-columns: 2rem 1fr;
+  grid-template-columns: 2.35rem 1fr;
   gap: 0.75rem;
   align-items: center;
   background: transparent;
   border: 0;
-  padding: 0.7rem 0.4rem;
+  padding: 0.7rem 0.55rem;
   border-radius: var(--radius-md);
   color: var(--color-text-soft);
   cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.stepper__item button:hover:not(:disabled) {
+  background: var(--color-blue-soft);
+}
+
+.stepper__item button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .stepper__item.is-done button,
@@ -31,15 +89,23 @@
   color: var(--color-heading);
 }
 
+.stepper__item.is-current button {
+  background: var(--color-blue-soft);
+}
+
 .stepper__num {
-  width: 2rem;
-  height: 2rem;
+  width: 2.35rem;
+  height: 2.35rem;
   border-radius: 50%;
-  border: 1px solid var(--color-line);
+  border: 1.5px solid var(--color-line);
   display: grid;
   place-items: center;
-  font-size: 0.85rem;
-  font-weight: 700;
+  color: var(--color-text-soft);
+}
+
+.stepper__num svg {
+  width: 1.1rem;
+  height: 1.1rem;
 }
 
 .stepper__item.is-current .stepper__num {
@@ -49,13 +115,29 @@
 }
 
 .stepper__item.is-done .stepper__num {
-  background: var(--color-ok);
-  border-color: var(--color-ok);
+  background: var(--color-blue);
+  border-color: var(--color-blue);
   color: #fff;
 }
 
+.stepper__kicker {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+}
+
+.stepper__item.is-current .stepper__kicker,
+.stepper__item.is-done .stepper__kicker {
+  color: var(--color-blue);
+}
+
 .stepper__title {
-  font-weight: 600;
+  display: block;
+  font-weight: 700;
+  line-height: 1.25;
 }
 
 .stepper__sub {
@@ -69,40 +151,64 @@
   display: none;
 }
 
-.panel__head {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: var(--space-3);
-  margin-bottom: var(--space-5);
+.panel {
+  display: grid;
+  gap: var(--space-5);
 }
 
 .panel__head h1 {
-  margin: 0 0 0.35rem;
-  font-size: 1.6rem;
+  margin: 0 0 0.4rem;
+  font-size: clamp(1.55rem, 2.4vw, 2rem);
+  letter-spacing: -0.02em;
   color: var(--color-heading);
 }
 
 .panel__head p {
   margin: 0;
   color: var(--color-text-soft);
+  max-width: 42rem;
+}
+
+.block-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 1.4rem 1.45rem 1.55rem;
+}
+
+.block-card h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.2rem;
+  color: var(--color-heading);
+}
+
+.block-card__lead {
+  margin: 0 0 1.2rem;
+  color: var(--color-text-soft);
+  font-size: 0.95rem;
+}
+
+.block-card + .block-card {
+  margin-top: 0;
 }
 
 @media (max-width: 900px) {
   .stepper {
     position: static;
+    padding: 0.75rem;
   }
 
   .stepper__list {
     display: flex;
     overflow-x: auto;
-    gap: 0.25rem;
-    padding-bottom: 0.5rem;
+    gap: 0.2rem;
+    padding-bottom: 0.35rem;
   }
 
   .stepper__item button {
-    min-width: 140px;
-    grid-template-columns: 1.7rem 1fr;
+    min-width: 168px;
+    grid-template-columns: 2rem 1fr;
   }
 
   .stepper__sub {

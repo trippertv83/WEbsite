@@ -8,7 +8,7 @@
       content="Verbrauchsausweis für Wohngebäude online erstellen und bestellen."
     />
     <title>Verbrauchsausweis bestellen | Energieausweis Pro</title>
-    <link rel="stylesheet" href="style.css?v=20260903i" />
+    <link rel="stylesheet" href="style.css?v=20260906a" />
   </head>
   <body class="is-register-only">
     <a class="skip-link" href="#main">Zum Inhalt springen</a>
@@ -168,40 +168,65 @@
         <ol class="stepper__list" id="stepper-list"></ol>
       </nav>
 
-      <div>
-        <section class="panel card" id="step-1" data-step="1">
+      <div class="wizard-body">
+        <div class="wizard-progress">
+          <div class="wizard-progress__meta">
+            <span id="progress-step-label">Schritt 1 von 6</span>
+            <span id="progress-pct">17 % abgeschlossen</span>
+          </div>
+          <div
+            class="wizard-progress__bar"
+            id="wizard-progress-bar"
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="17"
+          >
+            <span id="progress-fill"></span>
+          </div>
+        </div>
+        <section class="panel" id="step-1" data-step="1">
           <div class="panel__head">
             <div>
-              <h1 tabindex="-1">Gebäudedaten</h1>
-              <p>Adresse und wesentliche Eigenschaften des Wohngebäudes.</p>
+              <h1 tabindex="-1">Objektdaten</h1>
+              <p>Adresse, Gebäudeart und die wichtigsten Merkmale Ihres Wohngebäudes.</p>
             </div>
           </div>
           <form id="form-building" novalidate>
+            <div class="block-card">
+              <h2>Adresse &amp; Fläche</h2>
+              <p class="block-card__lead">Bitte tragen Sie die Angaben so ein, wie sie in Ihren Unterlagen stehen.</p>
             <div class="grid-3">
               <div class="field">
-                <label class="field__label" for="plz">Postleitzahl</label>
+                <label class="field__label" for="plz"><span class="req" aria-hidden="true">*</span>Postleitzahl</label>
                 <input class="input" id="plz" name="plz" inputmode="numeric" maxlength="5" required />
                 <span class="field__error" data-error-for="plz"></span>
               </div>
               <div class="field">
-                <label class="field__label" for="ort">Ort</label>
+                <label class="field__label" for="ort"><span class="req" aria-hidden="true">*</span>Ort</label>
                 <input class="input" id="ort" name="ort" required />
                 <span class="field__error" data-error-for="ort"></span>
               </div>
               <div class="field">
-                <label class="field__label" for="strasse">Straße</label>
+                <label class="field__label" for="strasse"><span class="req" aria-hidden="true">*</span>Straße</label>
                 <input class="input" id="strasse" name="strasse" required />
                 <span class="field__error" data-error-for="strasse"></span>
               </div>
             </div>
             <div class="grid-3" style="margin-top: 1rem">
               <div class="field">
-                <label class="field__label" for="hausnummer">Hausnummer</label>
+                <label class="field__label" for="hausnummer"><span class="req" aria-hidden="true">*</span>Hausnummer</label>
                 <input class="input" id="hausnummer" name="hausnummer" required />
                 <span class="field__error" data-error-for="hausnummer"></span>
               </div>
               <div class="field">
-                <label class="field__label" for="wohnflaeche">Wohnfläche (m²)</label>
+                <div class="label-line">
+                  <label class="field__label" for="wohnflaeche"><span class="req" aria-hidden="true">*</span>Wohnfläche (m²)</label>
+                  <button type="button" class="info-btn" aria-label="Hinweis zur Wohnfläche" aria-expanded="false">
+                    i
+                    <span class="info-pop" role="tooltip">Geben Sie die gesamte beheizte Wohnfläche an. Balkone und Terrassen zählen in der Regel nur anteilig – übernehmen Sie den Wert aus Ihren Unterlagen, ohne ihn zu kürzen.</span>
+                  </button>
+                </div>
                 <input
                   class="input"
                   id="wohnflaeche"
@@ -215,17 +240,22 @@
                 <span class="field__error" data-error-for="wohnflaeche"></span>
               </div>
               <div class="field">
-                <label class="field__label" for="gebaeudetyp">Gebäudetyp</label>
-                <select class="select" id="gebaeudetyp" name="gebaeudetyp" required>
-                  <option value="">Bitte wählen</option>
-                  <option value="Einfamilienhaus">Einfamilienhaus</option>
-                  <option value="Zweifamilienhaus">Zweifamilienhaus</option>
-                  <option value="Mehrfamilienhaus">Mehrfamilienhaus</option>
-                  <option value="einseitig angebautes Gebäude">einseitig angebautes Gebäude</option>
-                  <option value="beidseitig angebautes Gebäude">beidseitig angebautes Gebäude</option>
-                  <option value="Wohnteil gemischt genutztes Gebäude">Wohnteil gemischt genutztes Gebäude</option>
-                  <option value="sonstiges Wohngebäude">sonstiges Wohngebäude</option>
-                </select>
+                <div class="label-line">
+                  <span class="field__label" id="gebaeudetyp-label"><span class="req" aria-hidden="true">*</span>Gebäudetyp</span>
+                  <button type="button" class="info-btn" aria-label="Hinweis zum Gebäudetyp" aria-expanded="false">
+                    i
+                    <span class="info-pop" role="tooltip">Wählen Sie die Gebäudeart, die Ihr Objekt am besten beschreibt. Maßgeblich ist die tatsächliche Bauform, nicht die Eigentumsform.</span>
+                  </button>
+                </div>
+                <div class="choice-group choice-group--stack" role="radiogroup" aria-labelledby="gebaeudetyp-label">
+                  <label class="choice choice-card"><input type="radio" name="gebaeudetyp" value="Einfamilienhaus" required /><span>Einfamilienhaus</span></label>
+                  <label class="choice choice-card"><input type="radio" name="gebaeudetyp" value="Zweifamilienhaus" /><span>Zweifamilienhaus</span></label>
+                  <label class="choice choice-card"><input type="radio" name="gebaeudetyp" value="Mehrfamilienhaus" /><span>Mehrfamilienhaus</span></label>
+                  <label class="choice choice-card"><input type="radio" name="gebaeudetyp" value="einseitig angebautes Gebäude" /><span>einseitig angebautes Gebäude</span></label>
+                  <label class="choice choice-card"><input type="radio" name="gebaeudetyp" value="beidseitig angebautes Gebäude" /><span>beidseitig angebautes Gebäude</span></label>
+                  <label class="choice choice-card"><input type="radio" name="gebaeudetyp" value="Wohnteil gemischt genutztes Gebäude" /><span>Wohnteil gemischt genutztes Gebäude</span></label>
+                  <label class="choice choice-card"><input type="radio" name="gebaeudetyp" value="sonstiges Wohngebäude" /><span>sonstiges Wohngebäude</span></label>
+                </div>
                 <span class="field__error" data-error-for="gebaeudetyp"></span>
               </div>
               <div class="field">
@@ -244,21 +274,43 @@
             </div>
             <div class="grid-2" style="margin-top: 1rem">
               <div class="field">
-                <label class="field__label" for="anzahlWohnungen">Anzahl Wohnungen</label>
+                <div class="label-line">
+                  <label class="field__label" for="anzahlWohnungen"><span class="req" aria-hidden="true">*</span>Anzahl Wohnungen</label>
+                  <button type="button" class="info-btn" aria-label="Hinweis zur Anzahl der Wohnungen" aria-expanded="false">
+                    i
+                    <span class="info-pop" role="tooltip">Zählen Sie eigenständige Wohneinheiten. Ein Einfamilienhaus entspricht einer Wohnung. Die Angabe beeinflusst Hinweise bei älteren Gebäuden mit wenigen Einheiten.</span>
+                  </button>
+                </div>
                 <input class="input" id="anzahlWohnungen" name="anzahlWohnungen" type="number" min="1" max="500" value="1" required />
                 <span class="field__error" data-error-for="anzahlWohnungen"></span>
               </div>
               <div class="field">
-                <label class="field__label" for="gebaeudeteil">Gebäudeteil</label>
+                <div class="label-line">
+                  <label class="field__label" for="gebaeudeteil">Geltungsbereich des Ausweises</label>
+                  <button type="button" class="info-btn" aria-label="Hinweis zum Geltungsbereich" aria-expanded="false">
+                    i
+                    <span class="info-pop" role="tooltip">Gilt der Ausweis für das ganze Gebäude oder nur für den Wohnteil eines gemischt genutzten Objekts? Den Wohnteil wählen Sie nur, wenn Fläche und Verbrauch eindeutig dazugehören.</span>
+                  </button>
+                </div>
                 <select class="select" id="gebaeudeteil" name="gebaeudeteil">
                   <option value="Ganzes Gebäude">Ganzes Gebäude</option>
                   <option value="Gebäudeteil">Gebäudeteil</option>
                 </select>
               </div>
             </div>
+            </div>
+            <div class="block-card" style="margin-top: 1.25rem">
+              <h2>Gebäudeeigenschaften</h2>
+              <p class="block-card__lead">Anlass, Lüftung, erneuerbare Energien und Baujahre.</p>
             <div class="grid-2" style="margin-top: 1rem">
               <div class="field">
-                <label class="field__label" for="anlass">Anlass der Ausstellung</label>
+                <div class="label-line">
+                  <label class="field__label" for="anlass"><span class="req" aria-hidden="true">*</span>Anlass der Ausstellung</label>
+                  <button type="button" class="info-btn" aria-label="Hinweis zum Anlass" aria-expanded="false">
+                    i
+                    <span class="info-pop" role="tooltip">Wählen Sie den Grund, z. B. Vermietung, Verkauf oder Modernisierung. Neubau fehlt bewusst: Ein Verbrauchsausweis braucht Messwerte aus 36 Monaten, die ein Neubau noch nicht hat.</span>
+                  </button>
+                </div>
                 <select class="select" id="anlass" name="anlass" required>
                   <option value="Vermietung / Verkauf">Vermietung / Verkauf</option>
                   <option value="Modernisierung">Modernisierung</option>
@@ -268,21 +320,27 @@
                 <span class="field__error" data-error-for="anlass"></span>
               </div>
               <div class="field">
-                <span class="field__label" id="lueftung-label">Lüftung (zutreffendes ankreuzen)</span>
+                <div class="label-line">
+                  <span class="field__label" id="lueftung-label">Art der Lüftung</span>
+                  <button type="button" class="info-btn" aria-label="Hinweis zur Lüftung" aria-expanded="false">
+                    i
+                    <span class="info-pop" role="tooltip">Markieren Sie, wie das Gebäude belüftet wird. Reine Fensterlüftung, Schacht oder Anlage mit bzw. ohne Wärmerückgewinnung – mehrere Angaben sind möglich.</span>
+                  </button>
+                </div>
                 <div class="choice-group choice-group--stack" role="group" aria-labelledby="lueftung-label">
-                  <label class="choice">
+                  <label class="choice choice-card">
                     <input type="checkbox" name="lueftung" value="Fensterlüftung" checked />
                     <span>Fensterlüftung</span>
                   </label>
-                  <label class="choice">
+                  <label class="choice choice-card">
                     <input type="checkbox" name="lueftung" value="Schachtlüftung" />
                     <span>Schachtlüftung</span>
                   </label>
-                  <label class="choice">
+                  <label class="choice choice-card">
                     <input type="checkbox" name="lueftung" value="Lüftungsanlage mit Wärmerückgewinnung" />
                     <span>Lüftungsanlage mit Wärmerückgewinnung</span>
                   </label>
-                  <label class="choice">
+                  <label class="choice choice-card">
                     <input type="checkbox" name="lueftung" value="Lüftungsanlage ohne Wärmerückgewinnung" />
                     <span>Lüftungsanlage ohne Wärmerückgewinnung</span>
                   </label>
@@ -291,25 +349,31 @@
             </div>
             <div class="grid-2" style="margin-top: 1rem">
               <div class="field">
-                <span class="field__label" id="ee-use-label">Erneuerbare Energien (Verwendung)</span>
+                <div class="label-line">
+                  <span class="field__label" id="ee-use-label">Was wird genutzt? (Mehrfachauswahl)</span>
+                  <button type="button" class="info-btn" aria-label="Hinweis zu erneuerbaren Energien" aria-expanded="false">
+                    i
+                    <span class="info-pop" role="tooltip">Solarthermie liefert Wärme, Photovoltaik Strom. Wärmepumpe und Biomasse zählen ebenfalls. Die Angabe erscheint auf dem Ausweis und ändert die Verbrauchswerte nicht.</span>
+                  </button>
+                </div>
                 <div class="choice-group choice-group--stack" role="group" aria-labelledby="ee-use-label">
-                  <label class="choice">
+                  <label class="choice choice-card">
                     <input type="checkbox" name="eeVerwendung" value="heizung" />
                     <span>Heizung</span>
                   </label>
-                  <label class="choice">
+                  <label class="choice choice-card">
                     <input type="checkbox" name="eeVerwendung" value="ww" />
                     <span>Warmwasser</span>
                   </label>
-                  <label class="choice">
+                  <label class="choice choice-card">
                     <input type="checkbox" name="eeVerwendung" value="strom" />
                     <span>Strom</span>
                   </label>
                 </div>
-                <p class="field__hint">Auch Kombinationen möglich, z. B. Heizung und Warmwasser.</p>
+                <p class="field__hint">Kombinationen sind möglich, etwa Heizung und Warmwasser.</p>
               </div>
               <div class="field">
-                <label class="field__label" for="erneuerbareEnergienA">Erneuerbare Energien (Art)</label>
+                <label class="field__label" for="erneuerbareEnergienA">Art der erneuerbaren Energie</label>
                 <select class="select" id="erneuerbareEnergienA" name="erneuerbareEnergienA" disabled>
                   <option value="">keine</option>
                   <option value="solar">Solar</option>
@@ -320,7 +384,13 @@
             </div>
             <div class="grid-2" style="margin-top: 1rem">
               <div class="field">
-                <label class="field__label" for="baujahr">Baujahr Gebäude</label>
+                <div class="label-line">
+                  <label class="field__label" for="baujahr"><span class="req" aria-hidden="true">*</span>Baujahr des Gebäudes</label>
+                  <button type="button" class="info-btn" aria-label="Hinweis zum Baujahr" aria-expanded="false">
+                    i
+                    <span class="info-pop" role="tooltip">Tragen Sie das ursprüngliche Errichtungsjahr ein, nicht das Jahr einer Sanierung. Bei sehr alten Gebäuden genügt das bekannte Baujahr aus Kaufvertrag oder Bauakten.</span>
+                  </button>
+                </div>
                 <input
                   class="input"
                   id="baujahr"
@@ -333,7 +403,7 @@
                 <span class="field__error" data-error-for="baujahr"></span>
               </div>
               <div class="field">
-                <label class="field__label" for="baujahrHeizung">Baujahr Wärmeerzeuger</label>
+                <label class="field__label" for="baujahrHeizung"><span class="req" aria-hidden="true">*</span>Baujahr Wärmeerzeuger</label>
                 <input
                   class="input"
                   id="baujahrHeizung"
@@ -347,13 +417,19 @@
               </div>
             </div>
             <div class="field" style="margin-top: 1rem">
-              <span class="field__label" id="keller-label">Beheizter Keller</span>
+              <div class="label-line">
+                <span class="field__label" id="keller-label"><span class="req" aria-hidden="true">*</span>Beheizter Keller</span>
+                <button type="button" class="info-btn" aria-label="Hinweis zum Keller" aria-expanded="false">
+                  i
+                  <span class="info-pop" role="tooltip">„Ja“ nur, wenn Kellerräume regelmäßig beheizt werden. Unbeheizte Abstellräume zählen nicht dazu.</span>
+                </button>
+              </div>
               <div class="choice-group" role="radiogroup" aria-labelledby="keller-label">
-                <label class="choice">
+                <label class="choice choice-card" style="flex:1">
                   <input type="radio" name="beheizterKeller" value="ja" required />
                   <span>Ja</span>
                 </label>
-                <label class="choice">
+                <label class="choice choice-card" style="flex:1">
                   <input type="radio" name="beheizterKeller" value="nein" />
                   <span>Nein</span>
                 </label>
@@ -361,7 +437,9 @@
               <span class="field__error" data-error-for="beheizterKeller"></span>
             </div>
             <div class="field" style="margin-top: 1rem">
-              <span class="field__label" id="kuehl-label">Kühlung</span>
+              <div class="label-line">
+                <span class="field__label" id="kuehl-label"><span class="req" aria-hidden="true">*</span>Kühlung</span>
+              </div>
               <div class="choice-group" role="radiogroup" aria-labelledby="kuehl-label">
                 <label class="choice">
                   <input type="radio" name="gekuehlt" value="nein" checked />
@@ -429,21 +507,45 @@
                 </div>
               </div>
             </details>
-            <div class="field" style="margin-top: 1rem">
-              <span class="field__label" id="ww-label">Warmwasser</span>
-              <div class="choice-group" role="radiogroup" aria-labelledby="ww-label">
-                <label class="choice">
-                  <input type="radio" name="warmwasser" value="pauschal" required />
-                  <span>pauschal 20 kWh/m² (GEG)</span>
-                </label>
-                <label class="choice">
-                  <input type="radio" name="warmwasser" value="enthalten" />
-                  <span>im Verbrauch enthalten</span>
-                </label>
-                <label class="choice">
-                  <input type="radio" name="warmwasser" value="separat" />
-                  <span>separat gemessen</span>
-                </label>
+            </div>
+            <div class="block-card" style="margin-top: 1.25rem">
+              <h2>Warmwasser</h2>
+              <p class="block-card__lead">Wie wird der Warmwasseranteil in der Abrechnung behandelt?</p>
+            <div class="field">
+              <div class="label-line">
+                <span class="field__label" id="ww-label"><span class="req" aria-hidden="true">*</span>Warmwasser</span>
+              </div>
+              <div class="choice-group choice-group--stack" role="radiogroup" aria-labelledby="ww-label">
+                <div class="choice-row">
+                  <label class="choice choice-card">
+                    <input type="radio" name="warmwasser" value="pauschal" required />
+                    <span>Pauschalwert 20 kWh/m² (GEG)</span>
+                  </label>
+                  <button type="button" class="info-btn" aria-label="Hinweis Pauschalwert" aria-expanded="false">
+                    i
+                    <span class="info-pop" role="tooltip">Wenn kein gemessener Warmwasseranteil vorliegt, wird der gesetzlich vorgesehene Standardwert angesetzt.</span>
+                  </button>
+                </div>
+                <div class="choice-row">
+                  <label class="choice choice-card">
+                    <input type="radio" name="warmwasser" value="enthalten" />
+                    <span>Im Heizverbrauch enthalten</span>
+                  </label>
+                  <button type="button" class="info-btn" aria-label="Hinweis enthalten" aria-expanded="false">
+                    i
+                    <span class="info-pop" role="tooltip">Wählen Sie das, wenn die Abrechnung Heizung und Warmwasser nicht getrennt ausweist – der Gesamtverbrauch gilt dann für beides.</span>
+                  </button>
+                </div>
+                <div class="choice-row">
+                  <label class="choice choice-card">
+                    <input type="radio" name="warmwasser" value="separat" />
+                    <span>Gemessener Wert (kWh)</span>
+                  </label>
+                  <button type="button" class="info-btn" aria-label="Hinweis Messwert" aria-expanded="false">
+                    i
+                    <span class="info-pop" role="tooltip">Bevorzugt, wenn der Warmwasseranteil in kWh separat vorliegt. Tragen Sie die Jahreswerte später in den Perioden ein.</span>
+                  </button>
+                </div>
               </div>
               <span class="field__error" data-error-for="warmwasser"></span>
               <label class="checkbox" style="margin-top: 0.75rem">
@@ -451,9 +553,11 @@
                 <span>Solare Warmwasserbereitung vorhanden</span>
               </label>
             </div>
-            <fieldset style="margin-top: 1.5rem; border: 0; padding: 0">
+            </div>
+            <div class="block-card" style="margin-top: 1.25rem">
+            <fieldset style="margin-top: 0; border: 0; padding: 0">
               <legend class="field__label">Modernisierungsempfehlungen</legend>
-              <p class="field__hint">Genau zwei Maßnahmen ankreuzen – oder „keine möglich“.</p>
+              <p class="field__hint">Bitte zwei Maßnahmen wählen – oder bestätigen, dass keine sinnvoll sind.</p>
               <span class="field__error" data-error-for="recommendations"></span>
               <label class="checkbox">
                 <input type="checkbox" name="keineEmpfehlungen" value="1" />
@@ -468,6 +572,7 @@
               <label class="checkbox"><input type="checkbox" name="recommendation" value="fassade" /><span>Fassadendämmung</span></label>
               <label class="checkbox"><input type="checkbox" name="recommendation" value="allgemein" /><span>Allgemein: Energieberatung / Förderung</span></label>
             </fieldset>
+            </div>
           </form>
           <div class="btn-row">
             <span></span>
@@ -475,16 +580,23 @@
           </div>
         </section>
 
-        <section class="panel card" id="step-2" data-step="2" hidden>
+        <section class="panel" id="step-2" data-step="2" hidden>
           <div class="panel__head">
             <div>
-              <h1 tabindex="-1">Verbrauch</h1>
-              <p>Energieträger und die drei Abrechnungsperioden eintragen. Bei Heizöl, Holz oder Pellets kann zusätzlich die Lagermengen-Ermittlung geöffnet werden.</p>
+              <h1 tabindex="-1">Wärmeverbrauch</h1>
+              <p>Energieträger, Einheit und drei vollständige Abrechnungsjahre – so wie auf der Jahresabrechnung.</p>
             </div>
           </div>
           <form id="form-consumption" novalidate>
+            <div class="block-card">
             <div class="field">
-              <span class="field__label" id="carrier-label">Energieträger</span>
+              <div class="label-line">
+                <span class="field__label" id="carrier-label"><span class="req" aria-hidden="true">*</span>Energieträger</span>
+                <button type="button" class="info-btn" aria-label="Hinweis zum Energieträger" aria-expanded="false">
+                  i
+                  <span class="info-pop" role="tooltip">Übernehmen Sie den Energieträger genau von der Abrechnung. Bei Erdgas unterscheiden L und H: rund 9–10 kWh/m³ entspricht L, 11–13 kWh/m³ entspricht H. Eine Verwechslung verschiebt das Ergebnis deutlich.</span>
+                </button>
+              </div>
               <div class="carrier-grid" id="carrier-grid" role="radiogroup" aria-labelledby="carrier-label"></div>
               <span class="field__error" data-error-for="energietraeger"></span>
             </div>
@@ -495,18 +607,34 @@
             </p>
             <div class="grid-2" id="period-setup" style="margin-top: 1rem">
               <div class="field">
-                <label class="field__label" for="startYear">Beginn erstes Abrechnungsjahr</label>
+                <div class="label-line">
+                  <label class="field__label" for="startYear"><span class="req" aria-hidden="true">*</span>Startjahr</label>
+                  <button type="button" class="info-btn" aria-label="Hinweis zum Startjahr" aria-expanded="false">
+                    i
+                    <span class="info-pop" role="tooltip">Geben Sie das erste der drei vollständigen Abrechnungsjahre an. Daraus entstehen automatisch drei aufeinanderfolgende Zeiträume.</span>
+                  </button>
+                </div>
                 <input class="input" id="startYear" name="startYear" type="number" min="2015" max="2026" required />
-                <span class="field__hint">Beispiel: 2023 – daraus werden drei Zeiträume erzeugt.</span>
                 <span class="field__error" data-error-for="startYear"></span>
               </div>
               <div class="field">
-                <label class="field__label" for="periodStartMonth">Abrechnungsperiode</label>
+                <div class="label-line">
+                  <label class="field__label" for="periodStartMonth"><span class="req" aria-hidden="true">*</span>Abrechnungszeitraum</label>
+                  <button type="button" class="info-btn" aria-label="Hinweis zum Abrechnungszeitraum" aria-expanded="false">
+                    i
+                    <span class="info-pop" role="tooltip">Wählen Sie den Monat, in dem Ihr Abrechnungsjahr beginnt – zum Beispiel Januar bis Dezember oder April bis März. Den Zeitraum finden Sie auf der Heizkostenabrechnung.</span>
+                  </button>
+                </div>
                 <select class="select" id="periodStartMonth" name="periodStartMonth" required></select>
                 <span class="field__error" data-error-for="periodStartMonth"></span>
               </div>
             </div>
-            <div id="periods-container" style="margin-top: 1.5rem"></div>
+            </div>
+            <div class="block-card" style="margin-top: 1.25rem">
+              <h2>Verbrauchszeiträume</h2>
+              <p class="block-card__lead">Jahreswerte für das gesamte Gebäude, nicht für einzelne Monate oder nur eine Wohnung.</p>
+            <div id="periods-container"></div>
+            </div>
           </form>
           <div class="btn-row">
             <button class="btn btn--ghost" type="button" data-prev>Zurück</button>
@@ -514,56 +642,56 @@
           </div>
         </section>
 
-        <section class="panel card" id="step-3" data-step="3" hidden>
+        <section class="panel" id="step-3" data-step="3" hidden>
           <div class="panel__head">
             <div>
-              <h1 tabindex="-1">Dokumente</h1>
-              <p>Nur PDF. Mindestens eine Heizkostenabrechnung (alle Jahre dürfen in einer Datei stehen). Dateien verlassen den Browser erst bei der Bestellung.</p>
+              <h1 tabindex="-1">Leerstand &amp; Energienutzung</h1>
+              <p>Laden Sie die Nachweise als PDF hoch. Leerstandsanteile tragen Sie in den Verbrauchsjahren ein.</p>
             </div>
           </div>
-          <div id="documents-root"></div>
+          <div class="block-card" id="documents-root"></div>
           <div class="btn-row">
             <button class="btn btn--ghost" type="button" data-prev>Zurück</button>
             <button class="btn btn--primary" type="button" data-next>Weiter</button>
           </div>
         </section>
 
-        <section class="panel card" id="step-4" data-step="4" hidden>
+        <section class="panel" id="step-4" data-step="4" hidden>
           <div class="panel__head">
             <div>
-              <h1 tabindex="-1">Berechnung</h1>
-              <p>Endenergie, Primärenergie, CO₂ und Effizienzklasse inkl. DWD-Klimakorrekturfaktoren nach PLZ.</p>
+              <h1 tabindex="-1">Bauteile</h1>
+              <p>Endenergie, Primärenergie, CO₂ und Effizienzklasse inklusive Klimakorrektur nach PLZ.</p>
             </div>
           </div>
-          <div id="calculation-root"></div>
+          <div class="block-card" id="calculation-root"></div>
           <div class="btn-row">
             <button class="btn btn--ghost" type="button" data-prev>Zurück</button>
             <button class="btn btn--primary" type="button" data-next>Zur Vorschau</button>
           </div>
         </section>
 
-        <section class="panel card" id="step-5" data-step="5" hidden>
+        <section class="panel" id="step-5" data-step="5" hidden>
           <div class="panel__head">
             <div>
-              <h1 tabindex="-1">Vorschau</h1>
-              <p>Grafische Darstellung analog zum Energieband – eigenständiges Layout.</p>
+              <h1 tabindex="-1">Ausweisübersicht</h1>
+              <p>Vorläufiges Energieband – der amtliche Ausweis folgt nach der Bestellung.</p>
             </div>
           </div>
-          <div id="preview-root"></div>
+          <div class="block-card" id="preview-root"></div>
           <div class="btn-row">
             <button class="btn btn--ghost" type="button" data-prev>Zurück</button>
             <button class="btn btn--primary" type="button" data-next>Zur Bestellung</button>
           </div>
         </section>
 
-        <section class="panel card" id="step-6" data-step="6" hidden>
+        <section class="panel" id="step-6" data-step="6" hidden>
           <div class="panel__head">
             <div>
-              <h1 tabindex="-1">Bestellung</h1>
-              <p>Prüfen Sie die Angaben und legen Sie den Verbrauchsausweis in den Warenkorb.</p>
+              <h1 tabindex="-1">Abrechnung &amp; Lieferung</h1>
+              <p>Angaben prüfen und den Verbrauchsausweis in den Warenkorb legen.</p>
             </div>
           </div>
-          <div id="order-root"></div>
+          <div class="block-card" id="order-root"></div>
           <div class="btn-row">
             <button class="btn btn--ghost" type="button" data-prev>Zurück</button>
             <button class="btn btn--primary" type="button" id="btn-checkout">
@@ -710,6 +838,6 @@
       </div>
     </dialog>
     <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
-    <script type="module" src="app.js?v=20260901c"></script>
+    <script type="module" src="app.js?v=20260906a"></script>
   </body>
 </html>

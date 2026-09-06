@@ -42,8 +42,8 @@
 
 .carrier-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 0.6rem;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.65rem;
 }
 
 .period-card {
@@ -52,6 +52,11 @@
   padding: var(--space-4);
   display: grid;
   gap: var(--space-3);
+  background: #fbfcfd;
+}
+
+.period-card + .period-card {
+  margin-top: 0.85rem;
 }
 
 .period-card h3 {

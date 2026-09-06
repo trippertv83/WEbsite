@@ -18,7 +18,7 @@ const CATEGORIES = [
   {
     id: 'heatingBills',
     title: 'Heizkostenabrechnungen',
-    hint: 'Mindestens eine PDF. Alle Abrechnungsjahre dürfen in einer Datei liegen.',
+    hint: 'Mindestens eine PDF. Alle Abrechnungsjahre dürfen in einer Datei stehen.',
     required: true,
   },
   {
@@ -30,13 +30,13 @@ const CATEGORIES = [
   {
     id: 'heatingPhoto',
     title: 'Foto Heizung (optional)',
-    hint: 'Als PDF (Scan).',
+    hint: 'Scan oder Foto der Anlage als PDF, falls vorhanden.',
     required: false,
   },
   {
     id: 'other',
-    title: 'Sonstige Dokumente',
-    hint: 'Weitere Nachweise als PDF.',
+    title: 'Gebäudefoto & weitere Nachweise',
+    hint: 'Außenfoto der Straßenfassade bei Tageslicht – vollständig sichtbar. Innenräume oder Detailaufnahmen eignen sich nicht für den Ausweis. Weitere PDFs ebenfalls hier.',
     required: false,
   },
 ];
@@ -63,7 +63,11 @@ export function renderDocuments() {
   const root = qs('#documents-root');
   root.innerHTML = CATEGORIES.map(
     (cat) => `<section class="doc-section" data-cat="${cat.id}">
-      <h2 style="margin:0 0 0.35rem;font-size:1.1rem">${cat.title}</h2>
+      <h2 style="margin:0 0 0.35rem;font-size:1.1rem">${
+        cat.required
+          ? `<span class="req" aria-hidden="true">*</span>${cat.title}`
+          : cat.title
+      }</h2>
       <p class="field__hint">${cat.hint}</p>
       <div class="dropzone" tabindex="0" data-drop="${cat.id}">
         <div class="dropzone__icon" aria-hidden="true">↑</div>
