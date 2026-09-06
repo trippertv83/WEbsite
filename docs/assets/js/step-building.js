@@ -77,7 +77,8 @@ export function readBuildingForm() {
     const extra = qs(sel);
     if (!extra) return;
     for (const [key, value] of new FormData(extra).entries()) {
-      if (!skip.has(key)) data[key] = value;
+      if (skip.has(key) || key.startsWith('anlage')) continue;
+      data[key] = value;
     }
   });
   delete data.recommendation;

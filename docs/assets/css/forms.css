@@ -174,7 +174,7 @@ textarea.input {
 }
 
 .grid-3 {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
 }
 
 .choice-group:not(.choice-group--stack) {

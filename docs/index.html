@@ -8,7 +8,7 @@
       content="Verbrauchsausweis für Wohngebäude online erstellen und bestellen."
     />
     <title>Verbrauchsausweis bestellen | Energieausweis Pro</title>
-    <link rel="stylesheet" href="style.css?v=20260906c" />
+    <link rel="stylesheet" href="style.css?v=20260906d" />
   </head>
   <body class="is-register-only">
     <a class="skip-link" href="#main">Zum Inhalt springen</a>
@@ -693,72 +693,7 @@
                 </div>
               </div>
             </div>
-            <div class="anlage-box" id="anlage-2" hidden>
-              <h3>Anlage 2</h3>
-              <div class="grid-2">
-                <div class="field">
-                  <label class="field__label" for="anlage2Energietraeger">Energieträger</label>
-                  <select class="select" id="anlage2Energietraeger" name="anlage2Energietraeger">
-                    <option value="">Bitte wählen</option>
-                    <option value="erdgas">Erdgas</option>
-                    <option value="heizoel">Heizöl</option>
-                    <option value="fernwaerme">Fernwärme</option>
-                    <option value="strom">Strom</option>
-                    <option value="holz">Holz</option>
-                    <option value="pellets">Pellets</option>
-                    <option value="waermepumpe">Wärmepumpe</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label class="field__label" for="anlage2Baujahr">Baujahr</label>
-                  <input class="input" id="anlage2Baujahr" name="anlage2Baujahr" type="number" min="1800" max="2026" />
-                </div>
-              </div>
-            </div>
-            <div class="anlage-box" id="anlage-3" hidden>
-              <h3>Anlage 3</h3>
-              <div class="grid-2">
-                <div class="field">
-                  <label class="field__label" for="anlage3Energietraeger">Energieträger</label>
-                  <select class="select" id="anlage3Energietraeger" name="anlage3Energietraeger">
-                    <option value="">Bitte wählen</option>
-                    <option value="erdgas">Erdgas</option>
-                    <option value="heizoel">Heizöl</option>
-                    <option value="fernwaerme">Fernwärme</option>
-                    <option value="strom">Strom</option>
-                    <option value="holz">Holz</option>
-                    <option value="pellets">Pellets</option>
-                    <option value="waermepumpe">Wärmepumpe</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label class="field__label" for="anlage3Baujahr">Baujahr</label>
-                  <input class="input" id="anlage3Baujahr" name="anlage3Baujahr" type="number" min="1800" max="2026" />
-                </div>
-              </div>
-            </div>
-            <div class="anlage-box" id="anlage-4" hidden>
-              <h3>Anlage 4</h3>
-              <div class="grid-2">
-                <div class="field">
-                  <label class="field__label" for="anlage4Energietraeger">Energieträger</label>
-                  <select class="select" id="anlage4Energietraeger" name="anlage4Energietraeger">
-                    <option value="">Bitte wählen</option>
-                    <option value="erdgas">Erdgas</option>
-                    <option value="heizoel">Heizöl</option>
-                    <option value="fernwaerme">Fernwärme</option>
-                    <option value="strom">Strom</option>
-                    <option value="holz">Holz</option>
-                    <option value="pellets">Pellets</option>
-                    <option value="waermepumpe">Wärmepumpe</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label class="field__label" for="anlage4Baujahr">Baujahr</label>
-                  <input class="input" id="anlage4Baujahr" name="anlage4Baujahr" type="number" min="1800" max="2026" />
-                </div>
-              </div>
-            </div>
+            <div id="extra-anlagen"></div>
             <p id="lager-open-wrap" hidden style="margin-top: 1rem">
               <button class="btn btn--ghost" type="button" id="btn-open-lager">
                 Verbrauchsermittlung für lagerfähige Brennstoffe
@@ -1141,6 +1076,6 @@
       </div>
     </dialog>
     <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
-    <script type="module" src="app.js?v=20260906c"></script>
+    <script type="module" src="app.js?v=20260906d"></script>
   </body>
 </html>

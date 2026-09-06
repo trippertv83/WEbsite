@@ -6,7 +6,7 @@ import { AppConfig } from './config.example.js';
 import { getState, patch, patchCustomer, patchBuilding, serializeForBackend } from './assets/js/state.js';
 import { createOrderNumber, qs, showToast } from './assets/js/utils.js';
 import { bindInfoTips } from './assets/js/info-tips.js';
-import { bindStepper, renderStepper, showStep } from './assets/js/wizard.js?v=20260906c';
+import { bindStepper, renderStepper, showStep } from './assets/js/wizard.js?v=20260906d';
 import { bindRegister, showWizard } from './assets/js/step-register.js?v=20260905d';
 import { bindBuildingLive, validateStepBuilding, readBuildingForm } from './assets/js/step-building.js';
 import {

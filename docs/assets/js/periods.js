@@ -53,6 +53,9 @@ export function buildThreePeriods(startYear, startMonth) {
       to,
       label: formatPeriodLabel(from, to),
       consumption: '',
+      consumption2: '',
+      consumption3: '',
+      consumption4: '',
       vacancy: '0',
       warmWater: '',
     });

@@ -110,6 +110,30 @@ export function validateConsumption(consumption) {
   return errors;
 }
 
+export function validateExtraPlants(consumption, plantCount) {
+  const errors = {};
+  const n = Number(plantCount) || 1;
+  const extraCount = Math.max(0, n - 1);
+  for (let idx = 0; idx < extraCount; idx += 1) {
+    const plant = (consumption.extraPlants || [])[idx] || {};
+    const number = idx + 2;
+    if (!plant.energietraeger) {
+      errors[`anlage${number}Energietraeger`] = `Bitte den Energieträger für Anlage ${number} wählen.`;
+    }
+    if (!plant.unit) {
+      errors[`anlage${number}Unit`] = `Bitte die Einheit für Anlage ${number} wählen.`;
+    }
+    (consumption.periods || []).forEach((period, index) => {
+      const value = Number(period[`consumption${number}`]);
+      if (!Number.isFinite(value) || value <= 0) {
+        errors[`period-${index}-consumption${number}`] =
+          `Verbrauch Anlage ${number} größer 0 angeben.`;
+      }
+    });
+  }
+  return errors;
+}
+
 export function validateDocuments(documents, minBills) {
   const errors = {};
   if ((documents.heatingBills || []).length < minBills) {

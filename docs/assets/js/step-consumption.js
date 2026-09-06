@@ -16,7 +16,7 @@ import {
   unitLabel,
 } from './lager.js';
 import { getState, patchBuilding, patchConsumption } from './state.js';
-import { validateBuilding, validateConsumption, isEmpty } from './validation.js';
+import { validateConsumption, validateExtraPlants, isEmpty } from './validation.js';
 import { clearFormErrors, qs, setFieldError } from './utils.js';
 import { readBuildingForm, applyBuildingErrors } from './step-building.js';
 
@@ -27,6 +27,9 @@ function keepPeriodValues(oldPeriods, nextPeriods) {
       ? {
           ...period,
           consumption: prev.consumption,
+          consumption2: prev.consumption2 || '',
+          consumption3: prev.consumption3 || '',
+          consumption4: prev.consumption4 || '',
           vacancy: prev.vacancy,
           warmWater: prev.warmWater,
         }
@@ -145,7 +148,13 @@ function previewLager() {
 function applyLager() {
   const { consumption } = getState();
   const { lager, total } = previewLager();
-  const periods = periodsFromLager(lager, total);
+  const prevPeriods = consumption.periods;
+  const periods = periodsFromLager(lager, total).map((period, index) => ({
+    ...period,
+    consumption2: prevPeriods[index]?.consumption2 || '',
+    consumption3: prevPeriods[index]?.consumption3 || '',
+    consumption4: prevPeriods[index]?.consumption4 || '',
+  }));
   if (!periods.length || total <= 0) return false;
   patchConsumption({
     useLager: true,
@@ -186,21 +195,122 @@ export function renderPeriodSelect() {
     .join('');
 }
 
+function plantCount() {
+  return Math.min(4, Math.max(1, Number(getState().building.anzahlHeizungsanlagen) || 1));
+}
+
+function readExtraPlantsFromForm() {
+  const prev = getState().consumption.extraPlants || [];
+  return [2, 3, 4].map((number, index) => {
+    const carrier =
+      qs(`input[name="anlage${number}Energietraeger"]:checked`)?.value ||
+      qs(`[name="anlage${number}Energietraeger"]`)?.value ||
+      prev[index]?.energietraeger ||
+      '';
+    const carrierInfo = ENERGY_CARRIERS.find((item) => item.id === carrier);
+    const selectedUnit = qs(`input[name="anlage${number}Unit"]:checked`)?.value || prev[index]?.unit || '';
+    const unit =
+      carrierInfo?.units.some((item) => item.id === selectedUnit)
+        ? selectedUnit
+        : carrierInfo?.units[0]?.id || '';
+    return {
+      energietraeger: carrier,
+      unit,
+      baujahr: qs(`#anlage${number}Baujahr`)?.value || prev[index]?.baujahr || '',
+    };
+  });
+}
+
+function extraCarrierGrid(number, selected) {
+  return ENERGY_CARRIERS.map(
+    (c) => `<label class="choice choice-card">
+      <input type="radio" name="anlage${number}Energietraeger" value="${c.id}" ${
+        c.id === selected ? 'checked' : ''
+      } />
+      <span>${c.label}</span>
+    </label>`
+  ).join('');
+}
+
+function extraUnitGrid(number, carrierId, selectedUnit) {
+  const carrier = ENERGY_CARRIERS.find((item) => item.id === carrierId);
+  if (!carrier) return '<p class="field__hint">Zuerst Energieträger wählen.</p>';
+  const unit = carrier.units.some((item) => item.id === selectedUnit)
+    ? selectedUnit
+    : carrier.units[0].id;
+  return `<div class="choice-group" role="radiogroup" aria-label="Einheit Anlage ${number}">
+    ${carrier.units
+      .map(
+        (u) => `<label class="choice choice-card" style="flex:1;min-width:7rem">
+          <input type="radio" name="anlage${number}Unit" value="${u.id}" ${
+            u.id === unit ? 'checked' : ''
+          } />
+          <span>${u.label}</span>
+        </label>`
+      )
+      .join('')}
+  </div>
+  <span class="field__error" data-error-for="anlage${number}Unit"></span>`;
+}
+
+function renderExtraAnlagen() {
+  const root = qs('#extra-anlagen');
+  if (!root) return;
+  const n = plantCount();
+  const plants = readExtraPlantsFromForm();
+  patchConsumption({ extraPlants: plants });
+  root.innerHTML = [2, 3, 4]
+    .map((number) => {
+      const plant = plants[number - 2] || {};
+      return `<div class="anlage-box" id="anlage-${number}" ${n < number ? 'hidden' : ''}>
+        <h3>Anlage ${number}</h3>
+        <div class="field">
+          <span class="field__label"><span class="req" aria-hidden="true">*</span>Energieträger</span>
+          <div class="carrier-grid" role="radiogroup">${extraCarrierGrid(number, plant.energietraeger)}</div>
+          <span class="field__error" data-error-for="anlage${number}Energietraeger"></span>
+        </div>
+        <div class="field" style="margin-top: 0.85rem">
+          <span class="field__label"><span class="req" aria-hidden="true">*</span>Einheit</span>
+          ${extraUnitGrid(number, plant.energietraeger, plant.unit)}
+        </div>
+        <div class="field" style="margin-top: 0.85rem">
+          <label class="field__label" for="anlage${number}Baujahr">Baujahr</label>
+          <input class="input" id="anlage${number}Baujahr" name="anlage${number}Baujahr" type="number" min="1800" max="2026" value="${plant.baujahr || ''}" />
+        </div>
+      </div>`;
+    })
+    .join('');
+}
+
 export function renderPeriodCards() {
   const { consumption, building } = getState();
   const showWw = building.warmwasser !== 'enthalten';
+  const extras = plantCount();
+  const extraPlants = consumption.extraPlants || [];
   const root = qs('#periods-container');
   root.innerHTML = consumption.periods
-    .map(
-      (period, index) => `<article class="period-card">
+    .map((period, index) => {
+      let extraFields = '';
+      for (let number = 2; number <= extras; number += 1) {
+        const plant = extraPlants[number - 2] || {};
+        const unit = plant.unit || 'kWh';
+        const field = `consumption${number}`;
+        extraFields += `<div class="field">
+          <label class="field__label" for="c${number}-${index}"><span class="req" aria-hidden="true">*</span>Verbrauch Anlage ${number} (${unit})</label>
+          <input class="input" id="c${number}-${index}" type="number" min="0.01" step="0.01"
+            value="${period[field] || ''}" data-period="${index}" data-field="${field}" required />
+          <span class="field__error" data-error-for="period-${index}-${field}"></span>
+        </div>`;
+      }
+      return `<article class="period-card">
       <h3>${period.label}</h3>
       <div class="grid-3">
         <div class="field">
           <div class="label-line">
-            <label class="field__label" for="c-${index}"><span class="req" aria-hidden="true">*</span>Jahresverbrauch (${consumption.unit || 'kWh'})</label>
+            <label class="field__label" for="c-${index}"><span class="req" aria-hidden="true">*</span>Verbrauch Anlage 1 (${consumption.unit || 'kWh'})</label>
             ${
               index === 0
-                ? `<button type="button" class="info-btn" aria-label="Hinweis zum Verbrauch" aria-expanded="false">i<span class="info-pop" role="tooltip">Tragen Sie den Jahresverbrauch des ganzen Gebäudes ein – keine Monatswerte und nicht nur eine Wohnung. Punkt als Tausendertrennzeichen und Komma als Dezimalzeichen werden erkannt.</span></button>`
+                ? `<button type="button" class="info-btn" aria-label="Hinweis zum Verbrauch" aria-expanded="false">i<span class="info-pop" role="tooltip">Je Anlage den Jahresverbrauch des ganzen Gebäudes eintragen – keine Monatswerte. Mehrere Anlagen werden addiert.</span></button>`
                 : ''
             }
           </div>
@@ -208,6 +318,7 @@ export function renderPeriodCards() {
             value="${period.consumption}" data-period="${index}" data-field="consumption" required />
           <span class="field__error" data-error-for="period-${index}-consumption"></span>
         </div>
+        ${extraFields}
         <div class="field">
           <label class="field__label" for="v-${index}"><span class="req" aria-hidden="true">*</span>Leerstand %</label>
           <input class="input" id="v-${index}" type="number" min="0" max="99.9" step="0.1"
@@ -221,11 +332,11 @@ export function renderPeriodCards() {
             <input class="input" id="w-${index}" type="number" min="0" step="0.01"
               value="${period.warmWater}" data-period="${index}" data-field="warmWater" />
           </div>`
-            : '<div></div>'
+            : ''
         }
       </div>
-    </article>`
-    )
+    </article>`;
+    })
     .join('');
 }
 
@@ -328,6 +439,18 @@ export function bindConsumption() {
       readBuildingForm();
       return;
     }
+    if (/^anlage[2-4]Energietraeger$/.test(event.target.name)) {
+      const plants = readExtraPlantsFromForm();
+      patchConsumption({ extraPlants: plants });
+      renderExtraAnlagen();
+      renderPeriodCards();
+      return;
+    }
+    if (/^anlage[2-4]Unit$/.test(event.target.name)) {
+      patchConsumption({ extraPlants: readExtraPlantsFromForm() });
+      renderPeriodCards();
+      return;
+    }
     if (event.target.name === 'unit') {
       patchConsumption({ unit: event.target.value });
       renderPeriodCards();
@@ -365,6 +488,9 @@ export function bindConsumption() {
 
   qs('#form-consumption').addEventListener('input', (event) => {
     if (event.target.name === 'baujahrHeizung' || String(event.target.name || '').startsWith('anlage')) {
+      if (String(event.target.name || '').startsWith('anlage')) {
+        patchConsumption({ extraPlants: readExtraPlantsFromForm() });
+      }
       readBuildingForm();
     }
   });
@@ -385,10 +511,9 @@ export function bindConsumption() {
 function syncPlantCount() {
   const n = Number(qs('input[name="anzahlHeizungsanlagen"]:checked')?.value || 1);
   patchBuilding({ anzahlHeizungsanlagen: String(n) });
-  [2, 3, 4].forEach((i) => {
-    const box = qs(`#anlage-${i}`);
-    if (box) box.hidden = n < i;
-  });
+  patchConsumption({ extraPlants: readExtraPlantsFromForm() });
+  renderExtraAnlagen();
+  renderPeriodCards();
 }
 
 export function validateStepConsumption() {
@@ -405,7 +530,15 @@ export function validateStepConsumption() {
     heatErrors.baujahrHeizung = 'Baujahr der Heizung prüfen.';
   }
   applyBuildingErrors(heatErrors);
-  const errors = validateConsumption(getState().consumption);
+  const consumptionState = {
+    ...getState().consumption,
+    extraPlants: readExtraPlantsFromForm(),
+  };
+  patchConsumption({ extraPlants: consumptionState.extraPlants });
+  const errors = {
+    ...validateConsumption(consumptionState),
+    ...validateExtraPlants(consumptionState, plants),
+  };
   Object.entries(errors).forEach(([name, message]) => {
     setFieldError(form, name, message);
   });

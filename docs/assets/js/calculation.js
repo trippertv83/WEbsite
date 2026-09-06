@@ -91,6 +91,27 @@ function warmWaterAddition(warmwasserMode, area, periods) {
   return DEFAULT_WW_SPECIFIC * area;
 }
 
+function extraActivePlants(consumption, building) {
+  const count = Math.min(4, Math.max(1, Number(building.anzahlHeizungsanlagen) || 1));
+  return (consumption.extraPlants || [])
+    .slice(0, count - 1)
+    .map((plant, index) => ({
+      number: index + 2,
+      field: `consumption${index + 2}`,
+      energietraeger: plant.energietraeger,
+      unit: plant.unit,
+      label: getCarrier(plant.energietraeger)?.label || `Anlage ${index + 2}`,
+    }))
+    .filter((plant) => plant.energietraeger && plant.unit);
+}
+
+function periodPlantKwh(period, carrierId, unitId, field) {
+  const value = Number(field === 'consumption' ? period.consumption : period[field]);
+  if (!Number.isFinite(value) || value <= 0) return 0;
+  const vacantCorrected = correctVacancy(convertToKwh(value, carrierId, unitId), period.vacancy);
+  return vacantCorrected;
+}
+
 export function calculateCertificate({
   building,
   consumption,
@@ -102,40 +123,69 @@ export function calculateCertificate({
   const carrier = getCarrier(consumption.energietraeger);
   if (!carrier) throw new Error('Energieträger fehlt.');
 
+  const extras = extraActivePlants(consumption, building);
   const yearly = consumption.periods.map((period, index) => {
-    const raw = convertToKwh(
-      Number(period.consumption),
+    const kf =
+      Number(climateFactors?.[index] ?? period.climateFactor ?? climateFactor) || 1;
+    const mainVacant = periodPlantKwh(
+      period,
       consumption.energietraeger,
-      consumption.unit
+      consumption.unit,
+      'consumption'
     );
-    const vacantCorrected = correctVacancy(raw, period.vacancy);
-    const kf = Number(
-      climateFactors?.[index] ?? period.climateFactor ?? climateFactor
-    ) || 1;
-    const climateCorrected = applyClimateFactor(vacantCorrected, kf);
+    const mainKwh = applyClimateFactor(mainVacant, kf);
+    let kwh = mainKwh;
+    let peHeat = mainKwh * PRIMARY_FACTORS[consumption.energietraeger];
+    let co2Heat = mainKwh * CO2_FACTORS[consumption.energietraeger];
+    const plants = [
+      {
+        number: 1,
+        label: carrier.label,
+        kwh: mainKwh,
+      },
+    ];
+    extras.forEach((plant) => {
+      const vacant = periodPlantKwh(period, plant.energietraeger, plant.unit, plant.field);
+      const plantKwh = applyClimateFactor(vacant, kf);
+      kwh += plantKwh;
+      peHeat += plantKwh * PRIMARY_FACTORS[plant.energietraeger];
+      co2Heat += plantKwh * CO2_FACTORS[plant.energietraeger];
+      plants.push({ number: plant.number, label: plant.label, kwh: plantKwh });
+    });
     return {
       label: period.label,
-      kwh: climateCorrected,
+      kwh,
+      peHeat,
+      co2Heat,
       climateFactor: kf,
+      plants,
     };
   });
 
   const avgEnd = yearly.reduce((acc, y) => acc + y.kwh, 0) / yearly.length;
+  const avgPeHeat = yearly.reduce((acc, y) => acc + y.peHeat, 0) / yearly.length;
+  const avgCo2Heat = yearly.reduce((acc, y) => acc + y.co2Heat, 0) / yearly.length;
   const ww = warmWaterAddition(building.warmwasser, area, consumption.periods);
   const endEnergy = avgEnd + ww;
-  const peFactor = PRIMARY_FACTORS[consumption.energietraeger];
-  const co2Factor = CO2_FACTORS[consumption.energietraeger];
-  const primaryEnergy = endEnergy * peFactor;
-  const co2 = endEnergy * co2Factor;
+  const peFactorMain = PRIMARY_FACTORS[consumption.energietraeger];
+  const co2FactorMain = CO2_FACTORS[consumption.energietraeger];
+  const primaryEnergy = avgPeHeat + ww * peFactorMain;
+  const co2 = avgCo2Heat + ww * co2FactorMain;
   const endSpecific = endEnergy / area;
   const primarySpecific = primaryEnergy / area;
   const co2Specific = co2 / area;
   const efficiencyClass = getEfficiencyClass(primarySpecific);
+  const peFactor = endEnergy ? primaryEnergy / endEnergy : peFactorMain;
+  const extraLabels = extras.map((item) => item.label);
+  const carrierLabel = extraLabels.length
+    ? [carrier.label, ...extraLabels].join(' + ')
+    : carrier.label;
 
   return {
     area,
     carrierId: consumption.energietraeger,
-    carrierLabel: carrier.label,
+    carrierLabel,
+    extraPlants: extras,
     unit: consumption.unit,
     climateFactor: climateFactors
       ? climateFactors.reduce((a, b) => a + Number(b), 0) / climateFactors.length
@@ -151,7 +201,7 @@ export function calculateCertificate({
     co2Specific,
     efficiencyClass,
     peFactor,
-    co2Factor,
+    co2Factor: endEnergy ? co2 / endEnergy : co2FactorMain,
     bandPercent: bandPositionPercent(primarySpecific),
   };
 }

@@ -61,5 +61,10 @@ export async function renderCalculation() {
       ${formatDeNumber(result.primarySpecific, 1)} kWh/(m²·a) Primärenergie
       (Faktor ${formatDeNumber(result.peFactor, 2)}).
     </p>
+    ${
+      result.extraPlants?.length
+        ? `<p class="field__hint">Energieträger: ${result.carrierLabel}. Zusätzliche Anlagen werden mit eigenem Verbrauch, Primärenergiefaktor und CO₂-Faktor addiert.</p>`
+        : ''
+    }
   `;
 }
