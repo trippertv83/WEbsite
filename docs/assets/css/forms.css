@@ -102,6 +102,9 @@ textarea.input {
   border-radius: var(--radius-md);
   resize: vertical;
 }
+
+.input,
+.select {
   min-height: 50px;
   width: 100%;
   border: 1px solid var(--color-line);
