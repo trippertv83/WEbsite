@@ -6,9 +6,9 @@ import { AppConfig } from './config.example.js';
 import { getState, patch, patchCustomer, patchBuilding, serializeForBackend } from './assets/js/state.js';
 import { createOrderNumber, qs, showToast } from './assets/js/utils.js';
 import { bindInfoTips } from './assets/js/info-tips.js';
-import { bindStepper, renderStepper, showStep } from './assets/js/wizard.js?v=20260906b';
+import { bindStepper, renderStepper, showStep } from './assets/js/wizard.js?v=20260906c';
 import { bindRegister, showWizard } from './assets/js/step-register.js?v=20260905d';
-import { bindBuildingLive, validateStepBuilding } from './assets/js/step-building.js';
+import { bindBuildingLive, validateStepBuilding, readBuildingForm } from './assets/js/step-building.js';
 import {
   bindConsumption,
   validateStepConsumption,
@@ -102,6 +102,13 @@ async function onCheckout() {
 
 function bindNav() {
   document.addEventListener('click', (event) => {
+    const save = event.target.closest('[data-save-draft]');
+    if (save) {
+      readBuildingForm();
+      sessionStorage.setItem('ea_wizard_draft', JSON.stringify(serializeForBackend()));
+      showToast('Angaben zwischengespeichert.');
+      return;
+    }
     const next = event.target.closest('[data-next]');
     const prev = event.target.closest('[data-prev]');
     if (next) {

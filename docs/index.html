@@ -8,7 +8,7 @@
       content="Verbrauchsausweis für Wohngebäude online erstellen und bestellen."
     />
     <title>Verbrauchsausweis bestellen | Energieausweis Pro</title>
-    <link rel="stylesheet" href="style.css?v=20260906b" />
+    <link rel="stylesheet" href="style.css?v=20260906c" />
   </head>
   <body class="is-register-only">
     <a class="skip-link" href="#main">Zum Inhalt springen</a>
@@ -244,9 +244,14 @@
       <div class="wizard-body">
         <section class="panel" id="step-1" data-step="1">
           <div class="panel__head">
-            <div>
-              <h1 tabindex="-1">Objektdaten</h1>
-              <p>Adresse, Gebäudeart und die wichtigsten Merkmale Ihres Wohngebäudes.</p>
+            <div class="section-head">
+              <span class="section-head__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 3 3 10.2V21h6.2v-6.5h5.6V21H21V10.2L12 3z"/></svg>
+              </span>
+              <div>
+                <h1 tabindex="-1">Objektdaten</h1>
+                <p>Adresse, Gebäudeart und die wichtigsten Merkmale Ihres Wohngebäudes.</p>
+              </div>
             </div>
           </div>
           <form id="form-building" novalidate>
@@ -296,7 +301,8 @@
                 />
                 <span class="field__error" data-error-for="wohnflaeche"></span>
               </div>
-              <div class="field">
+            </div>
+            <div class="field" style="margin-top: 1.1rem">
                 <div class="label-line">
                   <span class="field__label" id="gebaeudetyp-label"><span class="req" aria-hidden="true">*</span>Gebäudetyp</span>
                   <button type="button" class="info-btn" aria-label="Hinweis zum Gebäudetyp" aria-expanded="false">
@@ -304,17 +310,18 @@
                     <span class="info-pop" role="tooltip">Wählen Sie die Gebäudeart, die Ihr Objekt am besten beschreibt. Maßgeblich ist die tatsächliche Bauform, nicht die Eigentumsform.</span>
                   </button>
                 </div>
-                <div class="choice-group choice-group--stack" role="radiogroup" aria-labelledby="gebaeudetyp-label">
-                  <label class="choice choice-card"><input type="radio" name="gebaeudetyp" value="Einfamilienhaus" required /><span>Einfamilienhaus</span></label>
-                  <label class="choice choice-card"><input type="radio" name="gebaeudetyp" value="Zweifamilienhaus" /><span>Zweifamilienhaus</span></label>
-                  <label class="choice choice-card"><input type="radio" name="gebaeudetyp" value="Mehrfamilienhaus" /><span>Mehrfamilienhaus</span></label>
-                  <label class="choice choice-card"><input type="radio" name="gebaeudetyp" value="einseitig angebautes Gebäude" /><span>einseitig angebautes Gebäude</span></label>
-                  <label class="choice choice-card"><input type="radio" name="gebaeudetyp" value="beidseitig angebautes Gebäude" /><span>beidseitig angebautes Gebäude</span></label>
-                  <label class="choice choice-card"><input type="radio" name="gebaeudetyp" value="Wohnteil gemischt genutztes Gebäude" /><span>Wohnteil gemischt genutztes Gebäude</span></label>
-                  <label class="choice choice-card"><input type="radio" name="gebaeudetyp" value="sonstiges Wohngebäude" /><span>sonstiges Wohngebäude</span></label>
+                <div class="type-grid" role="radiogroup" aria-labelledby="gebaeudetyp-label">
+                  <label class="type-tile"><input type="radio" name="gebaeudetyp" value="Einfamilienhaus" required /><span><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3 4 9.4V21h6v-6h4v6h6V9.4L12 3z"/></svg>Einfamilienhaus</span></label>
+                  <label class="type-tile"><input type="radio" name="gebaeudetyp" value="Zweifamilienhaus" /><span><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 21V10l6-5 6 5v11H3zm2-2h8v-8.2L9 6.7 5 10.8V19z"/></svg>Zweifamilienhaus</span></label>
+                  <label class="type-tile"><input type="radio" name="gebaeudetyp" value="Mehrfamilienhaus" /><span><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 21V3h10v6h6v12H4zm2-2h6V5H6v14zm8 0h6v-8h-6v8z"/></svg>Mehrfamilienhaus</span></label>
+                  <label class="type-tile"><input type="radio" name="gebaeudetyp" value="einseitig angebautes Gebäude" /><span><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 21V8l8-5 8 5v13h-6v-7H10v7H4z"/></svg>einseitig angebaut</span></label>
+                  <label class="type-tile"><input type="radio" name="gebaeudetyp" value="beidseitig angebautes Gebäude" /><span><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M2 21V10l5-4 5 4v11H2zm10 0V10l5-4 5 4v11h-4v-7h-2v7h-4z"/></svg>beidseitig angebaut</span></label>
+                  <label class="type-tile"><input type="radio" name="gebaeudetyp" value="Wohnteil gemischt genutztes Gebäude" /><span><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 21V7l8-4 8 4v4h2v10H3z"/></svg>Wohnteil gemischt</span></label>
+                  <label class="type-tile"><input type="radio" name="gebaeudetyp" value="sonstiges Wohngebäude" /><span><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 21V9l8-6 8 6v12H4z"/></svg>sonstiges Wohngebäude</span></label>
                 </div>
                 <span class="field__error" data-error-for="gebaeudetyp"></span>
-              </div>
+            </div>
+            <div class="grid-2" style="margin-top: 1rem">
               <div class="field">
                 <label class="field__label" for="nutzflaeche">Nutzfläche (m²)</label>
                 <input
@@ -384,22 +391,22 @@
                     <span class="info-pop" role="tooltip">Markieren Sie, wie das Gebäude belüftet wird. Reine Fensterlüftung, Schacht oder Anlage mit bzw. ohne Wärmerückgewinnung – mehrere Angaben sind möglich.</span>
                   </button>
                 </div>
-                <div class="choice-group choice-group--stack" role="group" aria-labelledby="lueftung-label">
-                  <label class="choice choice-card">
+                <div class="icon-grid" role="group" aria-labelledby="lueftung-label">
+                  <label class="icon-tile">
                     <input type="checkbox" name="lueftung" value="Fensterlüftung" checked />
-                    <span>Fensterlüftung</span>
+                    <span><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 4h16v16H4V4zm2 2v12h5V6H6zm7 0v12h5V6h-5z"/></svg>Fensterlüftung</span>
                   </label>
-                  <label class="choice choice-card">
+                  <label class="icon-tile">
                     <input type="checkbox" name="lueftung" value="Schachtlüftung" />
-                    <span>Schachtlüftung</span>
+                    <span><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 3h8v18H8V3zm2 2v14h4V5h-4z"/></svg>Schachtlüftung</span>
                   </label>
-                  <label class="choice choice-card">
+                  <label class="icon-tile">
                     <input type="checkbox" name="lueftung" value="Lüftungsanlage mit Wärmerückgewinnung" />
-                    <span>Lüftungsanlage mit Wärmerückgewinnung</span>
+                    <span><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 4a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-1 3h2v5.2l3.2 1.9-1 1.7L11 13V7z"/></svg>Anlage mit WRG</span>
                   </label>
-                  <label class="choice choice-card">
+                  <label class="icon-tile">
                     <input type="checkbox" name="lueftung" value="Lüftungsanlage ohne Wärmerückgewinnung" />
-                    <span>Lüftungsanlage ohne Wärmerückgewinnung</span>
+                    <span><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 12a8 8 0 1 1 16 0H4zm8-6a6 6 0 0 0-5.7 4h11.4A6 6 0 0 0 12 6z"/></svg>Anlage ohne WRG</span>
                   </label>
                 </div>
               </div>
@@ -458,19 +465,6 @@
                   required
                 />
                 <span class="field__error" data-error-for="baujahr"></span>
-              </div>
-              <div class="field">
-                <label class="field__label" for="baujahrHeizung"><span class="req" aria-hidden="true">*</span>Baujahr Wärmeerzeuger</label>
-                <input
-                  class="input"
-                  id="baujahrHeizung"
-                  name="baujahrHeizung"
-                  type="number"
-                  min="1800"
-                  max="2026"
-                  required
-                />
-                <span class="field__error" data-error-for="baujahrHeizung"></span>
               </div>
             </div>
             <div class="field" style="margin-top: 1rem">
@@ -631,24 +625,50 @@
             </fieldset>
             </div>
           </form>
-          <div class="btn-row">
+          <div class="wizard-footer">
             <span></span>
-            <button class="btn btn--primary" type="button" data-next>Weiter</button>
+            <div class="wizard-footer__right">
+              <button class="btn btn--ghost" type="button" data-save-draft>Speichern</button>
+              <button class="btn btn--primary" type="button" data-next>Wärmeverbrauch <span aria-hidden="true">→</span></button>
+            </div>
           </div>
         </section>
 
         <section class="panel" id="step-2" data-step="2" hidden>
           <div class="panel__head">
-            <div>
-              <h1 tabindex="-1">Wärmeverbrauch</h1>
-              <p>Energieträger, Einheit und drei vollständige Abrechnungsjahre – so wie auf der Jahresabrechnung.</p>
+            <div class="section-head">
+              <span class="section-head__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2s4 4.2 4 8.2c0 2.4-1.4 4.4-3.3 5.3.6-1.1.9-2.3.7-3.6-.3-1.8-1.6-3.2-3.4-3.9C11.6 11.2 10 14 10 16.4 10 19.5 12.2 22 12 22c4.4 0 8-3.4 8-8.2C20 8 12 2 12 2z"/></svg>
+              </span>
+              <div>
+                <h1 tabindex="-1">Wärmeverbrauch</h1>
+                <p>Angaben zu Heizungssystemen, Einheiten und Energieverbrauch.</p>
+              </div>
             </div>
           </div>
           <form id="form-consumption" novalidate>
             <div class="block-card">
-            <div class="field">
-              <div class="label-line">
-                <span class="field__label" id="carrier-label"><span class="req" aria-hidden="true">*</span>Energieträger</span>
+              <h2 class="card-title">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2s4 4.2 4 8.2C16 16 12 22 12 22S8 16 8 10.2C8 6.2 12 2 12 2z"/></svg>
+                Heizungsanlagen
+              </h2>
+              <div class="field">
+                <div class="label-line">
+                  <span class="field__label" id="anlagen-label"><span class="req" aria-hidden="true">*</span>Wie viele Heizungsanlagen hat das Gebäude?</span>
+                </div>
+                <div class="count-grid" role="radiogroup" aria-labelledby="anlagen-label">
+                  <label class="count-tile"><input type="radio" name="anzahlHeizungsanlagen" value="1" checked /><span>1 Anlage</span></label>
+                  <label class="count-tile"><input type="radio" name="anzahlHeizungsanlagen" value="2" /><span>2 Anlagen</span></label>
+                  <label class="count-tile"><input type="radio" name="anzahlHeizungsanlagen" value="3" /><span>3 Anlagen</span></label>
+                  <label class="count-tile"><input type="radio" name="anzahlHeizungsanlagen" value="4" /><span>4 Anlagen</span></label>
+                </div>
+                <span class="field__error" data-error-for="anzahlHeizungsanlagen"></span>
+              </div>
+              <div class="anlage-box">
+                <h3>Anlage 1</h3>
+                <div class="field">
+                  <div class="label-line">
+                    <span class="field__label" id="carrier-label"><span class="req" aria-hidden="true">*</span>Energieträger</span>
                 <button type="button" class="info-btn" aria-label="Hinweis zum Energieträger" aria-expanded="false">
                   i
                   <span class="info-pop" role="tooltip">Übernehmen Sie den Energieträger genau von der Abrechnung. Bei Erdgas unterscheiden L und H: rund 9–10 kWh/m³ entspricht L, 11–13 kWh/m³ entspricht H. Eine Verwechslung verschiebt das Ergebnis deutlich.</span>
@@ -656,6 +676,88 @@
               </div>
               <div class="carrier-grid" id="carrier-grid" role="radiogroup" aria-labelledby="carrier-label"></div>
               <span class="field__error" data-error-for="energietraeger"></span>
+              <p class="help-box">Bei Erdgas bitte L oder H anhand des Brennwerts auf der Rechnung wählen (etwa 9–10 kWh/m³ = L, 11–13 kWh/m³ = H).</p>
+              <div class="grid-2" style="margin-top: 1rem">
+                <div class="field">
+                  <label class="field__label" for="heizzweck"><span class="req" aria-hidden="true">*</span>Zweck</label>
+                  <select class="select" id="heizzweck" name="heizzweck">
+                    <option value="Heizung">Heizung</option>
+                    <option value="Heizung + Warmwasser" selected>Heizung + Warmwasser</option>
+                    <option value="Warmwasser">Warmwasser</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label class="field__label" for="baujahrHeizung"><span class="req" aria-hidden="true">*</span>Baujahr des Wärmeerzeugers</label>
+                  <input class="input" id="baujahrHeizung" name="baujahrHeizung" type="number" min="1800" max="2026" required />
+                  <span class="field__error" data-error-for="baujahrHeizung"></span>
+                </div>
+              </div>
+            </div>
+            <div class="anlage-box" id="anlage-2" hidden>
+              <h3>Anlage 2</h3>
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field__label" for="anlage2Energietraeger">Energieträger</label>
+                  <select class="select" id="anlage2Energietraeger" name="anlage2Energietraeger">
+                    <option value="">Bitte wählen</option>
+                    <option value="erdgas">Erdgas</option>
+                    <option value="heizoel">Heizöl</option>
+                    <option value="fernwaerme">Fernwärme</option>
+                    <option value="strom">Strom</option>
+                    <option value="holz">Holz</option>
+                    <option value="pellets">Pellets</option>
+                    <option value="waermepumpe">Wärmepumpe</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label class="field__label" for="anlage2Baujahr">Baujahr</label>
+                  <input class="input" id="anlage2Baujahr" name="anlage2Baujahr" type="number" min="1800" max="2026" />
+                </div>
+              </div>
+            </div>
+            <div class="anlage-box" id="anlage-3" hidden>
+              <h3>Anlage 3</h3>
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field__label" for="anlage3Energietraeger">Energieträger</label>
+                  <select class="select" id="anlage3Energietraeger" name="anlage3Energietraeger">
+                    <option value="">Bitte wählen</option>
+                    <option value="erdgas">Erdgas</option>
+                    <option value="heizoel">Heizöl</option>
+                    <option value="fernwaerme">Fernwärme</option>
+                    <option value="strom">Strom</option>
+                    <option value="holz">Holz</option>
+                    <option value="pellets">Pellets</option>
+                    <option value="waermepumpe">Wärmepumpe</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label class="field__label" for="anlage3Baujahr">Baujahr</label>
+                  <input class="input" id="anlage3Baujahr" name="anlage3Baujahr" type="number" min="1800" max="2026" />
+                </div>
+              </div>
+            </div>
+            <div class="anlage-box" id="anlage-4" hidden>
+              <h3>Anlage 4</h3>
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field__label" for="anlage4Energietraeger">Energieträger</label>
+                  <select class="select" id="anlage4Energietraeger" name="anlage4Energietraeger">
+                    <option value="">Bitte wählen</option>
+                    <option value="erdgas">Erdgas</option>
+                    <option value="heizoel">Heizöl</option>
+                    <option value="fernwaerme">Fernwärme</option>
+                    <option value="strom">Strom</option>
+                    <option value="holz">Holz</option>
+                    <option value="pellets">Pellets</option>
+                    <option value="waermepumpe">Wärmepumpe</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label class="field__label" for="anlage4Baujahr">Baujahr</label>
+                  <input class="input" id="anlage4Baujahr" name="anlage4Baujahr" type="number" min="1800" max="2026" />
+                </div>
+              </div>
             </div>
             <p id="lager-open-wrap" hidden style="margin-top: 1rem">
               <button class="btn btn--ghost" type="button" id="btn-open-lager">
@@ -693,67 +795,210 @@
             <div id="periods-container"></div>
             </div>
           </form>
-          <div class="btn-row">
-            <button class="btn btn--ghost" type="button" data-prev>Zurück</button>
-            <button class="btn btn--primary" type="button" data-next>Weiter</button>
+          <div class="wizard-footer">
+            <button class="btn btn--ghost" type="button" data-prev><span aria-hidden="true">←</span> Zurück</button>
+            <div class="wizard-footer__right">
+              <button class="btn btn--ghost" type="button" data-save-draft>Speichern</button>
+              <button class="btn btn--primary" type="button" data-next>Leerstand &amp; Energienutzung <span aria-hidden="true">→</span></button>
+            </div>
           </div>
         </section>
 
         <section class="panel" id="step-3" data-step="3" hidden>
           <div class="panel__head">
-            <div>
-              <h1 tabindex="-1">Leerstand &amp; Energienutzung</h1>
-              <p>Laden Sie die Nachweise als PDF hoch. Leerstandsanteile tragen Sie in den Verbrauchsjahren ein.</p>
+            <div class="section-head">
+              <span class="section-head__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-4 0-8 2-8 5v2h16v-2c0-3-4-5-8-5z"/></svg>
+              </span>
+              <div>
+                <h1 tabindex="-1">Leerstand &amp; Energienutzung</h1>
+                <p>Leerstandsanteile stehen bei den Verbrauchsjahren. Hier laden Sie die Nachweise hoch.</p>
+              </div>
             </div>
           </div>
           <div class="block-card" id="documents-root"></div>
-          <div class="btn-row">
-            <button class="btn btn--ghost" type="button" data-prev>Zurück</button>
-            <button class="btn btn--primary" type="button" data-next>Weiter</button>
+          <div class="wizard-footer">
+            <button class="btn btn--ghost" type="button" data-prev><span aria-hidden="true">←</span> Zurück</button>
+            <div class="wizard-footer__right">
+              <button class="btn btn--ghost" type="button" data-save-draft>Speichern</button>
+              <button class="btn btn--primary" type="button" data-next>Bauteile <span aria-hidden="true">→</span></button>
+            </div>
           </div>
         </section>
 
         <section class="panel" id="step-4" data-step="4" hidden>
           <div class="panel__head">
-            <div>
-              <h1 tabindex="-1">Bauteile</h1>
-              <p>Endenergie, Primärenergie, CO₂ und Effizienzklasse inklusive Klimakorrektur nach PLZ.</p>
+            <div class="section-head">
+              <span class="section-head__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 3 2 8l10 5 10-5-10-5zm0 9.2L4.2 8.4 12 12.4l7.8-4L12 12.2zM4.2 13.2 12 17.2l7.8-4v2.2L12 19.6 4.2 15.4v-2.2z"/></svg>
+              </span>
+              <div>
+                <h1 tabindex="-1">Bauteile</h1>
+                <p>Dämmung, Fenster und Anlagentechnik – plus die berechneten Kennwerte.</p>
+              </div>
             </div>
           </div>
-          <div class="block-card" id="calculation-root"></div>
-          <div class="btn-row">
-            <button class="btn btn--ghost" type="button" data-prev>Zurück</button>
-            <button class="btn btn--primary" type="button" data-next>Zur Vorschau</button>
+          <form id="form-parts" novalidate>
+            <div class="block-card">
+              <h2 class="card-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 21V3h18v18H3zm2-2h14V5H5v14zm2-2h4v-4H7v4zm6 0h4v-4h-4v4zM7 11h4V7H7v4zm6 0h4V7h-4v4z"/></svg>Außenwände</h2>
+              <div class="field">
+                <div class="label-line">
+                  <span class="field__label"><span class="req" aria-hidden="true">*</span>Sind die Außenwände (oder Teile davon) gedämmt?</span>
+                </div>
+                <div class="choice-group" role="radiogroup">
+                  <label class="choice choice-card" style="flex:1"><input type="radio" name="waendeGedaemmt" value="ja" /><span>Ja</span></label>
+                  <label class="choice choice-card" style="flex:1"><input type="radio" name="waendeGedaemmt" value="nein" /><span>Nein</span></label>
+                </div>
+              </div>
+            </div>
+            <div class="block-card" style="margin-top: 1.25rem">
+              <h2 class="card-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3 3 12h3v9h12v-9h3L12 3z"/></svg>Dach</h2>
+              <div class="field">
+                <div class="label-line">
+                  <span class="field__label"><span class="req" aria-hidden="true">*</span>Ist das Dach oder die oberste Geschossdecke gedämmt?</span>
+                </div>
+                <div class="choice-group" role="radiogroup">
+                  <label class="choice choice-card" style="flex:1"><input type="radio" name="dachGedaemmt" value="ja" /><span>Ja</span></label>
+                  <label class="choice choice-card" style="flex:1"><input type="radio" name="dachGedaemmt" value="nein" /><span>Nein</span></label>
+                </div>
+              </div>
+            </div>
+            <div class="block-card" style="margin-top: 1.25rem">
+              <h2 class="card-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 10.5 12 4l8 6.5V21H4V10.5zM6 19h12v-7.4L12 7 6 11.6V19z"/></svg>Keller</h2>
+              <div class="field">
+                <div class="label-line">
+                  <span class="field__label"><span class="req" aria-hidden="true">*</span>Ist die Kellerdecke (unbeheizter Keller) oder der Boden gedämmt?</span>
+                </div>
+                <div class="choice-group" role="radiogroup">
+                  <label class="choice choice-card" style="flex:1"><input type="radio" name="kellerdeckeGedaemmt" value="ja" /><span>Ja</span></label>
+                  <label class="choice choice-card" style="flex:1"><input type="radio" name="kellerdeckeGedaemmt" value="nein" /><span>Nein</span></label>
+                </div>
+              </div>
+            </div>
+            <div class="block-card" style="margin-top: 1.25rem">
+              <h2 class="card-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 4h16v16H4V4zm2 2v12h5V6H6zm7 0v12h5V6h-5z"/></svg>Fenster</h2>
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field__label" for="fensterverglasung">Welche Verglasung haben die Fenster überwiegend?</label>
+                  <select class="select" id="fensterverglasung" name="fensterverglasung">
+                    <option value="">Bitte wählen</option>
+                    <option value="Einfachverglasung">Einfachverglasung</option>
+                    <option value="Isolierverglasung">Isolierverglasung</option>
+                    <option value="Wärmeschutzverglasung (2- oder 3-fach)">Wärmeschutzverglasung (2- oder 3-fach)</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label class="field__label" for="fensterBaujahr">Ungefähres Baujahr der Fenster</label>
+                  <input class="input" id="fensterBaujahr" name="fensterBaujahr" type="number" min="1800" max="2026" />
+                </div>
+              </div>
+              <div class="field" style="margin-top: 1rem">
+                <span class="field__label">Wurden Ihre Fenster ausgetauscht oder erneuert?</span>
+                <div class="choice-group" role="radiogroup">
+                  <label class="choice choice-card" style="flex:1"><input type="radio" name="fensterErneuert" value="ja" /><span>Ja</span></label>
+                  <label class="choice choice-card" style="flex:1"><input type="radio" name="fensterErneuert" value="nein" /><span>Nein</span></label>
+                </div>
+              </div>
+            </div>
+            <div class="block-card" style="margin-top: 1.25rem">
+              <h2 class="card-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21 7h-3V4h-2v3h-3v2h3v3h2V9h3V7zM4 20v-2.5L14 7.5 16.5 10 6.5 20H4zm1.8-1h.7l8.6-8.6-.7-.7L5.8 18.3v.7z"/></svg>Anlagentechnik</h2>
+              <div class="field">
+                <span class="field__label">Sind die Heizungs- und Warmwasserleitungen in unbeheizten Räumen überwiegend gedämmt?</span>
+                <div class="choice-group" role="radiogroup">
+                  <label class="choice choice-card" style="flex:1"><input type="radio" name="leitungenGedaemmt" value="ja" /><span>Ja</span></label>
+                  <label class="choice choice-card" style="flex:1"><input type="radio" name="leitungenGedaemmt" value="nein" /><span>Nein</span></label>
+                </div>
+              </div>
+              <div class="field" style="margin-top: 1rem">
+                <span class="field__label">Wie wird die Raumtemperatur geregelt?</span>
+                <div class="choice-group choice-group--stack" role="radiogroup">
+                  <label class="choice choice-card"><input type="radio" name="raumtemperatur" value="thermostat" /><span>Heizkörper mit Thermostatventilen</span></label>
+                  <label class="choice choice-card"><input type="radio" name="raumtemperatur" value="fussboden" /><span>Fußboden-/Flächenheizung mit Einzelraumregelung</span></label>
+                  <label class="choice choice-card"><input type="radio" name="raumtemperatur" value="keine" /><span>Keine Einzelraumregelung</span></label>
+                </div>
+              </div>
+            </div>
+          </form>
+          <div class="block-card" id="calculation-root" style="margin-top: 1.25rem"></div>
+          <div class="wizard-footer">
+            <button class="btn btn--ghost" type="button" data-prev><span aria-hidden="true">←</span> Zurück</button>
+            <div class="wizard-footer__right">
+              <button class="btn btn--ghost" type="button" data-save-draft>Speichern</button>
+              <button class="btn btn--primary" type="button" data-next>Ausweisübersicht <span aria-hidden="true">→</span></button>
+            </div>
           </div>
         </section>
 
         <section class="panel" id="step-5" data-step="5" hidden>
           <div class="panel__head">
-            <div>
-              <h1 tabindex="-1">Ausweisübersicht</h1>
-              <p>Vorläufiges Energieband – der amtliche Ausweis folgt nach der Bestellung.</p>
+            <div class="section-head">
+              <span class="section-head__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 2h9l5 5v15H6V2zm8 1.5V8h4.5L14 3.5z"/></svg>
+              </span>
+              <div>
+                <h1 tabindex="-1">Ausweisübersicht</h1>
+                <p>Vorläufiges Energieband – der amtliche Ausweis folgt nach der Bestellung.</p>
+              </div>
             </div>
           </div>
           <div class="block-card" id="preview-root"></div>
-          <div class="btn-row">
-            <button class="btn btn--ghost" type="button" data-prev>Zurück</button>
-            <button class="btn btn--primary" type="button" data-next>Zur Bestellung</button>
+          <form id="form-preview-notes" class="block-card" style="margin-top: 1.25rem" novalidate>
+            <label class="checkbox">
+              <input type="checkbox" name="angabenGeprueft" value="1" />
+              <span>Ich habe meine Angaben geprüft. Hinweise können unten hinterlegt werden, damit sie in die Bearbeitung einfließen.</span>
+            </label>
+            <h2 style="margin: 1.2rem 0 0.6rem; font-size: 1.05rem">Das bekommen Sie beim Kauf</h2>
+            <div class="benefit-grid">
+              <p>Offizieller Energieausweis als PDF</p>
+              <p>Prüfung durch das Ingenieurbüro</p>
+              <p>Rechnung und Nachweis für Behörden</p>
+              <p>Korrektur bei Bedarf nach Rückfrage</p>
+            </div>
+            <div class="field" style="margin-top: 1.2rem">
+              <div class="label-line">
+                <span class="field__label">Erscheint Ihr Energieverbrauch zu hoch?</span>
+              </div>
+              <div class="choice-group choice-group--stack" role="radiogroup">
+                <label class="choice choice-card"><input type="radio" name="verbrauchFeedback" value="realistisch" /><span>Der berechnete Wert wirkt realistisch</span></label>
+                <label class="choice choice-card"><input type="radio" name="verbrauchFeedback" value="zu-hoch" /><span>Der Wert erscheint mir zu hoch — bitte prüfen</span></label>
+                <label class="choice choice-card"><input type="radio" name="verbrauchFeedback" value="rueckmeldung" /><span>Ich möchte Rückmeldung vor der endgültigen Ausstellung</span></label>
+              </div>
+            </div>
+            <div class="field" style="margin-top: 1rem">
+              <label class="field__label" for="verbrauchHinweise">Ihre Hinweise (optional)</label>
+              <textarea class="input" id="verbrauchHinweise" name="verbrauchHinweise" rows="3" placeholder="z. B. Besonderheiten der Heizung oder der Nutzung"></textarea>
+            </div>
+          </form>
+          <div class="wizard-footer">
+            <button class="btn btn--ghost" type="button" data-prev><span aria-hidden="true">←</span> Zurück</button>
+            <div class="wizard-footer__right">
+              <button class="btn btn--ghost" type="button" data-save-draft>Speichern</button>
+              <button class="btn btn--primary" type="button" data-next>Abrechnung &amp; Lieferung <span aria-hidden="true">→</span></button>
+            </div>
           </div>
         </section>
 
         <section class="panel" id="step-6" data-step="6" hidden>
           <div class="panel__head">
-            <div>
-              <h1 tabindex="-1">Abrechnung &amp; Lieferung</h1>
-              <p>Angaben prüfen und den Verbrauchsausweis in den Warenkorb legen.</p>
+            <div class="section-head">
+              <span class="section-head__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5v-9z"/></svg>
+              </span>
+              <div>
+                <h1 tabindex="-1">Abrechnung &amp; Lieferung</h1>
+                <p>Angaben prüfen und den Verbrauchsausweis in den Warenkorb legen.</p>
+              </div>
             </div>
           </div>
           <div class="block-card" id="order-root"></div>
-          <div class="btn-row">
-            <button class="btn btn--ghost" type="button" data-prev>Zurück</button>
-            <button class="btn btn--primary" type="button" id="btn-checkout">
-              In den Warenkorb legen
-            </button>
+          <div class="wizard-footer">
+            <button class="btn btn--ghost" type="button" data-prev><span aria-hidden="true">←</span> Zurück</button>
+            <div class="wizard-footer__right">
+              <button class="btn btn--ghost" type="button" data-save-draft>Speichern</button>
+              <button class="btn btn--primary" type="button" id="btn-checkout">
+                In den Warenkorb legen
+              </button>
+            </div>
           </div>
         </section>
       </div>
@@ -896,6 +1141,6 @@
       </div>
     </dialog>
     <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
-    <script type="module" src="app.js?v=20260906b"></script>
+    <script type="module" src="app.js?v=20260906c"></script>
   </body>
 </html>

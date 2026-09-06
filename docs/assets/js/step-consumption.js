@@ -15,9 +15,10 @@ import {
   tankVolumeLiters,
   unitLabel,
 } from './lager.js';
-import { getState, patchConsumption } from './state.js';
-import { validateConsumption, isEmpty } from './validation.js';
+import { getState, patchBuilding, patchConsumption } from './state.js';
+import { validateBuilding, validateConsumption, isEmpty } from './validation.js';
 import { clearFormErrors, qs, setFieldError } from './utils.js';
+import { readBuildingForm, applyBuildingErrors } from './step-building.js';
 
 function keepPeriodValues(oldPeriods, nextPeriods) {
   return nextPeriods.map((period, index) => {
@@ -322,6 +323,11 @@ export function bindConsumption() {
   syncPeriodsFromInputs();
 
   qs('#form-consumption').addEventListener('change', (event) => {
+    if (event.target.name === 'anzahlHeizungsanlagen' || event.target.name === 'heizzweck') {
+      syncPlantCount();
+      readBuildingForm();
+      return;
+    }
     if (event.target.name === 'unit') {
       patchConsumption({ unit: event.target.value });
       renderPeriodCards();
@@ -357,6 +363,13 @@ export function bindConsumption() {
     applyTankFill(btn.dataset.tankTarget);
   });
 
+  qs('#form-consumption').addEventListener('input', (event) => {
+    if (event.target.name === 'baujahrHeizung' || String(event.target.name || '').startsWith('anlage')) {
+      readBuildingForm();
+    }
+  });
+  syncPlantCount();
+
   qs('#periods-container').addEventListener('input', (event) => {
     const input = event.target;
     if (!input.dataset.period) return;
@@ -369,12 +382,32 @@ export function bindConsumption() {
   });
 }
 
+function syncPlantCount() {
+  const n = Number(qs('input[name="anzahlHeizungsanlagen"]:checked')?.value || 1);
+  patchBuilding({ anzahlHeizungsanlagen: String(n) });
+  [2, 3, 4].forEach((i) => {
+    const box = qs(`#anlage-${i}`);
+    if (box) box.hidden = n < i;
+  });
+}
+
 export function validateStepConsumption() {
   const form = qs('#form-consumption');
   clearFormErrors(form);
+  const building = readBuildingForm();
+  const heatErrors = {};
+  const plants = Number(building.anzahlHeizungsanlagen);
+  if (!Number.isFinite(plants) || plants < 1 || plants > 4) {
+    heatErrors.anzahlHeizungsanlagen = 'Bitte die Anzahl der Heizungsanlagen wählen.';
+  }
+  const heatYear = Number(building.baujahrHeizung);
+  if (heatYear < 1800 || heatYear > 2026) {
+    heatErrors.baujahrHeizung = 'Baujahr der Heizung prüfen.';
+  }
+  applyBuildingErrors(heatErrors);
   const errors = validateConsumption(getState().consumption);
   Object.entries(errors).forEach(([name, message]) => {
     setFieldError(form, name, message);
   });
-  return isEmpty(errors);
+  return isEmpty(errors) && isEmpty(heatErrors);
 }

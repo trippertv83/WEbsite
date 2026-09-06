@@ -9,7 +9,7 @@ export function phoneDigitCount(value) {
   return String(value || '').replace(/\D/g, '').length;
 }
 
-export function validateBuilding(building) {
+export function validateObjectData(building) {
   const errors = {};
   if (!PLZ.test(String(building.plz || ''))) {
     errors.plz = 'Bitte eine gültige 5-stellige PLZ angeben.';
@@ -26,6 +26,20 @@ export function validateBuilding(building) {
   const units = Number(building.anzahlWohnungen);
   if (!Number.isFinite(units) || units < 1) {
     errors.anzahlWohnungen = 'Anzahl Wohnungen mindestens 1.';
+  }
+  const year = Number(building.baujahr);
+  if (year < 1800 || year > 2026) errors.baujahr = 'Baujahr prüfen.';
+  if (!building.beheizterKeller) {
+    errors.beheizterKeller = 'Bitte angeben, ob ein Keller beheizt wird.';
+  }
+  return errors;
+}
+
+export function validateBuilding(building) {
+  const errors = validateObjectData(building);
+  const plants = Number(building.anzahlHeizungsanlagen);
+  if (!Number.isFinite(plants) || plants < 1 || plants > 4) {
+    errors.anzahlHeizungsanlagen = 'Bitte die Anzahl der Heizungsanlagen wählen.';
   }
   if (!building.gekuehlt) errors.gekuehlt = 'Bitte Kühlung angeben.';
   if (building.erneuerbareEnergien && !building.erneuerbareEnergienA) {
@@ -50,9 +64,6 @@ export function validateBuilding(building) {
   const heatYear = Number(building.baujahrHeizung);
   if (heatYear < 1800 || heatYear > 2026) {
     errors.baujahrHeizung = 'Baujahr der Heizung prüfen.';
-  }
-  if (!building.beheizterKeller) {
-    errors.beheizterKeller = 'Bitte angeben, ob ein Keller beheizt wird.';
   }
   if (!building.warmwasser) errors.warmwasser = 'Bitte Warmwasser wählen.';
   return errors;

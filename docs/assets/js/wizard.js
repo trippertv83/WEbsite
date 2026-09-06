@@ -5,6 +5,15 @@
 import { getState, setStep } from './state.js';
 import { qs, qsa } from './utils.js';
 
+export const STEP_NEXT = [
+  '',
+  'Wärmeverbrauch',
+  'Leerstand & Energienutzung',
+  'Bauteile',
+  'Ausweisübersicht',
+  'Abrechnung & Lieferung',
+];
+
 const STEPS = [
   { id: 1, title: 'Objektdaten', sub: 'Adresse & Gebäude', icon: 'home' },
   { id: 2, title: 'Wärmeverbrauch', sub: 'Energieträger', icon: 'flame' },
@@ -65,6 +74,11 @@ export function renderStepper() {
     </li>`;
   }).join('');
   updateProgress(step);
+  qsa('[data-next]').forEach((btn) => {
+    if (btn.id === 'btn-checkout') return;
+    const label = STEP_NEXT[step];
+    if (label) btn.innerHTML = `${label} <span aria-hidden="true">→</span>`;
+  });
 }
 
 export function showStep(step) {

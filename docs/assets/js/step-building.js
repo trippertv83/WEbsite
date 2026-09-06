@@ -72,6 +72,14 @@ function syncRecommendations(form, event) {
 export function readBuildingForm() {
   const form = qs('#form-building');
   const data = Object.fromEntries(new FormData(form).entries());
+  const skip = new Set(['energietraeger', 'unit', 'startYear', 'periodStartMonth']);
+  ['#form-consumption', '#form-parts', '#form-preview-notes'].forEach((sel) => {
+    const extra = qs(sel);
+    if (!extra) return;
+    for (const [key, value] of new FormData(extra).entries()) {
+      if (!skip.has(key)) data[key] = value;
+    }
+  });
   delete data.recommendation;
   delete data.kuehlungArt;
   delete data.eeVerwendung;
@@ -107,24 +115,29 @@ export function readBuildingForm() {
 }
 
 export function applyBuildingErrors(errors) {
-  const form = qs('#form-building');
-  clearFormErrors(form);
+  const root = qs('#wizard-app') || qs('#form-building');
+  ['#form-building', '#form-consumption', '#form-parts', '#form-preview-notes'].forEach((sel) => {
+    const form = qs(sel);
+    if (form) clearFormErrors(form);
+  });
   Object.entries(errors).forEach(([name, message]) => {
-    const field = form.elements[name];
+    const field = root.querySelector(`[name="${CSS.escape(name)}"]`);
     if (field && typeof field.setAttribute === 'function') {
       field.setAttribute('aria-invalid', 'true');
     } else {
-      [...form.querySelectorAll(`[name="${CSS.escape(name)}"]`)].forEach((el) => {
+      [...root.querySelectorAll(`[name="${CSS.escape(name)}"]`)].forEach((el) => {
         el.setAttribute('aria-invalid', 'true');
       });
     }
-    setFieldError(form, name, message);
+    setFieldError(root, name, message);
   });
 }
 
 export function validateStepBuilding() {
   const building = readBuildingForm();
   const errors = validateBuilding(building);
+  delete errors.baujahrHeizung;
+  delete errors.anzahlHeizungsanlagen;
   applyBuildingErrors(errors);
   return isEmpty(errors);
 }
@@ -138,7 +151,11 @@ export function bindBuildingLive() {
     syncCoolingPanel(form);
     readBuildingForm();
   };
-  form.addEventListener('input', refresh);
-  form.addEventListener('change', refresh);
+  ['#form-building', '#form-parts', '#form-preview-notes'].forEach((sel) => {
+    const el = qs(sel);
+    if (!el) return;
+    el.addEventListener('input', refresh);
+    el.addEventListener('change', refresh);
+  });
   refresh();
 }
