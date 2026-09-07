@@ -232,7 +232,7 @@
         <p>Der Förderrechner nennt je Maßnahme den besten Weg zu max. Zuschuss bzw. Steuererleichterung. Wo es eine Alternative gibt (Zuschuss ↔ Steuerbonus), lässt sich der Weg direkt auf der Karte umschalten – die Summe rechnet mit. Zusätzlich müssen individuell bei Kreditprogrammen die tagesaktuellen Zinsersparnisse einkalkuliert werden.</p>
         <p>Betrachtet werden aktuell bei der Berechnung immer die Wohneinheiten eines Hauses mit den Gesamtkosten für das ganze Haus; für mehrere Häuser (wie z. B. beim Gebäudenetz) müssen mehrere Berechnungen parallel gestartet werden. Sollen nicht alle WE eines MFH bei der Berechnung berücksichtigt werden, muss bei der jeweiligen WE „wird saniert“ weggeklickt werden.</p>
         <p>BEG EM, BEG WG und Steuerbonus schließen sich für dieselbe Maßnahme aus. Wegen des Kombiverbots / der 3-Jahres-Sperre zwischen BEG WG und BEG EM (wenn beide Anträge ab 21.07.2026) sollte pro Berechnung vorab ein Weg gewählt werden – Einzelmaßnahmen oder Effizienzhaus-Sanierung. Lediglich der Steuerbonus kann aktuell jeweils dazu für nicht identische Maßnahmen kombiniert werden.</p>
-        <p>Der Deckel der BEG-EM-Einzelmaßnahmen (Dämmung, Fenster/Türen, Anlagentechnik, Heizungsoptimierung) gilt gemeinsam und ist nach WE gestaffelt: 1. WE 30.000 €, ab 2. je 15.000 €, ab 7. je 8.000 € (mit iSFP 60.000 / 30.000 / 15.000 €). Er gilt nur für die Maßnahmen, die auf BAFA stehen. Maßnahmen mit Steuerbonus zählen nicht gegen den Deckel – deshalb bleibt BAFA bei Fenster/Türen wählbar, auch wenn die Dämmung teurer ist als der Höchstbetrag. Stehen mehrere Maßnahmen auf BAFA und übersteigen den Deckel, wird in dieser Reihenfolge gefüllt: Dämmung, Heizungsoptimierung, Anlagentechnik, Fenster/Türen (WPB-Bonus nur auf Dämmkosten). Zu beachten: Wenn der iSFP-Bonus bei der Berechnung berücksichtigt werden soll, muss „iSFP vorhanden“ unter Schritt 1 ausgewählt werden, selbst wenn „Energieberatung / iSFP“ als Maßnahme gewählt wird.</p>
+        <p>Der Deckel der BEG-EM-Einzelmaßnahmen (Dämmung, Fenster/Türen, Anlagentechnik, Heizungsoptimierung) gilt je Antrag und ist nach WE gestaffelt: 1. WE 30.000 €, ab 2. je 15.000 €, ab 7. je 8.000 € (mit iSFP 60.000 / 30.000 / 15.000 €). Er gilt nur für die Maßnahmen, die auf BAFA stehen. Maßnahmen mit Steuerbonus zählen nicht gegen den Deckel. Stehen mehrere BAFA-Maßnahmen im selben Antrag und übersteigen den Deckel, wird in dieser Reihenfolge gefüllt: Dämmung, Heizungsoptimierung, Anlagentechnik, Fenster/Türen (WPB-Bonus nur auf Dämmkosten). Passt eine Maßnahme nicht mehr in den 1. Antrag, kann sie im 2. Antrag (anderes Jahr) mit einem eigenen Deckel gerechnet werden – umschalten über „BAFA-Antrag“ oder über „Zuschuss · BAFA“ (dann rutscht sie automatisch ins zweite Jahr). Zu beachten: Wenn der iSFP-Bonus bei der Berechnung berücksichtigt werden soll, muss „iSFP vorhanden“ unter Schritt 1 ausgewählt werden, selbst wenn „Energieberatung / iSFP“ als Maßnahme gewählt wird.</p>
         <p>Zusätzlich zu den genannten Förderungen sind immer regionale Programme von Ländern und Kommunen zu überprüfen.</p>
 
         <h2>Erläuterungen zu Förderprogrammen</h2>
@@ -291,7 +291,7 @@
     </div>
     <div id="print-root"></div>
     <script type="module">
-      import { CATALOG, calculate, emptyMeasures, importEfbJson } from './assets/js/foerder-calc.js?v=20260907a';
+      import { CATALOG, calculate, emptyMeasures, importEfbJson } from './assets/js/foerder-calc.js?v=20260907b';
       import { printWithLetterhead } from './assets/js/print-brief.js?v=20260904p';
 
       const euro = (v) => Number(v || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
@@ -323,6 +323,15 @@
         }
         if (item.id === 'daemmung') {
           extra = `<div class="checks"><label><input type="checkbox" data-wpb /><span>Worst Performing Building (Dämmung, Bonus ab Q1/2027)</span></label></div>`;
+        }
+        if (['daemmung', 'heizopt_eff', 'anlagen', 'fenster'].includes(item.id)) {
+          extra += `
+            <label class="lbl">BAFA-Antrag</label>
+            <select data-antrag>
+              <option value="1">1. Antrag (dieses Jahr)</option>
+              <option value="2">2. Antrag (anderes Jahr, eigener Deckel)</option>
+            </select>
+            <p class="hint">Zwei Jahre / zwei Anträge = zweimal der BEG-EM-Deckel. Nicht dieselben Kosten doppelt ansetzen.</p>`;
         }
         if (item.id === 'komplett') {
           extra = `
@@ -386,6 +395,7 @@
             nh: Boolean(el.querySelector('[data-nh]')?.checked),
             ser: Boolean(el.querySelector('[data-ser]')?.checked),
             erz: el.querySelector('[data-erz]')?.value,
+            antrag: Number(el.querySelector('[data-antrag]')?.value) === 2 ? 2 : 1,
           };
         });
         return measures;
@@ -405,6 +415,7 @@
           if (el.querySelector('[data-eh]') && row.eh) el.querySelector('[data-eh]').value = row.eh;
           if (el.querySelector('[data-nh]')) el.querySelector('[data-nh]').checked = Boolean(row.nh);
           if (el.querySelector('[data-ser]')) el.querySelector('[data-ser]').checked = Boolean(row.ser);
+          if (el.querySelector('[data-antrag]') && row.antrag) el.querySelector('[data-antrag]').value = String(row.antrag);
         });
       }
 

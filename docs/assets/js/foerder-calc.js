@@ -69,7 +69,7 @@ const NOTE = {
   emiss:
     '50 % Zuschuss für Maßnahmen zur Emissionsminderung an Biomasseheizungen (kein gemeinsamer Deckel wie bei den übrigen Einzelmaßnahmen).',
   pool:
-    'Mindestinvestitionsvolumen: 300 € förderfähige Kosten je Einzelmaßnahme. BAFA BEG EM: 15 % Grundförderung auf Dämmung, Fenster/Türen, Anlagentechnik und Heizungsoptimierung. Mit iSFP 20 % auf den Betrag oberhalb des Basis-Deckels. Gemeinsamer Höchstbetrag, nach WE gestaffelt: 30.000 / 15.000 / 8.000 € (mit iSFP 60.000 / 30.000 / 15.000 €). Ab Q1/2027: zusätzlich +5 % WPB-Bonus, nur auf die Dämmung (Dach/Fassade/Keller; nicht Fenster/Türen), mit iSFP.',
+    'Mindestinvestitionsvolumen: 300 € förderfähige Kosten je Einzelmaßnahme. BAFA BEG EM: 15 % Grundförderung auf Dämmung, Fenster/Türen, Anlagentechnik und Heizungsoptimierung. Mit iSFP 20 % auf den Betrag oberhalb des Basis-Deckels. Höchstbetrag je Antrag, nach WE gestaffelt: 30.000 / 15.000 / 8.000 € (mit iSFP 60.000 / 30.000 / 15.000 €). Zwei Anträge in zwei Jahren = zweimal der Deckel (keine doppelten Kosten). Ab Q1/2027: zusätzlich +5 % WPB-Bonus, nur auf die Dämmung (Dach/Fassade/Keller; nicht Fenster/Türen), mit iSFP.',
   bbEm:
     '50 % – möglich, weil min. eine Maßnahme über BAFA BEG EM gefördert wird. Deckel 5.000 € (EFH/ZFH).',
   wg:
@@ -321,38 +321,84 @@ export function calculate(state) {
     return { elig, inBase, extra, bafaAmt, lines };
   }
 
-  function poolBafaOpt(slice, keepZero) {
-    return opt('BAFA', 'BEG EM', slice.bafaAmt, 'Zuschuss', slice.lines, NOTE.pool, keepZero);
+  function yearOf(id) {
+    return Number(m[id]?.antrag) === 2 ? 2 : 1;
   }
+
+  function withYearLine(slice, year) {
+    const lines = [...(slice.lines || [])];
+    if (year === 2) {
+      lines.unshift({ k: '2. Antrag (anderes Jahr, eigener Deckel)', v: money(slice.elig) });
+    }
+    return lines;
+  }
+
+  const yearState = {
+    1: { remainMax: maxCap, remainBase: baseCap },
+    2: { remainMax: maxCap, remainBase: baseCap },
+  };
 
   const poolRows = poolOrder
     .filter((id) => on(id))
     .map((id) => {
       const c = cost(id);
       const alone = poolSlice(c, maxCap, baseCap, id);
-      const bafa = poolBafaOpt(alone);
+      const bafaAlone = opt('BAFA', 'BEG EM', alone.bafaAmt, 'Zuschuss', alone.lines, NOTE.pool);
       const fa = tax20(c, self, TAX_MAX);
-      return { id, c, bafa, fa, rec: pickRec(bafa, null, fa, userPath[id]) };
+      return { id, c, y: yearOf(id), fa, rec: pickRec(bafaAlone, null, fa, userPath[id]) };
     });
 
-  let remainMax = maxCap;
-  let remainBase = baseCap;
   const allocated = {};
+  const usedYear = {};
   poolRows.forEach((item) => {
     if (item.rec?.agency !== 'BAFA') return;
-    allocated[item.id] = poolSlice(item.c, remainMax, remainBase, item.id);
-    remainMax -= allocated[item.id].elig;
-    remainBase -= allocated[item.id].inBase;
+    let y = item.y;
+    let slice = poolSlice(item.c, yearState[y].remainMax, yearState[y].remainBase, item.id);
+    if (slice.elig <= 0 && y === 1) {
+      y = 2;
+      slice = poolSlice(item.c, yearState[2].remainMax, yearState[2].remainBase, item.id);
+    }
+    yearState[y].remainMax -= slice.elig;
+    yearState[y].remainBase -= slice.inBase;
+    allocated[item.id] = slice;
+    usedYear[item.id] = y;
+    if (slice.elig <= 0 && userPath[item.id] === 'bafa') {
+      const label = CATALOG.find((x) => x.id === item.id).label;
+      poolWarnings.push(
+        `BAFA-Deckel für „${label}“ ist in beiden Anträgen ausgeschöpft. Eine Maßnahme ins andere Jahr legen oder auf Steuerbonus stellen.`
+      );
+    } else if (item.y === 1 && y === 2) {
+      const label = CATALOG.find((x) => x.id === item.id).label;
+      poolWarnings.push(
+        `„${label}“ ist im 2. Antrag (anderes Jahr) mit eigenem BEG-EM-Deckel gerechnet – so lassen sich Einzelmaßnahmen auf zwei Jahre aufteilen.`
+      );
+    }
   });
 
   poolRows.forEach((item) => {
     const label = CATALOG.find((x) => x.id === item.id).label;
-    const slice = allocated[item.id];
-    const bafa = slice ? poolBafaOpt(slice, true) : item.bafa;
-    if (slice && slice.elig <= 0 && userPath[item.id] === 'bafa') {
-      poolWarnings.push(
-        `BAFA-Deckel für „${label}“ ist durch andere auf BAFA gesetzte Einzelmaßnahmen ausgeschöpft. Eine andere Maßnahme auf Steuerbonus stellen – dann lässt sich BAFA hier anrechnen.`
+    let bafa = null;
+    if (allocated[item.id]) {
+      const sl = allocated[item.id];
+      bafa = opt(
+        'BAFA',
+        'BEG EM',
+        sl.bafaAmt,
+        'Zuschuss',
+        withYearLine(sl, usedYear[item.id]),
+        NOTE.pool,
+        true
       );
+    } else {
+      let y = item.y;
+      let sl = poolSlice(item.c, yearState[y].remainMax, yearState[y].remainBase, item.id);
+      if (sl.bafaAmt <= 0) {
+        y = y === 1 ? 2 : 1;
+        sl = poolSlice(item.c, yearState[y].remainMax, yearState[y].remainBase, item.id);
+      }
+      if (sl.bafaAmt > 0) {
+        bafa = opt('BAFA', 'BEG EM', sl.bafaAmt, 'Zuschuss', withYearLine(sl, y), NOTE.pool);
+      }
     }
     row(item.id, label, bafa, null, item.fa);
   });
