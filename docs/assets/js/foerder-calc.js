@@ -49,8 +49,8 @@ export function speedRate(date) {
   return 0;
 }
 
-function opt(agency, program, amount, unit, lines, note) {
-  if (!amount) return null;
+function opt(agency, program, amount, unit, lines, note, keepZero) {
+  if (!amount && !keepZero) return null;
   return { agency, program, amount: euro(amount), unit, lines: lines || [], note: note || '' };
 }
 
@@ -299,41 +299,62 @@ export function calculate(state) {
   }
 
   const poolOrder = ['daemmung', 'heizopt_eff', 'anlagen', 'fenster'];
-  let remainMax = maxCap;
-  let remainBase = baseCap;
-  poolOrder.forEach((id) => {
-    if (!on(id)) return;
-    const c = cost(id);
+  const poolWarnings = [];
+
+  function poolSlice(c, remainMax, remainBase, id) {
     const elig = Math.min(c, Math.max(0, remainMax));
-    remainMax -= elig;
-    const inBase = Math.min(elig, remainBase);
-    remainBase -= inBase;
+    const inBase = Math.min(elig, Math.max(0, remainBase));
     const extra = Math.max(0, elig - inBase);
     let bafaAmt = inBase * 0.15 + extra * 0.2;
     const lines = [
       { k: 'Förderfähige Kosten', v: money(elig) },
-      { k: extra || inBase < elig ? `15 % auf ${money(inBase)} (Basis)` : '15 % Basisförderung', v: money(inBase * 0.15) },
+      {
+        k: extra || inBase < elig ? `15 % auf ${money(inBase)} (Basis)` : '15 % Basisförderung',
+        v: money(inBase * 0.15),
+      },
     ];
     if (extra) lines.push({ k: `20 % auf ${money(extra)} (iSFP-Erhöhung)`, v: money(extra * 0.2) });
     if (id === 'daemmung' && g.wpbHuelle && g.q1) {
       bafaAmt += elig * 0.05;
       lines.push({ k: 'WPB-Bonus 5 % (Dämmung, ab Q1/2027)', v: money(elig * 0.05) });
     }
-    const label = CATALOG.find((x) => x.id === id).label;
-    row(
-      id,
-      label,
-      opt(
-        'BAFA',
-        'BEG EM',
-        bafaAmt,
-        'Zuschuss',
-        lines,
-        NOTE.pool
-      ),
-      null,
-      tax20(c, self, TAX_MAX)
-    );
+    return { elig, inBase, extra, bafaAmt, lines };
+  }
+
+  function poolBafaOpt(slice, keepZero) {
+    return opt('BAFA', 'BEG EM', slice.bafaAmt, 'Zuschuss', slice.lines, NOTE.pool, keepZero);
+  }
+
+  const poolRows = poolOrder
+    .filter((id) => on(id))
+    .map((id) => {
+      const c = cost(id);
+      const alone = poolSlice(c, maxCap, baseCap, id);
+      const bafa = poolBafaOpt(alone);
+      const fa = tax20(c, self, TAX_MAX);
+      return { id, c, bafa, fa, rec: pickRec(bafa, null, fa, userPath[id]) };
+    });
+
+  let remainMax = maxCap;
+  let remainBase = baseCap;
+  const allocated = {};
+  poolRows.forEach((item) => {
+    if (item.rec?.agency !== 'BAFA') return;
+    allocated[item.id] = poolSlice(item.c, remainMax, remainBase, item.id);
+    remainMax -= allocated[item.id].elig;
+    remainBase -= allocated[item.id].inBase;
+  });
+
+  poolRows.forEach((item) => {
+    const label = CATALOG.find((x) => x.id === item.id).label;
+    const slice = allocated[item.id];
+    const bafa = slice ? poolBafaOpt(slice, true) : item.bafa;
+    if (slice && slice.elig <= 0 && userPath[item.id] === 'bafa') {
+      poolWarnings.push(
+        `BAFA-Deckel für „${label}“ ist durch andere auf BAFA gesetzte Einzelmaßnahmen ausgeschöpft. Eine andere Maßnahme auf Steuerbonus stellen – dann lässt sich BAFA hier anrechnen.`
+      );
+    }
+    row(item.id, label, bafa, null, item.fa);
   });
 
   const anyBafaEm = per.some((p) => p.rec?.agency === 'BAFA' && p.rec?.program === 'BEG EM');
@@ -481,7 +502,7 @@ export function calculate(state) {
     totals[p.rec.agency] = euro((totals[p.rec.agency] || 0) + p.rec.amount);
   });
   const investTotal = euro(CATALOG.reduce((s, item) => s + cost(item.id) + n(m[item.id]?.kredit), 0));
-  const warnings = [];
+  const warnings = [...poolWarnings];
   if (on('komplett') && (on('waermepumpe') || poolSum > 0 || on('gebaeudenetz'))) {
     warnings.push(
       'Achtung: BEG WG (Komplettsanierung) und BEG EM (Einzelmaßnahmen/Heizung) sind nicht kombinierbar. Ab 21.07.2026 gilt eine 3-jährige Sperre – nur einen Weg beantragen; die hier ausgewiesene Summe darf nicht gemeinsam beantragt werden.'
